@@ -9,7 +9,7 @@ export const siteConfig = {
   shortName: "Văn THCS",
   tagline: "Tài liệu Ngữ văn THCS chất lượng, học tập hiệu quả hơn.",
   description:
-    "Cung cấp tài liệu Ngữ văn THCS chất lượng cao dạng Microsoft Word (.docx). Tải về ngay sau khi thanh toán.",
+    "Cung cấp tài liệu Ngữ văn THCS chất lượng cao. Tải về ngay sau khi thanh toán.",
   url: process.env.NEXT_PUBLIC_SITE_URL || "http://localhost:3000",
 
   contact: {
@@ -33,8 +33,10 @@ export const siteConfig = {
   store: {
     currency: "VND",
     currencySymbol: "₫",
-    fileFormat: ".docx",
-    fileFormatLabel: "Microsoft Word (.docx)",
+    supportedFormats: ["DOCX", "ZIP"] as readonly string[],
+    supportedFormatsLabel: "DOCX, ZIP",
+    maxFileSizeBytes: 50 * 1024 * 1024,
+    maxFileSizeLabel: "50 MB",
     maxDownloadsPerToken: 20,
     deliveryTokenExpiryDays: 30,
     signedUrlTtlSeconds: 60,

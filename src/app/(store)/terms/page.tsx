@@ -9,7 +9,7 @@ export default function TermsPage() {
       <div className="prose prose-sm text-text-secondary max-w-none space-y-4">
         <p>Khi sử dụng {siteConfig.name}, bạn đồng ý với các điều khoản sau.</p>
         <h2 className="text-lg font-semibold text-text-primary">Sản phẩm số</h2>
-        <p>Tất cả sản phẩm là tài liệu số dạng file Word (.docx). Sau khi thanh toán, bạn sẽ nhận được link tải.</p>
+        <p>Tất cả sản phẩm là tài liệu số dạng tệp tài liệu (DOCX, ZIP). Sau khi thanh toán, bạn sẽ nhận được link tải.</p>
         <h2 className="text-lg font-semibold text-text-primary">Quyền sử dụng</h2>
         <p>Tài liệu được cấp phép sử dụng cá nhân cho mục đích giáo dục. Không được phân phối lại hoặc bán lại.</p>
         <h2 className="text-lg font-semibold text-text-primary">Giới hạn tải</h2>

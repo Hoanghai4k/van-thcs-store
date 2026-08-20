@@ -192,7 +192,7 @@ export default async function ProductDetailPage({ params }: ProductPageProps) {
                   <div>
                     <p className="text-xs text-text-muted">Định dạng</p>
                     <p className="text-sm font-medium text-text-primary">
-                      {product.file_format || siteConfig.store.fileFormat}
+                      {(product.file_format || "docx").toUpperCase()}
                     </p>
                   </div>
                 </div>
@@ -242,7 +242,13 @@ export default async function ProductDetailPage({ params }: ProductPageProps) {
                 </div>
                 <div className="flex items-center gap-2.5">
                   <CheckCircle className="w-4 h-4 text-green-500 flex-shrink-0" />
-                  <span>File Word chỉnh sửa được</span>
+                  <span>
+                    {product.file_format === "zip"
+                      ? "Tệp tài liệu số"
+                      : product.file_format === "mixed"
+                        ? "DOCX + ZIP"
+                        : "File DOCX chỉnh sửa được"}
+                  </span>
                 </div>
                 <div className="flex items-center gap-2.5">
                   <CheckCircle className="w-4 h-4 text-green-500 flex-shrink-0" />

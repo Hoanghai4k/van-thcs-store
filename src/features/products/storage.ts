@@ -3,7 +3,7 @@
  * Upload/delete product assets and files via authenticated Supabase client.
  *
  * product-assets = PUBLIC bucket (thumbnails, previews)
- * product-files  = PRIVATE bucket (.docx files)
+ * product-files  = PRIVATE bucket (DOCX, ZIP product files)
  *
  * All operations use the authenticated admin session + Storage RLS.
  * No service_role key is used or needed.
@@ -15,14 +15,13 @@ import {
   getProductAssetPath,
   getProductFilePath,
   isAllowedImageType,
-  isAllowedDocumentType,
-  isDocxExtension,
+  validateProductFile,
+  getSafeExtension,
 } from "@/lib/storage/storage";
 
 // ─── Constants ─────────────────────────────────────────────────────
 
 export const MAX_IMAGE_SIZE = 10 * 1024 * 1024; // 10 MB
-export const MAX_DOCX_SIZE = 50 * 1024 * 1024; // 50 MB
 
 // ─── Asset Upload (Public — thumbnails, previews) ──────────────────
 
@@ -89,29 +88,30 @@ export async function deleteProductAsset(
   return { success: true };
 }
 
-// ─── File Upload (Private — .docx files) ───────────────────────────
+// ─── File Upload (Private — DOCX, ZIP product files) ───────────────
 
 /**
- * Upload a product file (.docx).
+ * Upload a product file (DOCX or ZIP).
  * Validates extension, MIME, and size client-side before uploading.
+ * Storage key uses UUID + safe extension (never original filename).
  */
 export async function uploadProductFile(
   productId: string,
   file: File,
 ): Promise<UploadResult> {
-  if (!isDocxExtension(file.name)) {
-    return { success: false, error: "File không đúng định dạng .docx." };
+  // Validate extension + MIME + size
+  const validationError = validateProductFile(file.name, file.type, file.size);
+  if (validationError) {
+    return { success: false, error: validationError };
   }
 
-  if (!isAllowedDocumentType(file.type)) {
-    return { success: false, error: "File không đúng định dạng .docx." };
+  // Get safe extension (already validated by validateProductFile)
+  const safeExt = getSafeExtension(file.name, file.type);
+  if (!safeExt) {
+    return { success: false, error: "Định dạng file không hợp lệ." };
   }
 
-  if (file.size > MAX_DOCX_SIZE) {
-    return { success: false, error: "Dung lượng file vượt quá 50 MB." };
-  }
-
-  const uniqueName = `${crypto.randomUUID()}.docx`;
+  const uniqueName = `${crypto.randomUUID()}.${safeExt}`;
   const storagePath = getProductFilePath(productId, uniqueName);
 
   const supabase = getSupabaseBrowserClient();
@@ -125,7 +125,7 @@ export async function uploadProductFile(
 
   if (error) {
     console.error("[Storage] File upload error:", error.message);
-    return { success: false, error: "Không thể tải file Word lên. Vui lòng thử lại." };
+    return { success: false, error: "Không thể tải tệp lên. Vui lòng thử lại." };
   }
 
   return { success: true, path: storagePath };

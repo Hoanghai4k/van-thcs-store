@@ -169,7 +169,7 @@ export async function updateProduct(
 
 /**
  * Toggle product active status.
- * Activation requires at least 1 Word file.
+ * Activation requires at least 1 deliverable file (DOCX or ZIP).
  */
 export async function toggleProductActive(
   id: string,
@@ -212,7 +212,7 @@ export async function toggleProductActive(
     if (!count || count === 0) {
       return {
         success: false,
-        error: "Không thể kích hoạt sản phẩm vì chưa có file Word (.docx). Hãy tải lên ít nhất 1 file.",
+        error: "Không thể kích hoạt sản phẩm vì chưa có tệp tài liệu. Hãy tải lên ít nhất 1 file.",
       };
     }
   }
@@ -234,20 +234,32 @@ export async function toggleProductActive(
 }
 
 /**
- * Recalculate and sync file_count from product_files table.
+ * Recalculate and sync file_count and file_format from product_files table.
+ * file_format is derived from actual attached files:
+ *   - "docx" if all files are DOCX
+ *   - "zip" if all files are ZIP
+ *   - "mixed" if both types exist
+ *   - "docx" as fallback for 0 files
  */
 export async function syncProductFileCount(
   productId: string,
 ): Promise<void> {
   const supabase = await getSupabaseServerClient();
 
-  const { count } = await supabase
+  const { data: files, count } = await supabase
     .from("product_files")
-    .select("id", { count: "exact", head: true })
+    .select("file_name", { count: "exact" })
     .eq("product_id", productId);
+
+  const fileFormat = deriveFileFormat(files?.map((f) => f.file_name) ?? []);
 
   await supabase
     .from("products")
-    .update({ file_count: count ?? 0 })
+    .update({ file_count: count ?? 0, file_format: fileFormat })
     .eq("id", productId);
 }
+
+// Import deriveFileFormat from storage module (pure utility).
+// Defined there because "use server" files require all exported
+// functions to be async — this is a sync utility function.
+import { deriveFileFormat } from "@/lib/storage/storage";

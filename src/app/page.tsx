@@ -44,7 +44,7 @@ export default async function HomePage() {
             </h1>
 
             <p className="text-lg md:text-xl text-blue-100 mb-8 leading-relaxed max-w-2xl">
-              Tài liệu định dạng Word (.docx) — dễ dàng chỉnh sửa, in ấn.
+              Tài liệu chất lượng — dễ dàng sử dụng, in ấn.
               Đề thi, giáo án, bài văn mẫu, bộ đề đọc hiểu... soạn bởi giáo viên giàu kinh nghiệm.
             </p>
 
@@ -149,8 +149,8 @@ export default async function HomePage() {
             {[
               {
                 icon: FileText,
-                title: "Định dạng Word",
-                desc: "File .docx dễ chỉnh sửa, in ấn. Tùy biến theo nhu cầu riêng.",
+                title: "Nhiều định dạng",
+                desc: "DOCX, ZIP — tải ngay, dễ sử dụng theo nhu cầu riêng.",
               },
               {
                 icon: Star,
@@ -251,7 +251,7 @@ export default async function HomePage() {
             {[
               {
                 q: "Tài liệu có định dạng gì?",
-                a: "Tất cả tài liệu đều ở định dạng Microsoft Word (.docx), dễ dàng chỉnh sửa và in ấn.",
+                a: "Tài liệu được cung cấp ở định dạng DOCX hoặc ZIP, dễ dàng sử dụng và in ấn.",
               },
               {
                 q: "Tôi có thể tải lại tài liệu không?",

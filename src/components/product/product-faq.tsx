@@ -14,7 +14,7 @@ export function ProductFAQ() {
     {
       question: "File có chỉnh sửa được không?",
       answer:
-        "Có. Tất cả sản phẩm đều ở định dạng Microsoft Word (.docx), bạn có thể mở và chỉnh sửa tự do bằng Microsoft Office, Google Docs hoặc LibreOffice.",
+        "Có. Sản phẩm định dạng DOCX có thể mở và chỉnh sửa bằng Microsoft Office, Google Docs hoặc LibreOffice. Sản phẩm ZIP chứa bộ tài liệu đầy đủ.",
     },
     {
       question: "Tôi có thể tải lại file không?",

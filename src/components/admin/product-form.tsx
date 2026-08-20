@@ -146,7 +146,7 @@ export function ProductForm({
             setFeedback({
               type: "success",
               message:
-                "Đã tạo sản phẩm nháp. Bây giờ bạn có thể tải ảnh và file Word.",
+                "Đã tạo sản phẩm nháp. Bây giờ bạn có thể tải ảnh và tệp tài liệu.",
             });
             // Redirect to edit page
             router.replace(`/admin/products/${result.data.id}`);
@@ -237,12 +237,12 @@ export function ProductForm({
     router.refresh();
   }
 
-  // ─── Word File Upload ──────────────────────────────────────────
-  async function handleWordUpload(e: React.ChangeEvent<HTMLInputElement>) {
+  // ─── Product File Upload ──────────────────────────────────────
+  async function handleFileUpload(e: React.ChangeEvent<HTMLInputElement>) {
     const file = e.target.files?.[0];
     if (!file || !savedProductId) return;
 
-    setUploading("docx");
+    setUploading("file");
     setFeedback(null);
 
     const result = await uploadProductFile(savedProductId, file);
@@ -489,7 +489,7 @@ export function ProductForm({
               value={featuresText}
               onChange={(e) => setFeaturesText(e.target.value)}
               rows={4}
-              placeholder={"50 đề đọc hiểu có đáp án\nHướng dẫn chấm bài rõ ràng\nFile Word chỉnh sửa được"}
+              placeholder={"50 đề đọc hiểu có đáp án\nHướng dẫn chấm bài rõ ràng\nFile tài liệu dễ sử dụng"}
               className="w-full border border-slate-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
             />
           </div>
@@ -623,10 +623,10 @@ export function ProductForm({
             </label>
           </section>
 
-          {/* Word Files */}
+          {/* Product Files */}
           <section className="bg-white rounded-xl border border-slate-200 p-5 space-y-3">
             <h2 className="font-semibold text-slate-900">
-              File Word (.docx){" "}
+              Tệp tài liệu{" "}
               <span className="text-sm font-normal text-slate-500">
                 ({files.length} file)
               </span>
@@ -644,8 +644,12 @@ export function ProductForm({
                         <p className="text-sm text-slate-900 truncate">
                           {f.file_name}
                         </p>
-                        <p className="text-xs text-slate-400">
+                      <p className="text-xs text-slate-400">
                           {(f.file_size / 1024 / 1024).toFixed(2)} MB
+                          {" · "}
+                          <span className="font-medium uppercase">
+                            {f.file_name.split(".").pop()}
+                          </span>
                         </p>
                       </div>
                     </div>
@@ -662,22 +666,22 @@ export function ProductForm({
               </div>
             )}
             <label className="flex items-center gap-2 w-fit px-4 py-2 border border-slate-300 rounded-lg text-sm text-slate-700 hover:bg-slate-50 cursor-pointer transition-colors">
-              {uploading === "docx" ? (
+              {uploading === "file" ? (
                 <Loader2 className="w-4 h-4 animate-spin" />
               ) : (
                 <FileText className="w-4 h-4" />
               )}
-              Tải file .docx
+              Tải tệp
               <input
                 type="file"
-                accept=".docx,application/vnd.openxmlformats-officedocument.wordprocessingml.document"
-                onChange={handleWordUpload}
+                accept=".docx,.zip,application/vnd.openxmlformats-officedocument.wordprocessingml.document,application/zip,application/x-zip-compressed"
+                onChange={handleFileUpload}
                 disabled={!!uploading}
                 className="hidden"
               />
             </label>
             <p className="text-xs text-slate-400">
-              Chỉ chấp nhận .docx — tối đa 50 MB
+              DOCX hoặc ZIP — tối đa 50 MB
             </p>
           </section>
         </div>
@@ -687,7 +691,7 @@ export function ProductForm({
         <div className="mt-6 p-4 bg-blue-50 border border-blue-200 rounded-lg text-sm text-blue-700">
           <p>
             Hãy <strong>tạo sản phẩm nháp</strong> trước để có thể tải ảnh và
-            file Word.
+            tệp tài liệu.
           </p>
         </div>
       )}

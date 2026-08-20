@@ -81,7 +81,7 @@ export default function CartPage() {
                     </span>
                   )}
                   <span className="text-xs text-text-muted bg-surface-alt px-1.5 py-0.5 rounded">
-                    {siteConfig.store.fileFormatLabel}
+                    {siteConfig.store.supportedFormatsLabel}
                   </span>
                 </div>
               </div>

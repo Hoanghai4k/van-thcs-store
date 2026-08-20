@@ -1,6 +1,6 @@
 /**
  * Product file management server actions.
- * Handles DB metadata for uploaded .docx files.
+ * Handles DB metadata for uploaded product files (DOCX, ZIP).
  * All mutations require admin authentication.
  */
 

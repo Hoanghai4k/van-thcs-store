@@ -35,7 +35,7 @@ export function CheckoutOrderSummary() {
                     {formatCurrency(item.price)}
                   </span>
                   <span className="text-xs text-text-muted bg-surface-alt px-1.5 py-0.5 rounded">
-                    {siteConfig.store.fileFormatLabel}
+                    {siteConfig.store.supportedFormatsLabel}
                   </span>
                 </div>
               </div>
@@ -65,7 +65,7 @@ export function CheckoutOrderSummary() {
           </div>
           <div className="flex items-center gap-2.5">
             <FileText className="w-4 h-4 text-primary-500 flex-shrink-0" />
-            <span>File Word chỉnh sửa được</span>
+            <span>Tệp tài liệu số</span>
           </div>
           <div className="flex items-center gap-2.5">
             <ShieldCheck className="w-4 h-4 text-primary-500 flex-shrink-0" />

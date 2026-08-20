@@ -77,7 +77,7 @@ export function ProductGallery({
         <FileText className="w-14 h-14 text-primary-300" />
       </div>
       <span className="text-sm text-primary-400 font-medium">
-        Tài liệu Word (.docx)
+        Tài liệu số
       </span>
       {discount && (
         <span className="absolute top-4 right-4 bg-error text-white text-sm font-bold px-3 py-1.5 rounded-full shadow-md">
