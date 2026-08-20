@@ -77,7 +77,7 @@ export async function createOrderAndPayment(
       customerEmail,
       customerName,
       customerPhone,
-      returnUrl: `${siteUrl}/order/success?orderCode=${order.orderCode}`,
+      returnUrl: `${siteUrl}/order/${order.orderCode}`,
       cancelUrl: `${siteUrl}/order/${order.orderCode}`,
       items: paymentItems,
       expiresInSeconds: 15 * 60, // 15 minutes

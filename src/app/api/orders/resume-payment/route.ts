@@ -112,7 +112,7 @@ export async function POST(request: NextRequest) {
       customerEmail: customer.email,
       customerName: customer.name,
       customerPhone: customer.phone ?? "",
-      returnUrl: `${siteUrl}/order/success?orderCode=${order.order_code}`,
+      returnUrl: `${siteUrl}/order/${order.order_code}`,
       cancelUrl: `${siteUrl}/order/${order.order_code}`,
       items: paymentItems,
       expiresInSeconds: 15 * 60,
