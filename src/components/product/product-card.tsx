@@ -1,7 +1,8 @@
 "use client";
 
+import Image from "next/image";
 import Link from "next/link";
-import { ShoppingCart, Check, FileText, Tag } from "lucide-react";
+import { ShoppingCart, Check, FileText, Tag, FileType } from "lucide-react";
 import { formatCurrency } from "@/lib/utils";
 import { useCart } from "@/components/cart/cart-provider";
 import { getProductAssetUrl } from "@/lib/storage/storage";
@@ -42,10 +43,12 @@ export function ProductCard({ product }: ProductCardProps) {
         {(() => {
           const thumbUrl = getProductAssetUrl(product.thumbnail_path);
           return thumbUrl ? (
-            <img
+            <Image
               src={thumbUrl}
               alt={product.name}
-              className="w-full h-full object-cover"
+              fill
+              className="object-cover"
+              sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 25vw"
             />
           ) : (
             <FileText className="w-16 h-16 text-primary-300 group-hover:text-primary-400 transition-colors group-hover:scale-110 duration-300" />
@@ -79,6 +82,17 @@ export function ProductCard({ product }: ProductCardProps) {
         )}
 
         <div className="mt-auto">
+          {/* Format */}
+          <div className="flex items-center gap-1.5 mb-2">
+            <span className="text-[11px] font-medium bg-surface-alt text-text-secondary px-2 py-0.5 rounded border border-border">
+              {product.file_format === "zip"
+                ? "ZIP"
+                : product.file_format === "mixed"
+                  ? "DOCX + ZIP"
+                  : "DOCX"}
+            </span>
+          </div>
+
           {/* Price */}
           <div className="flex items-baseline gap-2 mb-3">
             <span className="text-lg font-bold text-primary-600">

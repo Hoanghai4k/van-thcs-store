@@ -32,37 +32,54 @@ export default async function HomePage() {
           <div className="absolute bottom-10 right-10 w-96 h-96 rounded-full bg-accent-300/20 blur-3xl" />
         </div>
 
-        <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-20 md:py-28">
-          <div className="max-w-3xl">
-            <div className="inline-flex items-center gap-2 bg-white/10 backdrop-blur-sm text-white/90 text-sm font-medium px-4 py-2 rounded-full mb-6 border border-white/20">
-              <Zap className="w-4 h-4 text-yellow-300" />
-              Tải ngay sau khi thanh toán — không cần chờ đợi
+        <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12 md:py-20">
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
+            {/* Left Content */}
+            <div className="max-w-2xl">
+              <div className="inline-flex items-center gap-2 bg-white/10 backdrop-blur-sm text-white/90 text-sm font-medium px-4 py-2 rounded-full mb-6 border border-white/20">
+                <Zap className="w-4 h-4 text-yellow-300" />
+                Tải ngay sau khi thanh toán — không cần chờ đợi
+              </div>
+
+              <h1 className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-extrabold text-white leading-tight mb-6">
+                {siteConfig.tagline}
+              </h1>
+
+              <p className="text-lg md:text-xl text-blue-100 mb-8 leading-relaxed">
+                Tài liệu tham khảo chuyên biệt cho THCS. Dễ dàng sử dụng, dễ dàng chỉnh sửa. Tải về ngay lập tức sau khi hoàn tất thanh toán.
+              </p>
+
+              <div className="flex flex-col sm:flex-row gap-4">
+                <Link
+                  href="/products"
+                  className="inline-flex items-center justify-center gap-2 bg-white text-primary-700 font-semibold px-8 py-3.5 rounded-xl hover:bg-blue-50 shadow-lg hover:shadow-xl transition-all duration-200 active:scale-[0.98]"
+                >
+                  Xem tài liệu
+                  <ArrowRight className="w-5 h-5" />
+                </Link>
+                <a
+                  href="#how-it-works"
+                  className="inline-flex items-center justify-center gap-2 text-white font-medium px-8 py-3.5 rounded-xl border-2 border-white/30 hover:bg-white/10 transition-all duration-200"
+                >
+                  Cách mua hàng
+                  <ChevronDown className="w-5 h-5" />
+                </a>
+              </div>
             </div>
 
-            <h1 className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-extrabold text-white leading-tight mb-6">
-              {siteConfig.tagline}
-            </h1>
-
-            <p className="text-lg md:text-xl text-blue-100 mb-8 leading-relaxed max-w-2xl">
-              Tài liệu chất lượng — dễ dàng sử dụng, in ấn.
-              Đề thi, giáo án, bài văn mẫu, bộ đề đọc hiểu... soạn bởi giáo viên giàu kinh nghiệm.
-            </p>
-
-            <div className="flex flex-col sm:flex-row gap-4">
-              <Link
-                href="/products"
-                className="inline-flex items-center justify-center gap-2 bg-white text-primary-700 font-semibold px-8 py-3.5 rounded-xl hover:bg-blue-50 shadow-lg hover:shadow-xl transition-all duration-200 active:scale-[0.98]"
-              >
-                Xem tài liệu
-                <ArrowRight className="w-5 h-5" />
-              </Link>
-              <a
-                href="#how-it-works"
-                className="inline-flex items-center justify-center gap-2 text-white font-medium px-8 py-3.5 rounded-xl border-2 border-white/30 hover:bg-white/10 transition-all duration-200"
-              >
-                Cách mua hàng
-                <ChevronDown className="w-5 h-5" />
-              </a>
+            {/* Right Visuals (Desktop only) */}
+            <div className="hidden lg:block relative">
+              <div className="absolute inset-0 bg-gradient-to-tr from-white/10 to-transparent rounded-3xl transform rotate-3" />
+              <div className="relative grid grid-cols-2 gap-5 p-4">
+                {featuredProducts.slice(0, 2).map((product, idx) => (
+                  <div 
+                    key={product.id} 
+                    className={`transform transition-transform duration-500 hover:-translate-y-2 ${idx === 1 ? "translate-y-8" : ""}`}
+                  >
+                    <ProductCard product={product} />
+                  </div>
+                ))}
+              </div>
             </div>
           </div>
         </div>
@@ -204,25 +221,25 @@ export default async function HomePage() {
                 step: "01",
                 icon: BookOpen,
                 title: "Chọn tài liệu",
-                desc: "Duyệt danh mục và chọn tài liệu phù hợp",
+                desc: "Duyệt và chọn tài liệu tham khảo phù hợp",
               },
               {
                 step: "02",
-                icon: CreditCard,
-                title: "Thanh toán",
-                desc: "Thanh toán nhanh chóng, bảo mật",
+                icon: FileText,
+                title: "Nhập thông tin",
+                desc: "Điền email để nhận link tải tài liệu",
               },
               {
                 step: "03",
-                icon: CheckCircle,
-                title: "Xác nhận tự động",
-                desc: "Hệ thống xác nhận thanh toán tự động",
+                icon: CreditCard,
+                title: "Thanh toán VietQR",
+                desc: "Thanh toán an toàn, tự động xác nhận qua payOS",
               },
               {
                 step: "04",
                 icon: Download,
-                title: "Tải tài liệu",
-                desc: "Nhận link tải ngay qua email",
+                title: "Nhận tài liệu",
+                desc: "Tải ngay trên web hoặc qua link gửi về email",
               },
             ].map((item) => (
               <div key={item.step} className="relative text-center">

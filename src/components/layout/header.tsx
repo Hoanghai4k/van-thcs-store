@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import Link from "next/link";
+import { usePathname } from "next/navigation";
 import { ShoppingCart, Menu, X, BookOpen, ChevronDown } from "lucide-react";
 import { siteConfig } from "@/config/site";
 import { mainNavigation } from "@/config/navigation";
@@ -10,6 +11,7 @@ import { useCart } from "@/components/cart/cart-provider";
 export function Header() {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [categoryDropdownOpen, setCategoryDropdownOpen] = useState(false);
+  const pathname = usePathname();
   const { items } = useCart();
   const cartCount = items.length;
 
@@ -58,7 +60,11 @@ export function Header() {
                 ) : (
                   <Link
                     href={item.href}
-                    className="px-3 py-2 text-sm font-medium text-text-secondary hover:text-primary-600 rounded-lg hover:bg-primary-50 transition-colors"
+                    className={`px-3 py-2 text-sm font-medium rounded-lg transition-colors ${
+                      pathname === item.href
+                        ? "text-primary-600 bg-primary-50"
+                        : "text-text-secondary hover:text-primary-600 hover:bg-primary-50"
+                    }`}
                   >
                     {item.label}
                   </Link>
@@ -107,7 +113,11 @@ export function Header() {
               <div key={item.href}>
                 <Link
                   href={item.href}
-                  className="block px-3 py-2.5 text-sm font-medium text-text-secondary hover:text-primary-600 hover:bg-primary-50 rounded-lg transition-colors"
+                  className={`block px-3 py-2.5 text-sm font-medium rounded-lg transition-colors ${
+                    pathname === item.href
+                      ? "text-primary-600 bg-primary-50"
+                      : "text-text-secondary hover:text-primary-600 hover:bg-primary-50"
+                  }`}
                   onClick={() => setMobileMenuOpen(false)}
                 >
                   {item.label}

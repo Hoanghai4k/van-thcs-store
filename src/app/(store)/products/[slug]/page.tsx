@@ -77,76 +77,18 @@ export default async function ProductDetailPage({ params }: ProductPageProps) {
         <span className="text-text-secondary truncate">{product.name}</span>
       </nav>
 
-      <div className="grid grid-cols-1 lg:grid-cols-5 gap-10">
-        {/* Left: Gallery + Description + Features + FAQ */}
-        <div className="lg:col-span-3 space-y-8">
-          {/* Gallery */}
+      <div className="grid grid-cols-1 lg:grid-cols-12 gap-x-10 gap-y-8">
+        {/* Mobile 1 / Desktop Left Top: Gallery */}
+        <div className="lg:col-span-7 order-1">
           <ProductGallery
             previewImages={product.preview_images ?? undefined}
             productName={product.name}
             discount={discount}
           />
-
-          {/* Description */}
-          {product.description && (
-            <section>
-              <h2 className="text-lg font-bold text-text-primary mb-3">
-                Mô tả chi tiết
-              </h2>
-              <div className="prose prose-sm text-text-secondary max-w-none">
-                <p className="leading-relaxed">{product.description}</p>
-              </div>
-            </section>
-          )}
-
-          {/* "Bạn nhận được gì?" */}
-          {product.features && product.features.length > 0 && (
-            <section>
-              <h2 className="text-lg font-bold text-text-primary mb-3">
-                Bạn nhận được gì?
-              </h2>
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
-                {product.features.map((feature, idx) => (
-                  <div
-                    key={idx}
-                    className="flex items-start gap-2.5 p-3 bg-green-50/60 rounded-xl"
-                  >
-                    <CheckCircle className="w-4.5 h-4.5 text-green-500 flex-shrink-0 mt-0.5" />
-                    <span className="text-sm text-text-primary">
-                      {feature}
-                    </span>
-                  </div>
-                ))}
-              </div>
-            </section>
-          )}
-
-          {/* "Phù hợp với" */}
-          {product.suitable_for && product.suitable_for.length > 0 && (
-            <section>
-              <h2 className="text-lg font-bold text-text-primary mb-3">
-                Phù hợp với
-              </h2>
-              <div className="flex flex-wrap gap-2">
-                {product.suitable_for.map((audience, idx) => (
-                  <span
-                    key={idx}
-                    className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-primary-50 text-primary-700 text-sm font-medium rounded-full"
-                  >
-                    <Users className="w-3.5 h-3.5" />
-                    {audience}
-                  </span>
-                ))}
-              </div>
-            </section>
-          )}
-
-          {/* FAQ */}
-          <ProductFAQ />
         </div>
 
-        {/* Right: Product Info + CTA */}
-        <div className="lg:col-span-2">
+        {/* Mobile 2 / Desktop Right: Product Info + CTA */}
+        <div className="lg:col-span-5 order-2">
           <div className="sticky top-20 space-y-4">
             {/* Main Info Card */}
             <div className="bg-white rounded-2xl border border-border p-6 shadow-sm">
@@ -238,25 +180,84 @@ export default async function ProductDetailPage({ params }: ProductPageProps) {
               <div className="space-y-2.5 text-sm text-text-secondary">
                 <div className="flex items-center gap-2.5">
                   <CheckCircle className="w-4 h-4 text-green-500 flex-shrink-0" />
-                  <span>Tải ngay sau thanh toán</span>
+                  <span>Thanh toán an toàn qua payOS / VietQR</span>
+                </div>
+                <div className="flex items-center gap-2.5">
+                  <CheckCircle className="w-4 h-4 text-green-500 flex-shrink-0" />
+                  <span>Nhận tài liệu ngay sau khi thanh toán</span>
                 </div>
                 <div className="flex items-center gap-2.5">
                   <CheckCircle className="w-4 h-4 text-green-500 flex-shrink-0" />
                   <span>
                     {product.file_format === "zip"
-                      ? "Tệp tài liệu số"
+                      ? "Tệp tài liệu số (ZIP) bảo mật"
                       : product.file_format === "mixed"
-                        ? "DOCX + ZIP"
-                        : "File DOCX chỉnh sửa được"}
+                        ? "Tải qua hệ thống riêng tư (DOCX + ZIP)"
+                        : "Tải qua hệ thống riêng tư (DOCX)"}
                   </span>
-                </div>
-                <div className="flex items-center gap-2.5">
-                  <CheckCircle className="w-4 h-4 text-green-500 flex-shrink-0" />
-                  <span>Có hỗ trợ nếu gặp lỗi tải file</span>
                 </div>
               </div>
             </div>
           </div>
+        </div>
+
+        {/* Mobile 3 / Desktop Left Bottom: Details (Description, Features, FAQ) */}
+        <div className="lg:col-span-7 order-3 space-y-8 mt-2 lg:mt-0">
+          {/* Description */}
+          {product.description && (
+            <section>
+              <h2 className="text-lg font-bold text-text-primary mb-3">
+                Mô tả chi tiết
+              </h2>
+              <div className="prose prose-sm text-text-secondary max-w-none">
+                <p className="leading-relaxed">{product.description}</p>
+              </div>
+            </section>
+          )}
+
+          {/* "Bạn nhận được gì?" */}
+          {product.features && product.features.length > 0 && (
+            <section>
+              <h2 className="text-lg font-bold text-text-primary mb-3">
+                Bạn nhận được gì?
+              </h2>
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
+                {product.features.map((feature, idx) => (
+                  <div
+                    key={idx}
+                    className="flex items-start gap-2.5 p-3 bg-green-50/60 rounded-xl"
+                  >
+                    <CheckCircle className="w-4.5 h-4.5 text-green-500 flex-shrink-0 mt-0.5" />
+                    <span className="text-sm text-text-primary">
+                      {feature}
+                    </span>
+                  </div>
+                ))}
+              </div>
+            </section>
+          )}
+
+          {/* "Phù hợp với" */}
+          {product.suitable_for && product.suitable_for.length > 0 && (
+            <section>
+              <h2 className="text-lg font-bold text-text-primary mb-3">
+                Phù hợp với
+              </h2>
+              <div className="flex flex-wrap gap-2">
+                {product.suitable_for.map((audience, idx) => (
+                  <span
+                    key={idx}
+                    className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-primary-50 text-primary-700 text-sm font-medium rounded-full"
+                  >
+                    <Users className="w-3.5 h-3.5" />
+                    {audience}
+                  </span>
+                ))}
+              </div>
+            </section>
+          )}
+
+          <ProductFAQ />
         </div>
       </div>
     </div>

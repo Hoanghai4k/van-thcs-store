@@ -1,3 +1,6 @@
+"use client";
+
+import { useState } from "react";
 import Image from "next/image";
 import { FileText } from "lucide-react";
 import { getProductAssetUrl } from "@/lib/storage/storage";
@@ -18,6 +21,7 @@ export function ProductGallery({
   productName,
   discount,
 }: ProductGalleryProps) {
+  const [activeIndex, setActiveIndex] = useState(0);
   // Convert storage paths to public URLs
   const imageUrls = (previewImages ?? [])
     .map((path) => getProductAssetUrl(path))
@@ -29,10 +33,10 @@ export function ProductGallery({
     return (
       <div className="space-y-3">
         {/* Main Image */}
-        <div className="relative rounded-2xl overflow-hidden bg-surface-alt h-64 sm:h-80 md:h-96">
+        <div className="relative rounded-2xl overflow-hidden bg-surface-alt h-64 sm:h-80 md:h-96 border border-border">
           <Image
-            src={imageUrls[0]}
-            alt={productName}
+            src={imageUrls[activeIndex] || imageUrls[0]}
+            alt={`${productName} - ảnh ${activeIndex + 1}`}
             fill
             className="object-cover"
             sizes="(max-width: 1024px) 100vw, 60vw"
@@ -47,11 +51,16 @@ export function ProductGallery({
 
         {/* Thumbnail Strip */}
         {imageUrls.length > 1 && (
-          <div className="flex gap-2 overflow-x-auto pb-1">
+          <div className="flex gap-3 overflow-x-auto pb-2 mt-4 hide-scrollbar">
             {imageUrls.map((img, idx) => (
               <button
                 key={idx}
-                className="flex-shrink-0 w-16 h-16 rounded-lg overflow-hidden border-2 border-transparent hover:border-primary-400 transition-colors focus:outline-none focus:border-primary-500"
+                onClick={() => setActiveIndex(idx)}
+                className={`flex-shrink-0 w-20 h-20 rounded-xl overflow-hidden border-2 transition-all focus:outline-none focus:ring-2 focus:ring-primary-500 focus:ring-offset-1 ${
+                  idx === activeIndex
+                    ? "border-primary-600 shadow-md ring-1 ring-primary-600"
+                    : "border-transparent hover:border-primary-300 opacity-60 hover:opacity-100 bg-surface-alt"
+                }`}
                 aria-label={`Xem ảnh ${idx + 1}`}
               >
                 <Image

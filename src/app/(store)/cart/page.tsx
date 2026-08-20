@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import Image from "next/image";
 import {
   Trash2,
   ShoppingBag,
@@ -11,6 +12,7 @@ import {
 import { useCart } from "@/components/cart/cart-provider";
 import { formatCurrency } from "@/lib/utils";
 import { siteConfig } from "@/config/site";
+import { getProductAssetUrl } from "@/lib/storage/storage";
 
 export default function CartPage() {
   const { items, removeItem, clearCart, totalPrice } = useCart();
@@ -56,13 +58,19 @@ export default function CartPage() {
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
         {/* Cart Items */}
         <div className="lg:col-span-2 space-y-3">
-          {items.map((item) => (
+          {items.map((item) => {
+            const thumbUrl = item.thumbnailPath ? getProductAssetUrl(item.thumbnailPath) : null;
+            return (
             <div
               key={item.productId}
-              className="flex items-center gap-4 bg-white p-4 rounded-xl border border-border"
+              className="flex items-center gap-4 bg-white p-4 rounded-xl border border-border hover:border-primary-200 transition-colors shadow-sm"
             >
-              <div className="w-16 h-16 bg-primary-50 rounded-lg flex items-center justify-center flex-shrink-0">
-                <FileText className="w-8 h-8 text-primary-300" />
+              <div className="w-20 h-20 bg-surface-alt rounded-lg flex items-center justify-center flex-shrink-0 relative overflow-hidden border border-border/50">
+                {thumbUrl ? (
+                  <Image src={thumbUrl} alt={item.name} fill className="object-cover" sizes="80px" />
+                ) : (
+                  <FileText className="w-8 h-8 text-primary-300" />
+                )}
               </div>
               <div className="flex-1 min-w-0">
                 <Link
@@ -93,7 +101,8 @@ export default function CartPage() {
                 <Trash2 className="w-4 h-4" />
               </button>
             </div>
-          ))}
+            );
+          })}
 
           <button
             onClick={clearCart}
