@@ -35,10 +35,15 @@ export async function POST(request: NextRequest) {
 
     if (hasOrders) {
       const magicToken = generateMagicLinkToken(email);
-      // Fire and forget email sending to avoid blocking the response
-      sendMyOrdersAccessEmail(email, magicToken).catch((err) => {
-        console.error("[MyOrders] Failed to send magic link:", err);
-      });
+      const emailResult = await sendMyOrdersAccessEmail(email, magicToken);
+      
+      if (!emailResult.success) {
+        console.error(`[My Orders] provider error: ${emailResult.error}`);
+      } else {
+        console.log("[My Orders] email sent");
+      }
+    } else {
+      console.log("[My Orders] no matching orders");
     }
 
     // Always return the same response
