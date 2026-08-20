@@ -19,6 +19,7 @@ import type { PaymentItem } from "@/features/payments/types";
 import { getSupabaseAdmin } from "@/lib/supabase/admin";
 import { normalizeEmail } from "@/lib/utils";
 import { getSiteUrl } from "@/lib/url";
+import { setOrderAccessCookie } from "@/lib/auth/order-access";
 
 export async function POST(request: NextRequest) {
   try {
@@ -45,7 +46,7 @@ export async function POST(request: NextRequest) {
     );
     if (recentOrder) {
       // Return existing order's payment info
-      return NextResponse.json({
+      const res = NextResponse.json({
         success: true,
         data: {
           orderCode: recentOrder.orderCode,
@@ -56,6 +57,8 @@ export async function POST(request: NextRequest) {
           message: "Đơn hàng đã được tạo trước đó.",
         },
       });
+      setOrderAccessCookie(res, recentOrder.orderId, recentOrder.orderCode);
+      return res;
     }
 
     // Create order with server-trusted pricing
@@ -89,7 +92,7 @@ export async function POST(request: NextRequest) {
       expiresInSeconds: 15 * 60, // 15 minutes
     });
 
-    return NextResponse.json({
+    const res = NextResponse.json({
       success: true,
       data: {
         orderCode: order.orderCode,
@@ -104,6 +107,8 @@ export async function POST(request: NextRequest) {
         })),
       },
     });
+    setOrderAccessCookie(res, order.orderId, order.orderCode);
+    return res;
   } catch (error) {
     if (error instanceof CheckoutError) {
       return NextResponse.json(

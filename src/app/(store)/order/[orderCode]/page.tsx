@@ -4,10 +4,15 @@
  *
  * This page serves as both:
  * - The order detail/status page
- * - The payOS cancel URL landing page
+ * - The payOS return/cancel URL landing page
  *
- * SECURITY: Order code alone provides access (5 random chars = ~60M combinations).
- * For more sensitive operations, use /order/lookup (requires email verification).
+ * SECURITY: Requires a valid order-access cookie to view private details.
+ * The cookie is issued by:
+ * - /api/checkout (during order creation)
+ * - /api/orders/lookup (after email verification)
+ *
+ * Without a valid cookie, the user is redirected to /order/lookup
+ * with the orderCode prefilled for convenience.
  *
  * CRITICAL: This page does NOT set order status.
  * Only the webhook can mark an order as PAID.
@@ -17,8 +22,9 @@ import { getSupabaseAdmin } from "@/lib/supabase/admin";
 import { formatCurrency, formatDateTime } from "@/lib/utils";
 import Link from "next/link";
 import { Clock, CheckCircle, XCircle, AlertTriangle } from "lucide-react";
-import { notFound } from "next/navigation";
+import { redirect } from "next/navigation";
 import { ResumePaymentButton } from "@/components/order/resume-payment-button";
+import { getOrderAccessCookie } from "@/lib/auth/order-access";
 
 interface Props {
   params: Promise<{ orderCode: string }>;
@@ -43,12 +49,29 @@ async function getOrderByCode(orderCode: string) {
 
 export default async function OrderStatusPage({ params }: Props) {
   const { orderCode } = await params;
+
+  // 1. Verify order-access cookie
+  const accessResult = await getOrderAccessCookie(orderCode);
+
+  if (!accessResult.valid) {
+    // No valid cookie — redirect to lookup with prefilled orderCode
+    redirect(`/order/lookup?orderCode=${encodeURIComponent(orderCode)}`);
+  }
+
+  // 2. Fetch order from DB
   const order = await getOrderByCode(orderCode);
 
   if (!order) {
-    notFound();
+    // Order not found — redirect to lookup (don't reveal existence)
+    redirect(`/order/lookup?orderCode=${encodeURIComponent(orderCode)}`);
   }
 
+  // 3. Verify cookie's orderId matches the DB order
+  if (order.id !== accessResult.orderId) {
+    redirect(`/order/lookup?orderCode=${encodeURIComponent(orderCode)}`);
+  }
+
+  // 4. Render order details (authorized)
   const customer = order.customer as { name: string; email: string; phone: string | null } | null;
   const items = (order.items as Array<{ id: string; product_name: string; unit_price: number }>) ?? [];
 

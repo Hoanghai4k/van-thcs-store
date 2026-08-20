@@ -13,6 +13,7 @@ import { createPayment } from "@/features/payments/payment-service";
 import type { PaymentItem } from "@/features/payments/types";
 import type { ApiResponse } from "@/types/common";
 import { getSiteUrl } from "@/lib/url";
+import { setOrderAccessCookieFromServer } from "@/lib/auth/order-access";
 
 interface CheckoutResult {
   orderCode: string;
@@ -83,7 +84,10 @@ export async function createOrderAndPayment(
       expiresInSeconds: 15 * 60, // 15 minutes
     });
 
-    // 4. Return result
+    // 4. Issue order-access cookie for this browser
+    await setOrderAccessCookieFromServer(order.orderId, order.orderCode);
+
+    // 5. Return result
     return {
       success: true,
       data: {

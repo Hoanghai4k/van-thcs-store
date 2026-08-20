@@ -18,6 +18,8 @@ const serverEnvSchema = z.object({
   EMAIL_API_KEY: z.string().optional(),
   EMAIL_FROM: z.string().email().optional(),
   ADMIN_SECRET_KEY: z.string().optional(),
+  // Order access cookie signing secret (min 32 chars for production)
+  ORDER_ACCESS_SECRET: z.string().min(32).optional(),
 });
 
 const clientEnvSchema = z.object({

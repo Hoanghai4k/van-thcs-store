@@ -1,31 +1,54 @@
 "use client";
 
-import { useState } from "react";
-import { Search, Loader2, CheckCircle, Clock, XCircle, AlertTriangle } from "lucide-react";
+import { Suspense, useState } from "react";
+import { useRouter, useSearchParams } from "next/navigation";
+import { Search, Loader2, ShieldCheck } from "lucide-react";
 import { siteConfig } from "@/config/site";
-import { formatCurrency, formatDateTime } from "@/lib/utils";
-
-interface OrderResult {
-  orderCode: string;
-  status: string;
-  totalAmount: number;
-  createdAt: string;
-  paidAt: string | null;
-  items: Array<{ productName: string; unitPrice: number }>;
-}
 
 export default function OrderLookupPage() {
-  const [orderCode, setOrderCode] = useState("");
+  return (
+    <Suspense fallback={<OrderLookupSkeleton />}>
+      <OrderLookupForm />
+    </Suspense>
+  );
+}
+
+function OrderLookupSkeleton() {
+  return (
+    <div className="max-w-lg mx-auto px-4 py-12">
+      <div className="text-center mb-8">
+        <div className="w-14 h-14 bg-primary-100 rounded-full flex items-center justify-center mx-auto mb-4">
+          <ShieldCheck className="w-7 h-7 text-primary-600" />
+        </div>
+        <h1 className="text-2xl font-bold text-text-primary mb-2">Tra cứu đơn hàng</h1>
+        <p className="text-text-secondary">
+          Nhập mã đơn hàng và email đã đặt để xem chi tiết đơn hàng.
+        </p>
+      </div>
+      <div className="bg-white rounded-2xl border border-border p-6 space-y-4 animate-pulse">
+        <div className="h-10 bg-surface-alt rounded-xl" />
+        <div className="h-10 bg-surface-alt rounded-xl" />
+        <div className="h-12 bg-primary-200 rounded-xl" />
+      </div>
+    </div>
+  );
+}
+
+function OrderLookupForm() {
+  const router = useRouter();
+  const searchParams = useSearchParams();
+
+  // Prefill orderCode from URL query param (e.g., redirected from /order/[orderCode])
+  const initialOrderCode = searchParams.get("orderCode") ?? "";
+  const [orderCode, setOrderCode] = useState(initialOrderCode);
   const [email, setEmail] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const [order, setOrder] = useState<OrderResult | null>(null);
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
     setIsLoading(true);
     setError(null);
-    setOrder(null);
 
     try {
       const res = await fetch(`/api/orders/lookup?orderCode=${encodeURIComponent(orderCode)}&email=${encodeURIComponent(email)}`);
@@ -33,24 +56,28 @@ export default function OrderLookupPage() {
 
       if (!data.success) {
         setError(data.error || "Không tìm thấy đơn hàng.");
+        setIsLoading(false);
       } else {
-        setOrder(data.data);
+        // Cookie was set by the API — redirect to the protected order page
+        router.push(`/order/${data.data.orderCode}`);
       }
     } catch {
       setError("Lỗi kết nối. Vui lòng thử lại.");
-    } finally {
       setIsLoading(false);
     }
   }
 
-  const statusConfig = order ? getStatusDisplay(order.status) : null;
-
   return (
     <div className="max-w-lg mx-auto px-4 py-12">
-      <h1 className="text-2xl font-bold text-text-primary mb-2 text-center">Tra cứu đơn hàng</h1>
-      <p className="text-text-secondary text-center mb-8">
-        Nhập mã đơn hàng và email để kiểm tra trạng thái đơn hàng.
-      </p>
+      <div className="text-center mb-8">
+        <div className="w-14 h-14 bg-primary-100 rounded-full flex items-center justify-center mx-auto mb-4">
+          <ShieldCheck className="w-7 h-7 text-primary-600" />
+        </div>
+        <h1 className="text-2xl font-bold text-text-primary mb-2">Tra cứu đơn hàng</h1>
+        <p className="text-text-secondary">
+          Nhập mã đơn hàng và email đã đặt để xem chi tiết đơn hàng.
+        </p>
+      </div>
 
       <form onSubmit={handleSubmit} className="bg-white rounded-2xl border border-border p-6 space-y-4">
         <div>
@@ -92,72 +119,13 @@ export default function OrderLookupPage() {
           className="w-full flex items-center justify-center gap-2 bg-primary-600 text-white font-medium py-3 rounded-xl hover:bg-primary-700 transition-colors disabled:opacity-50"
         >
           {isLoading ? <Loader2 className="w-4 h-4 animate-spin" /> : <Search className="w-4 h-4" />}
-          Tra cứu
+          Xác minh và xem đơn hàng
         </button>
       </form>
-
-      {/* Order Result */}
-      {order && statusConfig && (
-        <div className="mt-6 bg-white rounded-2xl border border-border p-6">
-          <div className="flex items-center gap-3 mb-4">
-            <div className={`w-10 h-10 rounded-full flex items-center justify-center ${statusConfig.bgColor}`}>
-              <statusConfig.Icon className={`w-5 h-5 ${statusConfig.iconColor}`} />
-            </div>
-            <div>
-              <p className="font-semibold text-text-primary">{order.orderCode}</p>
-              <p className={`text-sm font-medium ${statusConfig.textColor}`}>{statusConfig.label}</p>
-            </div>
-          </div>
-
-          <div className="space-y-3 text-sm">
-            <div className="flex justify-between">
-              <span className="text-text-secondary">Ngày đặt</span>
-              <span className="text-text-primary">{formatDateTime(order.createdAt)}</span>
-            </div>
-            {order.paidAt && (
-              <div className="flex justify-between">
-                <span className="text-text-secondary">Ngày thanh toán</span>
-                <span className="text-text-primary">{formatDateTime(order.paidAt)}</span>
-              </div>
-            )}
-
-            <div className="border-t border-border pt-3 mt-3">
-              {order.items.map((item, idx) => (
-                <div key={idx} className="flex justify-between py-1">
-                  <span className="text-text-primary">{item.productName}</span>
-                  <span className="text-text-secondary">{formatCurrency(item.unitPrice)}</span>
-                </div>
-              ))}
-            </div>
-
-            <div className="border-t border-border pt-3">
-              <div className="flex justify-between font-semibold">
-                <span>Tổng cộng</span>
-                <span className="text-primary-600">{formatCurrency(order.totalAmount)}</span>
-              </div>
-            </div>
-          </div>
-        </div>
-      )}
 
       <p className="text-xs text-text-muted text-center mt-4">
         Cần hỗ trợ? Liên hệ {siteConfig.contact.email}
       </p>
     </div>
   );
-}
-
-function getStatusDisplay(status: string) {
-  switch (status) {
-    case "PAID":
-      return { Icon: CheckCircle, label: "Đã thanh toán", bgColor: "bg-green-100", iconColor: "text-green-600", textColor: "text-green-600" };
-    case "PENDING":
-      return { Icon: Clock, label: "Chờ thanh toán", bgColor: "bg-yellow-100", iconColor: "text-yellow-600", textColor: "text-yellow-600" };
-    case "CANCELLED":
-      return { Icon: XCircle, label: "Đã hủy", bgColor: "bg-gray-100", iconColor: "text-gray-500", textColor: "text-gray-500" };
-    case "FAILED":
-      return { Icon: AlertTriangle, label: "Thất bại", bgColor: "bg-red-100", iconColor: "text-red-600", textColor: "text-red-600" };
-    default:
-      return { Icon: Clock, label: status, bgColor: "bg-gray-100", iconColor: "text-gray-500", textColor: "text-gray-500" };
-  }
 }
