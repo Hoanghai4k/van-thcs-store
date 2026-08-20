@@ -115,6 +115,7 @@ export async function sendDeliveryEmail(
  */
 import { buildMyOrdersEmailSubject, buildMyOrdersEmailHtml } from "./templates/my-orders-email";
 import { createHash } from "crypto";
+import { getSiteUrl } from "@/lib/url";
 
 export async function sendMyOrdersAccessEmail(
   email: string,
@@ -132,7 +133,11 @@ export async function sendMyOrdersAccessEmail(
   const timeBucket = Math.floor(Date.now() / (1000 * 60 * 5)); 
   const idempotencyKey = `my-orders-access/${emailHash}/${timeBucket}`;
 
-  const verifyUrl = `${siteConfig.url}/orders/verify?token=${magicToken}`;
+  const siteUrl = getSiteUrl();
+  console.log(`[MyOrders] SITE_URL configured: ${!!process.env.SITE_URL}`);
+  console.log(`[MyOrders] Resolved site origin: ${siteUrl}`);
+
+  const verifyUrl = `${siteUrl}/orders/verify?token=${magicToken}`;
   const subject = buildMyOrdersEmailSubject();
   const html = buildMyOrdersEmailHtml({ verifyUrl });
 
