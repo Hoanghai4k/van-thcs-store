@@ -295,9 +295,9 @@ describe("order access cookie", () => {
       expect(_testing.COOKIE_TTL_SECONDS).toBe(30 * 60);
     });
 
-    it("cookie path is /order", async () => {
+    it("cookie path is / (accessible to both /order and /api routes)", async () => {
       const { _testing } = await loadModule();
-      expect(_testing.COOKIE_PATH).toBe("/order");
+      expect(_testing.COOKIE_PATH).toBe("/");
     });
 
     it("cookie name is order_access", async () => {

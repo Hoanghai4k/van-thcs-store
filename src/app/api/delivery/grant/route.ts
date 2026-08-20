@@ -34,6 +34,7 @@ export async function POST(request: NextRequest) {
     }
 
     // 1. Verify order-access cookie (customer must have verified email)
+    //    The cookie is signed with ORDER_ACCESS_SECRET and contains orderId + orderCode.
     const orderAccess = await getOrderAccessCookie(orderCode);
     if (!orderAccess.valid) {
       return NextResponse.json(
@@ -42,13 +43,22 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // 2. Verify order exists and is PAID
+    // 2. Cross-check: client-provided orderId MUST match signed cookie payload.
+    //    Do NOT trust client identity — use the cookie as source of truth.
+    if (orderAccess.orderId !== orderId) {
+      return NextResponse.json(
+        { success: false, error: "Phiên truy cập đơn hàng không hợp lệ." },
+        { status: 403 },
+      );
+    }
+
+    // 3. Verify order exists and is PAID (using cookie-derived identity)
     const supabaseAdmin = getSupabaseAdmin();
     const { data: order } = await supabaseAdmin
       .from("orders")
       .select("id, status")
-      .eq("id", orderId)
-      .eq("order_code", orderCode)
+      .eq("id", orderAccess.orderId)
+      .eq("order_code", orderAccess.orderCode)
       .single();
 
     if (!order) {
@@ -65,12 +75,12 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // 3. Ensure delivery grant exists
-    const { grant } = await ensureDeliveryGrant(orderId, supabaseAdmin);
+    // 4. Ensure delivery grant exists
+    const { grant } = await ensureDeliveryGrant(orderAccess.orderId, supabaseAdmin);
 
-    // 4. Set delivery access cookie on response
+    // 5. Set delivery access cookie on response
     const response = NextResponse.json({ success: true });
-    setDeliveryAccessCookie(response, grant.id, orderId);
+    setDeliveryAccessCookie(response, grant.id, orderAccess.orderId);
 
     return response;
   } catch (error) {

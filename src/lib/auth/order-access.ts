@@ -24,7 +24,7 @@ import type { NextResponse } from "next/server";
 
 const COOKIE_NAME = "order_access";
 const COOKIE_TTL_SECONDS = 30 * 60; // 30 minutes
-const COOKIE_PATH = "/order";
+const COOKIE_PATH = "/";
 
 // ─── Types ─────────────────────────────────────────────────────────
 
