@@ -62,9 +62,9 @@ export function buildMyOrdersEmailHtml(params: { verifyUrl: string }): string {
       <div class="container">
         <h1>Xem đơn hàng của bạn</h1>
         <p>Chào bạn,</p>
-        <p>Bạn vừa yêu cầu truy cập danh sách đơn hàng của mình tại <strong>Văn THCS Store</strong>. Hãy nhấn vào nút bên dưới để xác minh và xem đơn hàng của bạn:</p>
+        <p>Bạn vừa yêu cầu truy cập danh sách đơn hàng của mình tại <strong>Tài Liệu Hằng Cao</strong>. Hãy nhấn vào nút bên dưới để xác minh và xem đơn hàng của bạn:</p>
         
-        <a href="${params.verifyUrl}" class="button">Xem đơn hàng của tôi</a>
+        <a href="${params.verifyUrl}" class="button" style="color: #ffffff;">Xem đơn hàng của tôi</a>
         
         <p style="color: #d97706; font-size: 14px;">
           <strong>Lưu ý:</strong> Liên kết này chỉ có hiệu lực trong vòng 15 phút.
@@ -72,7 +72,7 @@ export function buildMyOrdersEmailHtml(params: { verifyUrl: string }): string {
 
         <div class="footer">
           <p>Nếu bạn không yêu cầu email này, bạn có thể bỏ qua nó một cách an toàn.</p>
-          <p>Cảm ơn bạn đã đồng hành cùng Văn THCS Store!</p>
+          <p>Cảm ơn bạn đã đồng hành cùng Tài Liệu Hằng Cao!</p>
         </div>
       </div>
     </body>

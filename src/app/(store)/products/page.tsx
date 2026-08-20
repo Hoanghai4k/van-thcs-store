@@ -6,7 +6,7 @@ import Link from "next/link";
 
 export const metadata: Metadata = {
   title: `Tất cả sản phẩm ${siteConfig.seo.titleTemplate.replace("%s", "")}`.trim(),
-  description: `Khám phá kho tài liệu Ngữ văn THCS chất lượng cao tại ${siteConfig.name}`,
+  description: `Khám phá kho tài liệu tham khảo Ngữ văn THCS chất lượng cao tại ${siteConfig.name}`,
 };
 
 export default async function ProductsPage() {

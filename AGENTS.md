@@ -1,4 +1,4 @@
-# AGENTS.md — Văn THCS Store
+# AGENTS.md — Tài Liệu Hằng Cao
 
 Rules and constraints for AI agents working on this codebase.
 

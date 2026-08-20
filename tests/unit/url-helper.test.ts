@@ -23,17 +23,17 @@ describe("getSiteUrl priority", () => {
   }
 
   it("returns SITE_URL when set (highest priority)", async () => {
-    process.env.SITE_URL = "https://vanthcs.store";
+    process.env.SITE_URL = "https://tailieuhangcao.vn";
     process.env.NEXT_PUBLIC_SITE_URL = "https://other.com";
     process.env.VERCEL_URL = "project.vercel.app";
     const getSiteUrl = await loadGetSiteUrl();
-    expect(getSiteUrl()).toBe("https://vanthcs.store");
+    expect(getSiteUrl()).toBe("https://tailieuhangcao.vn");
   });
 
   it("strips trailing slash from SITE_URL", async () => {
-    process.env.SITE_URL = "https://vanthcs.store/";
+    process.env.SITE_URL = "https://tailieuhangcao.vn/";
     const getSiteUrl = await loadGetSiteUrl();
-    expect(getSiteUrl()).toBe("https://vanthcs.store");
+    expect(getSiteUrl()).toBe("https://tailieuhangcao.vn");
   });
 
   it("falls back to NEXT_PUBLIC_SITE_URL when SITE_URL absent", async () => {
@@ -67,7 +67,7 @@ describe("getSiteUrl priority", () => {
   });
 
   it("production SITE_URL is always HTTPS", async () => {
-    process.env.SITE_URL = "https://vanthcs.store";
+    process.env.SITE_URL = "https://tailieuhangcao.vn";
     const getSiteUrl = await loadGetSiteUrl();
     expect(getSiteUrl()).toMatch(/^https:\/\//);
   });

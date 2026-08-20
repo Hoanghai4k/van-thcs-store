@@ -267,7 +267,7 @@ export default async function HomePage() {
               },
               {
                 q: "Làm sao để liên hệ hỗ trợ?",
-                a: `Gửi email đến ${siteConfig.contact.email} hoặc truy cập trang Liên hệ.`,
+                a: "Vui lòng truy cập trang Liên hệ để được hỗ trợ nhanh nhất.",
               },
             ].map((faq) => (
               <details

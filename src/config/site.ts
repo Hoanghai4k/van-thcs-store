@@ -5,15 +5,15 @@
  */
 
 export const siteConfig = {
-  name: "Văn THCS Store",
-  shortName: "Văn THCS",
-  tagline: "Tài liệu Ngữ văn THCS chất lượng, học tập hiệu quả hơn.",
+  name: "Tài Liệu Hằng Cao",
+  shortName: "Hằng Cao",
+  tagline: "Tài liệu tham khảo Ngữ văn THCS",
   description:
-    "Cung cấp tài liệu Ngữ văn THCS chất lượng cao. Tải về ngay sau khi thanh toán.",
-  url: process.env.NEXT_PUBLIC_SITE_URL || "http://localhost:3000",
+    "Tài liệu tham khảo Ngữ văn THCS dành cho học sinh và giáo viên, hỗ trợ DOCX và ZIP, nhận tài liệu sau khi thanh toán.",
+  url: process.env.NEXT_PUBLIC_SITE_URL || "https://www.tailieuhangcao.vn",
 
   contact: {
-    email: "contact@vanthcs.store",
+    email: "",
     phone: "",
     address: "",
   },
@@ -25,8 +25,8 @@ export const siteConfig = {
   },
 
   seo: {
-    titleTemplate: "%s | Văn THCS Store",
-    defaultTitle: "Văn THCS Store — Tài liệu Ngữ văn THCS",
+    titleTemplate: "%s | Tài Liệu Hằng Cao",
+    defaultTitle: "Tài Liệu Hằng Cao | Tài liệu tham khảo Ngữ văn THCS",
     ogImage: "/images/og-default.png",
   },
 
@@ -43,7 +43,7 @@ export const siteConfig = {
   },
 
   footer: {
-    copyright: `© ${new Date().getFullYear()} Văn THCS Store. All rights reserved.`,
+    copyright: `© ${new Date().getFullYear()} Tài Liệu Hằng Cao. All rights reserved.`,
   },
 } as const;
 

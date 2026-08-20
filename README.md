@@ -1,6 +1,6 @@
-# Văn THCS Store
+# Tài Liệu Hằng Cao
 
-Website bán tài liệu Ngữ văn THCS dạng Microsoft Word (.docx).
+Website bán tài liệu tham khảo Ngữ văn THCS dạng Microsoft Word (.docx).
 
 ## Tech Stack
 

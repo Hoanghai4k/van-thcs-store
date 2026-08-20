@@ -16,11 +16,10 @@ export default function ContactPage() {
           <div className="w-12 h-12 bg-primary-50 rounded-xl flex items-center justify-center mx-auto mb-4">
             <Mail className="w-6 h-6 text-primary-500" />
           </div>
-          <h2 className="font-semibold text-text-primary mb-2">Email</h2>
-          <a href={`mailto:${siteConfig.contact.email}`} className="text-primary-600 hover:text-primary-700 text-sm">
-            {siteConfig.contact.email}
-          </a>
-          <p className="text-xs text-text-muted mt-2">Phản hồi trong 24 giờ</p>
+          <h2 className="font-semibold text-text-primary mb-2">Kênh hỗ trợ</h2>
+          <p className="text-text-secondary text-sm">
+            Thông tin liên hệ đang được cập nhật.
+          </p>
         </div>
 
         <div className="bg-white rounded-2xl border border-border p-6 text-center">

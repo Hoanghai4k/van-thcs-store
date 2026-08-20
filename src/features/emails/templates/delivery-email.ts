@@ -110,10 +110,11 @@ export function buildDeliveryEmailHtml(data: DeliveryEmailData): string {
         <!-- Support -->
         <div style="margin-top: 32px; padding-top: 20px; border-top: 1px solid #eee;">
           <p style="margin: 0; font-size: 13px; color: #888; line-height: 1.5;">
-            Nếu bạn gặp vấn đề khi tải tài liệu, vui lòng liên hệ 
-            <a href="mailto:${escapeHtml(siteConfig.contact.email)}" style="color: #2563eb;">
-              ${escapeHtml(siteConfig.contact.email)}
+            Nếu bạn gặp vấn đề khi tải tài liệu, vui lòng liên hệ qua trang
+            <a href="${escapeHtml(siteConfig.url)}/contact" style="color: #2563eb;">
+              Liên hệ
             </a>
+            của chúng tôi.
           </p>
         </div>
       </div>

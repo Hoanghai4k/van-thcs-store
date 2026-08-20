@@ -19,8 +19,9 @@ export default function RefundPolicyPage() {
           <li>Đã tải file thành công và file hoạt động bình thường.</li>
           <li>Thay đổi ý kiến sau khi mua.</li>
         </ul>
-        <h2 className="text-lg font-semibold text-text-primary">Yêu cầu hoàn tiền</h2>
-        <p>Gửi yêu cầu đến {siteConfig.contact.email} kèm mã đơn hàng. Hoàn tiền trong 3-5 ngày làm việc.</p>
+        <p className="text-sm text-text-secondary mt-1">
+          Gửi yêu cầu kèm mã đơn hàng qua trang <a href="/contact" className="text-primary-600 hover:underline">Liên hệ</a>. Hoàn tiền trong 3-5 ngày làm việc.
+        </p>
       </div>
     </div>
   );

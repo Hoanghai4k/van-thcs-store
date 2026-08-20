@@ -98,7 +98,7 @@ function getStatusConfig(status: string) {
 }
 
 describe("payOS return URL routing", () => {
-  const siteUrl = "https://van-thcs-store.vercel.app";
+  const siteUrl = "https://www.tailieuhangcao.vn";
   const orderCode = "VTS-20240815-ABCDE";
 
   describe("generated URLs resolve to existing routes", () => {
@@ -210,7 +210,7 @@ describe("payOS return URL routing", () => {
   describe("production URL validation", () => {
     it("returnUrl starts with production domain, not localhost", () => {
       const returnUrl = buildReturnUrl(siteUrl, orderCode);
-      expect(returnUrl).toMatch(/^https:\/\/van-thcs-store\.vercel\.app/);
+      expect(returnUrl).toMatch(/^https:\/\/www\.tailieuhangcao\.vn/);
       expect(returnUrl).not.toContain("localhost");
       expect(returnUrl).not.toContain("127.0.0.1");
       expect(returnUrl).not.toContain("192.168.");
@@ -218,7 +218,7 @@ describe("payOS return URL routing", () => {
 
     it("cancelUrl starts with production domain, not localhost", () => {
       const cancelUrl = buildCancelUrl(siteUrl, orderCode);
-      expect(cancelUrl).toMatch(/^https:\/\/van-thcs-store\.vercel\.app/);
+      expect(cancelUrl).toMatch(/^https:\/\/www\.tailieuhangcao\.vn/);
       expect(cancelUrl).not.toContain("localhost");
     });
   });

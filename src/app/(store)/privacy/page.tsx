@@ -14,8 +14,7 @@ export default function PrivacyPage() {
         <p>Thông tin chỉ được sử dụng để xử lý đơn hàng, gửi tài liệu, và hỗ trợ khách hàng. Không chia sẻ cho bên thứ ba.</p>
         <h2 className="text-lg font-semibold text-text-primary">Bảo mật thanh toán</h2>
         <p>Thanh toán được xử lý qua cổng thanh toán bảo mật. Chúng tôi không lưu trữ thông tin thẻ.</p>
-        <h2 className="text-lg font-semibold text-text-primary">Liên hệ</h2>
-        <p>Mọi thắc mắc về bảo mật, vui lòng liên hệ: {siteConfig.contact.email}</p>
+        <p>Mọi thắc mắc về bảo mật, vui lòng liên hệ qua trang <a href="/contact" className="text-primary-600 hover:underline">Liên hệ</a>.</p>
       </div>
     </div>
   );

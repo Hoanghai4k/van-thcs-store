@@ -123,9 +123,9 @@ function OrderLookupForm() {
         </button>
       </form>
 
-      <p className="text-xs text-text-muted text-center mt-4">
-        Cần hỗ trợ? Liên hệ {siteConfig.contact.email}
-      </p>
+      <div className="mt-8 text-center text-sm text-text-muted">
+        Cần hỗ trợ? <a href="/contact" className="text-primary-600 hover:underline">Liên hệ với chúng tôi</a>
+      </div>
     </div>
   );
 }

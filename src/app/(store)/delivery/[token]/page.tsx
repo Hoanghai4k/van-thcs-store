@@ -78,9 +78,9 @@ function DeliveryError({ message }: { message: string }) {
             Tiếp tục mua sắm
           </Link>
         </div>
-        <p className="text-xs text-text-muted mt-6">
-          Cần hỗ trợ? Liên hệ {siteConfig.contact.email}
-        </p>
+        <div className="mt-8 text-center text-sm text-text-muted">
+          Cần hỗ trợ? <a href="/contact" className="text-primary-600 hover:underline">Liên hệ với chúng tôi</a>
+        </div>
       </div>
     </div>
   );
