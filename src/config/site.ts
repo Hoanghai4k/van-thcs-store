@@ -35,8 +35,9 @@ export const siteConfig = {
     currencySymbol: "₫",
     fileFormat: ".docx",
     fileFormatLabel: "Microsoft Word (.docx)",
-    maxDownloadsPerToken: 5,
-    downloadTokenExpiryHours: 72,
+    maxDownloadsPerToken: 20,
+    deliveryTokenExpiryDays: 30,
+    signedUrlTtlSeconds: 60,
   },
 
   footer: {

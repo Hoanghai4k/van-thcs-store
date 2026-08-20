@@ -13,7 +13,7 @@ export default function TermsPage() {
         <h2 className="text-lg font-semibold text-text-primary">Quyền sử dụng</h2>
         <p>Tài liệu được cấp phép sử dụng cá nhân cho mục đích giáo dục. Không được phân phối lại hoặc bán lại.</p>
         <h2 className="text-lg font-semibold text-text-primary">Giới hạn tải</h2>
-        <p>Mỗi đơn hàng được tải tối đa {siteConfig.store.maxDownloadsPerToken} lần trong vòng {siteConfig.store.downloadTokenExpiryHours} giờ.</p>
+        <p>Mỗi đơn hàng được tải tối đa {siteConfig.store.maxDownloadsPerToken} lần trong vòng {siteConfig.store.deliveryTokenExpiryDays} ngày.</p>
       </div>
     </div>
   );

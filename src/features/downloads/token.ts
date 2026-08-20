@@ -1,26 +1,41 @@
 /**
- * Download token utilities.
+ * Delivery token utilities.
  *
- * Generates and validates secure download tokens.
- * Tokens are random, time-limited, and have a maximum download count.
+ * Generates cryptographically secure delivery tokens and
+ * computes SHA-256 hashes for storage.
+ *
+ * SECURITY:
+ * - Raw tokens use crypto.randomBytes(32) → base64url (URL-safe)
+ * - Only the SHA-256 hash is stored in the database
+ * - Raw tokens exist only at generation time and in the delivery email URL
+ * - Raw tokens must NEVER be logged
  */
 
-import crypto from "crypto";
+import { createHash, randomBytes } from "crypto";
 import { siteConfig } from "@/config/site";
 
 /**
- * Generate a secure random download token.
+ * Generate a cryptographically secure delivery token.
+ * Returns base64url-encoded string (URL-safe, no padding).
  */
-export function generateDownloadToken(): string {
-  return crypto.randomBytes(32).toString("hex");
+export function generateDeliveryToken(): string {
+  return randomBytes(32).toString("base64url");
 }
 
 /**
- * Calculate the expiration date for a new download token.
+ * Compute SHA-256 hash of a raw token for database storage.
+ * This is a one-way operation — the raw token cannot be recovered.
+ */
+export function hashToken(rawToken: string): string {
+  return createHash("sha256").update(rawToken).digest("hex");
+}
+
+/**
+ * Calculate the expiration date for a new delivery token.
  */
 export function getTokenExpiry(): Date {
   const now = new Date();
-  now.setHours(now.getHours() + siteConfig.store.downloadTokenExpiryHours);
+  now.setDate(now.getDate() + siteConfig.store.deliveryTokenExpiryDays);
   return now;
 }
 
@@ -47,4 +62,11 @@ export function isDownloadLimitReached(
   maxDownloads: number,
 ): boolean {
   return downloadCount >= maxDownloads;
+}
+
+/**
+ * Build the delivery URL for email.
+ */
+export function buildDeliveryUrl(rawToken: string): string {
+  return `${siteConfig.url}/delivery/${rawToken}`;
 }

@@ -9,6 +9,7 @@ import { ArrowLeft } from "lucide-react";
 import { getOrderById } from "@/features/orders/queries";
 import { formatCurrency, formatDateTime } from "@/lib/utils";
 import { notFound } from "next/navigation";
+import { ResendEmailButton } from "@/components/admin/resend-email-button";
 
 interface Props {
   params: Promise<{ id: string }>;
@@ -46,6 +47,9 @@ export default async function AdminOrderDetailPage({ params }: Props) {
         <span className={`px-3 py-1 rounded-full text-sm font-medium ${sc.class}`}>
           {sc.label}
         </span>
+        {order.status === "PAID" && (
+          <ResendEmailButton orderId={order.id} orderCode={order.orderCode} />
+        )}
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">

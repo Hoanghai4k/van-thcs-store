@@ -114,36 +114,42 @@ export type Database = {
       download_tokens: {
         Row: {
           created_at: string
+          delivery_email_message_id: string | null
+          delivery_email_sent_at: string | null
           download_count: number
           expires_at: string
           id: string
-          last_download_at: string | null
           max_downloads: number
           order_id: string
-          product_id: string
-          token: string
+          revoked_at: string | null
+          token_hash: string
+          updated_at: string
         }
         Insert: {
           created_at?: string
+          delivery_email_message_id?: string | null
+          delivery_email_sent_at?: string | null
           download_count?: number
           expires_at: string
           id?: string
-          last_download_at?: string | null
           max_downloads?: number
           order_id: string
-          product_id: string
-          token: string
+          revoked_at?: string | null
+          token_hash: string
+          updated_at?: string
         }
         Update: {
           created_at?: string
+          delivery_email_message_id?: string | null
+          delivery_email_sent_at?: string | null
           download_count?: number
           expires_at?: string
           id?: string
-          last_download_at?: string | null
           max_downloads?: number
           order_id?: string
-          product_id?: string
-          token?: string
+          revoked_at?: string | null
+          token_hash?: string
+          updated_at?: string
         }
         Relationships: [
           {
@@ -151,13 +157,6 @@ export type Database = {
             columns: ["order_id"]
             isOneToOne: false
             referencedRelation: "orders"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "download_tokens_product_id_fkey"
-            columns: ["product_id"]
-            isOneToOne: false
-            referencedRelation: "products"
             referencedColumns: ["id"]
           },
         ]
@@ -374,7 +373,17 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
-      [_ in never]: never
+      consume_download: {
+        Args: {
+          p_token_hash: string
+        }
+        Returns: {
+          dt_id: string
+          dt_order_id: string
+          dt_download_count: number
+          dt_max_downloads: number
+        }[]
+      }
     }
     Enums: {
       order_status: "PENDING" | "PAID" | "FAILED" | "CANCELLED" | "REFUNDED"

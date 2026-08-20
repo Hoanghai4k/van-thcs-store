@@ -21,6 +21,8 @@ import type { Database } from "@/types/database";
 import type { VerifiedPaymentEvent } from "./types";
 import { ORDER_STATUS, type OrderStatus } from "@/lib/constants";
 import { canTransition } from "./state-machine";
+import { ensureDeliveryGrant } from "@/features/downloads/service";
+import { sendDeliveryEmail } from "@/features/emails/service";
 
 export interface WebhookProcessingResult {
   success: boolean;
@@ -167,6 +169,20 @@ export async function handleVerifiedPaymentEvent(
       (event.providerTransactionId ? ` txn=${event.providerTransactionId}` : ""),
   );
 
+  // ─── Post-PAID side effects (delivery grant + email) ─────────
+  // Only on first PAID transition. Email failure does NOT undo PAID.
+  if (targetStatus === ORDER_STATUS.PAID) {
+    try {
+      await handlePaidDelivery(order.id, order.order_code, supabaseAdmin);
+    } catch (deliveryError) {
+      // Log but do NOT fail the webhook response
+      console.error(
+        `[Webhook] Delivery side-effect error for order=${order.order_code}:`,
+        deliveryError instanceof Error ? deliveryError.message : deliveryError,
+      );
+    }
+  }
+
   return {
     success: true,
     action: "updated",
@@ -192,3 +208,72 @@ function mapProviderStatus(
       return null;
   }
 }
+
+/**
+ * Handle post-PAID delivery side effects:
+ * 1. Create/ensure delivery grant (hash-only token)
+ * 2. Send delivery email with secure link
+ *
+ * This function NEVER throws to the caller in a way that should
+ * affect the PAID status. All errors are caught and logged.
+ */
+async function handlePaidDelivery(
+  orderId: string,
+  orderCode: string,
+  supabaseAdmin: SupabaseClient<Database>,
+): Promise<void> {
+  // 1. Ensure delivery grant exists
+  const { grant, rawToken, isNew } = await ensureDeliveryGrant(orderId, supabaseAdmin);
+
+  // If grant already existed and email was already sent, skip
+  if (!isNew && grant.deliveryEmailSentAt) {
+    console.log(`[Webhook] Delivery grant already exists with email sent for order=${orderCode}`);
+    return;
+  }
+
+  // If no raw token (grant existed but no email sent), we need to create a new one for the email
+  if (!rawToken) {
+    console.log(`[Webhook] Delivery grant exists but no raw token available for email: order=${orderCode}`);
+    return;
+  }
+
+  // 2. Fetch order details for email
+  const { data: order } = await supabaseAdmin
+    .from("orders")
+    .select("customer_id, total_amount")
+    .eq("id", orderId)
+    .single();
+
+  if (!order) return;
+
+  const { data: customer } = await supabaseAdmin
+    .from("customers")
+    .select("name, email")
+    .eq("id", order.customer_id)
+    .single();
+
+  if (!customer) return;
+
+  const { data: items } = await supabaseAdmin
+    .from("order_items")
+    .select("product_name, unit_price")
+    .eq("order_id", orderId);
+
+  if (!items || items.length === 0) return;
+
+  // 3. Send delivery email (idempotent via Resend key)
+  await sendDeliveryEmail(
+    {
+      orderId,
+      orderCode,
+      customerEmail: customer.email,
+      customerName: customer.name,
+      items: items.map((i) => ({ productName: i.product_name, unitPrice: i.unit_price })),
+      totalAmount: order.total_amount,
+      rawToken,
+      deliveryGrantId: grant.id,
+    },
+    supabaseAdmin,
+  );
+}
+

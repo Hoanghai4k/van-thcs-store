@@ -25,6 +25,7 @@ import { Clock, CheckCircle, XCircle, AlertTriangle } from "lucide-react";
 import { redirect } from "next/navigation";
 import { ResumePaymentButton } from "@/components/order/resume-payment-button";
 import { getOrderAccessCookie } from "@/lib/auth/order-access";
+import { DeliveryButton } from "./delivery-button";
 
 interface Props {
   params: Promise<{ orderCode: string }>;
@@ -144,6 +145,16 @@ export default async function OrderStatusPage({ params }: Props) {
         </div>
       </div>
 
+      {/* PAID delivery CTA */}
+      {order.status === "PAID" && (
+        <div className="bg-green-50 border border-green-200 rounded-2xl p-6 mb-6 text-center">
+          <p className="text-green-800 font-medium mb-3">
+            Tài liệu của bạn đã sẵn sàng để tải xuống.
+          </p>
+          <DeliveryButton orderCode={order.order_code} orderId={order.id} />
+        </div>
+      )}
+
       {/* Actions */}
       <div className="flex flex-col sm:flex-row gap-3 justify-center">
         {order.status === "PENDING" && (
@@ -175,7 +186,7 @@ function getStatusConfig(status: string) {
       return {
         Icon: CheckCircle,
         title: "Thanh toán thành công",
-        subtitle: "Cảm ơn bạn! Tài liệu sẽ được cung cấp ở bước tiếp theo.",
+        subtitle: "Cảm ơn bạn! Tài liệu của bạn đã sẵn sàng.",
         bgColor: "bg-green-100",
         iconColor: "text-green-600",
         badgeClass: "bg-green-100 text-green-700",
