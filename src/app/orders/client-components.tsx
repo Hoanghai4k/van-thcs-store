@@ -87,7 +87,7 @@ export function MyOrdersForm() {
       <div className="mt-6 text-center text-sm">
         <span className="text-neutral-500">Hoặc</span>
         <br />
-        <Link href="/order/lookup" className="text-blue-600 hover:underline font-medium inline-block mt-2">
+        <Link href="/order/lookup" className="text-primary-600 hover:underline font-medium inline-block mt-2">
           Tra cứu bằng mã đơn hàng
         </Link>
       </div>

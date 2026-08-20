@@ -81,7 +81,7 @@ export function ProductGallery({
 
   // Fallback: beautiful gradient placeholder
   return (
-    <div className="relative bg-gradient-to-br from-primary-50 via-blue-50 to-accent-50 rounded-2xl h-64 sm:h-80 md:h-96 flex flex-col items-center justify-center gap-3">
+    <div className="relative bg-gradient-to-br from-primary-50 via-primary-50 to-accent-50 rounded-2xl h-64 sm:h-80 md:h-96 flex flex-col items-center justify-center gap-3">
       <div className="w-24 h-24 bg-white/60 rounded-2xl flex items-center justify-center shadow-sm">
         <FileText className="w-14 h-14 text-primary-300" />
       </div>

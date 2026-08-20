@@ -42,7 +42,7 @@ export default async function AdminOrdersPage({ searchParams }: Props) {
             href={`/admin/orders${filter.value ? `?status=${filter.value}` : ""}`}
             className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
               statusFilter === filter.value
-                ? "bg-blue-600 text-white"
+                ? "bg-primary-600 text-white"
                 : "bg-slate-100 text-slate-600 hover:bg-slate-200"
             }`}
           >
@@ -79,7 +79,7 @@ export default async function AdminOrdersPage({ searchParams }: Props) {
                     <td className="py-3 px-4">
                       <Link
                         href={`/admin/orders/${order.id}`}
-                        className="font-mono text-blue-600 hover:text-blue-700 font-medium"
+                        className="font-mono text-primary-600 hover:text-primary-700 font-medium"
                       >
                         {order.orderCode}
                       </Link>

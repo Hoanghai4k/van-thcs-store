@@ -136,7 +136,7 @@ export function AdminCategoryList({
         <h1 className="text-2xl font-bold text-slate-900">Quản lý danh mục</h1>
         <button
           onClick={openCreate}
-          className="flex items-center gap-2 bg-blue-600 text-white px-4 py-2 rounded-lg text-sm font-medium hover:bg-blue-700 transition-colors"
+          className="flex items-center gap-2 bg-primary-600 text-white px-4 py-2 rounded-lg text-sm font-medium hover:bg-primary-700 transition-colors"
         >
           <Plus className="w-4 h-4" />
           Thêm danh mục
@@ -175,7 +175,7 @@ export function AdminCategoryList({
                 type="text"
                 value={form.name}
                 onChange={(e) => handleNameChange(e.target.value)}
-                className="w-full border border-slate-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                className="w-full border border-slate-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent"
                 required
               />
             </div>
@@ -190,7 +190,7 @@ export function AdminCategoryList({
                   setSlugManuallyEdited(true);
                   setForm((prev) => ({ ...prev, slug: e.target.value }));
                 }}
-                className="w-full border border-slate-300 rounded-lg px-3 py-2 text-sm font-mono focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                className="w-full border border-slate-300 rounded-lg px-3 py-2 text-sm font-mono focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent"
                 required
               />
               <p className="text-xs text-slate-400 mt-1">
@@ -209,7 +209,7 @@ export function AdminCategoryList({
                 setForm((prev) => ({ ...prev, description: e.target.value }))
               }
               rows={2}
-              className="w-full border border-slate-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+              className="w-full border border-slate-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent"
             />
           </div>
 
@@ -232,7 +232,7 @@ export function AdminCategoryList({
             <button
               type="submit"
               disabled={isPending}
-              className="flex items-center gap-2 bg-blue-600 text-white px-4 py-2 rounded-lg text-sm font-medium hover:bg-blue-700 disabled:opacity-50 transition-colors"
+              className="flex items-center gap-2 bg-primary-600 text-white px-4 py-2 rounded-lg text-sm font-medium hover:bg-primary-700 disabled:opacity-50 transition-colors"
             >
               {isPending && <Loader2 className="w-4 h-4 animate-spin" />}
               {editingId ? "Cập nhật" : "Tạo mới"}
@@ -311,7 +311,7 @@ export function AdminCategoryList({
                     <div className="flex items-center gap-1 justify-end">
                       <button
                         onClick={() => openEdit(cat)}
-                        className="p-1.5 text-slate-400 hover:text-blue-600 rounded-lg hover:bg-blue-50 transition-colors"
+                        className="p-1.5 text-slate-400 hover:text-primary-600 rounded-lg hover:bg-primary-50 transition-colors"
                         title="Chỉnh sửa"
                       >
                         <Pencil className="w-4 h-4" />

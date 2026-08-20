@@ -102,7 +102,7 @@ export function AdminProductList({
         </h1>
         <Link
           href="/admin/products/new"
-          className="flex items-center gap-2 bg-blue-600 text-white px-4 py-2 rounded-lg text-sm font-medium hover:bg-blue-700 transition-colors"
+          className="flex items-center gap-2 bg-primary-600 text-white px-4 py-2 rounded-lg text-sm font-medium hover:bg-primary-700 transition-colors"
         >
           <Plus className="w-4 h-4" />
           Thêm sản phẩm
@@ -132,7 +132,7 @@ export function AdminProductList({
               value={search}
               onChange={(e) => setSearch(e.target.value)}
               placeholder="Tìm kiếm sản phẩm..."
-              className="w-full pl-9 pr-3 py-2 border border-slate-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+              className="w-full pl-9 pr-3 py-2 border border-slate-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-primary-500"
             />
           </div>
           <button
@@ -146,7 +146,7 @@ export function AdminProductList({
         <select
           value={currentCategory ?? ""}
           onChange={(e) => handleFilter("category", e.target.value)}
-          className="border border-slate-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+          className="border border-slate-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary-500"
         >
           <option value="">Tất cả danh mục</option>
           {categories.map((cat) => (
@@ -159,7 +159,7 @@ export function AdminProductList({
         <select
           value={currentStatus ?? ""}
           onChange={(e) => handleFilter("status", e.target.value)}
-          className="border border-slate-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+          className="border border-slate-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary-500"
         >
           <option value="">Tất cả trạng thái</option>
           <option value="active">Đang bán</option>
@@ -262,7 +262,7 @@ export function AdminProductList({
                         <div className="flex items-center gap-1 justify-end">
                           <Link
                             href={`/admin/products/${product.id}`}
-                            className="p-1.5 text-slate-400 hover:text-blue-600 rounded-lg hover:bg-blue-50 transition-colors"
+                            className="p-1.5 text-slate-400 hover:text-primary-600 rounded-lg hover:bg-primary-50 transition-colors"
                             title="Chỉnh sửa"
                           >
                             <Pencil className="w-4 h-4" />

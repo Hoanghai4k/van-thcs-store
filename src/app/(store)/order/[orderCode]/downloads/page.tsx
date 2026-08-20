@@ -95,7 +95,7 @@ export default async function DownloadsPage({ params }: Props) {
 
       {/* Download count info */}
       {grant && (
-        <div className="bg-blue-50 border border-blue-200 rounded-xl p-3 text-sm text-blue-700 mb-6 text-center">
+        <div className="bg-primary-50 border border-primary-200 rounded-xl p-3 text-sm text-primary-700 mb-6 text-center">
           Đã tải: {grant.downloadCount}/{grant.maxDownloads} lượt
         </div>
       )}

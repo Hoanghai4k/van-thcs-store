@@ -37,9 +37,9 @@ export function ProductCard({ product }: ProductCardProps) {
   }
 
   return (
-    <div className="group bg-white rounded-2xl border border-border hover:border-primary-200 shadow-sm hover:shadow-lg transition-all duration-300 overflow-hidden flex flex-col">
+    <div className="group bg-white rounded-2xl border border-border hover:border-primary-200 shadow-sm hover:shadow-md transition-all duration-300 overflow-hidden flex flex-col">
       {/* Thumbnail */}
-      <div className="relative h-44 bg-gradient-to-br from-primary-50 via-blue-50 to-accent-50 flex items-center justify-center overflow-hidden">
+      <div className="relative h-44 bg-gradient-to-br from-primary-50 via-primary-50 to-accent-50 flex items-center justify-center overflow-hidden">
         {(() => {
           const thumbUrl = getProductAssetUrl(product.thumbnail_path);
           return thumbUrl ? (

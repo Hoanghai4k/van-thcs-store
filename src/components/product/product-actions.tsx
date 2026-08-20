@@ -53,7 +53,7 @@ export function ProductActions({ product }: ProductActionsProps) {
       <div className="space-y-3">
         <button
           onClick={handleBuyNow}
-          className="w-full flex items-center justify-center gap-2 py-3.5 px-6 rounded-xl text-base font-semibold bg-primary-600 text-white hover:bg-primary-700 shadow-md hover:shadow-lg transition-all active:scale-[0.98]"
+          className="w-full flex items-center justify-center gap-2 py-3.5 px-6 rounded-xl text-base font-semibold bg-primary-600 text-white hover:bg-primary-700 shadow-sm hover:shadow-md transition-all active:scale-[0.98]"
         >
           <Zap className="w-5 h-5" />
           Mua ngay
@@ -80,7 +80,7 @@ export function ProductActions({ product }: ProductActionsProps) {
       <div className="space-y-3">
         <button
           onClick={handleBuyNow}
-          className="w-full flex items-center justify-center gap-2 py-3.5 px-6 rounded-xl text-base font-semibold bg-primary-600 text-white hover:bg-primary-700 shadow-md hover:shadow-lg transition-all active:scale-[0.98]"
+          className="w-full flex items-center justify-center gap-2 py-3.5 px-6 rounded-xl text-base font-semibold bg-primary-600 text-white hover:bg-primary-700 shadow-sm hover:shadow-md transition-all active:scale-[0.98]"
         >
           <Zap className="w-5 h-5" />
           Mua ngay
@@ -106,7 +106,7 @@ export function ProductActions({ product }: ProductActionsProps) {
     <div className="space-y-3">
       <button
         onClick={handleBuyNow}
-        className="w-full flex items-center justify-center gap-2 py-3.5 px-6 rounded-xl text-base font-semibold bg-primary-600 text-white hover:bg-primary-700 shadow-md hover:shadow-lg transition-all active:scale-[0.98]"
+        className="w-full flex items-center justify-center gap-2 py-3.5 px-6 rounded-xl text-base font-semibold bg-primary-600 text-white hover:bg-primary-700 shadow-sm hover:shadow-md transition-all active:scale-[0.98]"
       >
         <Zap className="w-5 h-5" />
         Mua ngay

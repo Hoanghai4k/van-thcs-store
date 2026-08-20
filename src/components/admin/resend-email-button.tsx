@@ -44,7 +44,7 @@ export function ResendEmailButton({ orderId, orderCode }: ResendEmailButtonProps
       <button
         onClick={handleResend}
         disabled={isLoading}
-        className="flex items-center gap-2 px-4 py-2 text-sm bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors disabled:opacity-50"
+        className="flex items-center gap-2 px-4 py-2 text-sm bg-primary-600 text-white rounded-lg hover:bg-primary-700 transition-colors disabled:opacity-50"
       >
         {isLoading ? (
           <Loader2 className="w-4 h-4 animate-spin" />

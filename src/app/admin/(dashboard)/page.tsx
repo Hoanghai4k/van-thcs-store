@@ -46,7 +46,7 @@ export default async function AdminDashboard() {
       label: "Đơn hàng hôm nay",
       value: String(stats.ordersToday),
       icon: ShoppingBag,
-      color: "text-blue-600 bg-blue-50",
+      color: "text-primary-600 bg-primary-50",
     },
     {
       label: "Doanh thu tháng",
@@ -114,21 +114,21 @@ export default async function AdminDashboard() {
 
         {/* Quick Links */}
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-          <Link href="/admin/products/new" className="flex items-center gap-3 bg-white rounded-xl border border-slate-200 p-5 hover:border-blue-300 hover:shadow-sm transition-all">
-            <Package className="w-8 h-8 text-blue-500" />
+          <Link href="/admin/products/new" className="flex items-center gap-3 bg-white rounded-xl border border-slate-200 p-5 hover:border-primary-300 hover:shadow-sm transition-all">
+            <Package className="w-8 h-8 text-primary-500" />
             <div>
               <p className="font-medium text-slate-900">Thêm sản phẩm</p>
               <p className="text-xs text-slate-500">Tạo sản phẩm mới</p>
             </div>
           </Link>
-          <Link href="/admin/categories" className="flex items-center gap-3 bg-white rounded-xl border border-slate-200 p-5 hover:border-blue-300 hover:shadow-sm transition-all">
+          <Link href="/admin/categories" className="flex items-center gap-3 bg-white rounded-xl border border-slate-200 p-5 hover:border-primary-300 hover:shadow-sm transition-all">
             <FolderOpen className="w-8 h-8 text-purple-500" />
             <div>
               <p className="font-medium text-slate-900">Quản lý danh mục</p>
               <p className="text-xs text-slate-500">Thêm, sửa danh mục</p>
             </div>
           </Link>
-          <Link href="/admin/orders" className="flex items-center gap-3 bg-white rounded-xl border border-slate-200 p-5 hover:border-blue-300 hover:shadow-sm transition-all">
+          <Link href="/admin/orders" className="flex items-center gap-3 bg-white rounded-xl border border-slate-200 p-5 hover:border-primary-300 hover:shadow-sm transition-all">
             <ShoppingBag className="w-8 h-8 text-green-500" />
             <div>
               <p className="font-medium text-slate-900">Đơn hàng</p>

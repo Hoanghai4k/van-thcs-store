@@ -30,7 +30,7 @@ export function AdminLoginForm() {
             type="email"
             required
             autoComplete="email"
-            className="w-full px-4 py-2.5 rounded-xl border border-slate-200 outline-none transition-all text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+            className="w-full px-4 py-2.5 rounded-xl border border-slate-200 outline-none transition-all text-sm focus:ring-2 focus:ring-primary-500 focus:border-primary-500"
             placeholder="admin@example.com"
           />
         </div>
@@ -47,7 +47,7 @@ export function AdminLoginForm() {
             type="password"
             required
             autoComplete="current-password"
-            className="w-full px-4 py-2.5 rounded-xl border border-slate-200 outline-none transition-all text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+            className="w-full px-4 py-2.5 rounded-xl border border-slate-200 outline-none transition-all text-sm focus:ring-2 focus:ring-primary-500 focus:border-primary-500"
             placeholder="••••••••"
           />
         </div>

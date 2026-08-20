@@ -25,7 +25,7 @@ export default async function HomePage() {
   return (
     <>
       {/* ─── Hero Section ─── */}
-      <section className="relative overflow-hidden bg-gradient-to-br from-primary-600 via-primary-700 to-primary-900">
+      <section className="relative overflow-hidden bg-gradient-to-br from-primary-600 to-primary-800">
         {/* Background pattern */}
         <div className="absolute inset-0 opacity-10">
           <div className="absolute top-10 left-10 w-64 h-64 rounded-full bg-white/20 blur-3xl" />
@@ -41,18 +41,18 @@ export default async function HomePage() {
                 Tải ngay sau khi thanh toán — không cần chờ đợi
               </div>
 
-              <h1 className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-extrabold text-white leading-tight mb-6">
+              <h1 className="text-3xl sm:text-4xl lg:text-5xl font-bold text-white leading-tight mb-6">
                 {siteConfig.tagline}
               </h1>
 
-              <p className="text-lg md:text-xl text-blue-100 mb-8 leading-relaxed">
+              <p className="text-lg md:text-xl text-primary-100 mb-8 leading-relaxed">
                 Tài liệu tham khảo chuyên biệt cho THCS. Dễ dàng sử dụng, dễ dàng chỉnh sửa. Tải về ngay lập tức sau khi hoàn tất thanh toán.
               </p>
 
               <div className="flex flex-col sm:flex-row gap-4">
                 <Link
                   href="/products"
-                  className="inline-flex items-center justify-center gap-2 bg-white text-primary-700 font-semibold px-8 py-3.5 rounded-xl hover:bg-blue-50 shadow-lg hover:shadow-xl transition-all duration-200 active:scale-[0.98]"
+                  className="inline-flex items-center justify-center gap-2 bg-white text-primary-700 font-semibold px-8 py-3.5 rounded-xl hover:bg-primary-50 shadow-sm hover:shadow-md transition-all duration-200 active:scale-[0.98]"
                 >
                   Xem tài liệu
                   <ArrowRight className="w-5 h-5" />
@@ -319,13 +319,13 @@ export default async function HomePage() {
               <h2 className="text-2xl md:text-4xl font-bold text-white mb-4">
                 Sẵn sàng nâng cao chất lượng dạy &amp; học?
               </h2>
-              <p className="text-blue-100 mb-8 max-w-lg mx-auto">
+              <p className="text-primary-100 mb-8 max-w-lg mx-auto">
                 Khám phá kho tài liệu Ngữ văn THCS chất lượng cao — tải ngay
                 sau khi thanh toán.
               </p>
               <Link
                 href="/products"
-                className="inline-flex items-center gap-2 bg-white text-primary-700 font-semibold px-8 py-3.5 rounded-xl hover:bg-blue-50 shadow-lg hover:shadow-xl transition-all duration-200"
+                className="inline-flex items-center gap-2 bg-white text-primary-700 font-semibold px-8 py-3.5 rounded-xl hover:bg-primary-50 shadow-lg hover:shadow-xl transition-all duration-200"
               >
                 Khám phá ngay
                 <ArrowRight className="w-5 h-5" />

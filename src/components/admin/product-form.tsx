@@ -359,7 +359,7 @@ export function ProductForm({
                 type="text"
                 value={name}
                 onChange={(e) => handleNameChange(e.target.value)}
-                className="w-full border border-slate-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+                className="w-full border border-slate-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary-500"
                 required
               />
             </div>
@@ -374,7 +374,7 @@ export function ProductForm({
                   setSlugManual(true);
                   setSlug(e.target.value);
                 }}
-                className="w-full border border-slate-300 rounded-lg px-3 py-2 text-sm font-mono focus:outline-none focus:ring-2 focus:ring-blue-500"
+                className="w-full border border-slate-300 rounded-lg px-3 py-2 text-sm font-mono focus:outline-none focus:ring-2 focus:ring-primary-500"
                 required
               />
             </div>
@@ -387,7 +387,7 @@ export function ProductForm({
             <select
               value={categoryId}
               onChange={(e) => setCategoryId(e.target.value)}
-              className="w-full border border-slate-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+              className="w-full border border-slate-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary-500"
             >
               <option value="">— Chọn danh mục —</option>
               {categories.map((cat) => (
@@ -407,7 +407,7 @@ export function ProductForm({
               value={shortDesc}
               onChange={(e) => setShortDesc(e.target.value)}
               maxLength={500}
-              className="w-full border border-slate-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+              className="w-full border border-slate-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary-500"
             />
           </div>
 
@@ -419,7 +419,7 @@ export function ProductForm({
               value={description}
               onChange={(e) => setDescription(e.target.value)}
               rows={4}
-              className="w-full border border-slate-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+              className="w-full border border-slate-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary-500"
             />
           </div>
         </section>
@@ -437,7 +437,7 @@ export function ProductForm({
                 value={price}
                 onChange={(e) => setPrice(e.target.value)}
                 min={0}
-                className="w-full border border-slate-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+                className="w-full border border-slate-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary-500"
                 required
               />
             </div>
@@ -451,7 +451,7 @@ export function ProductForm({
                 onChange={(e) => setOriginalPrice(e.target.value)}
                 min={0}
                 placeholder="Để trống nếu không giảm giá"
-                className="w-full border border-slate-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+                className="w-full border border-slate-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary-500"
               />
             </div>
             <div>
@@ -463,7 +463,7 @@ export function ProductForm({
                 value={pageCount}
                 onChange={(e) => setPageCount(e.target.value)}
                 min={1}
-                className="w-full border border-slate-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+                className="w-full border border-slate-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary-500"
               />
             </div>
           </div>
@@ -490,7 +490,7 @@ export function ProductForm({
               onChange={(e) => setFeaturesText(e.target.value)}
               rows={4}
               placeholder={"50 đề đọc hiểu có đáp án\nHướng dẫn chấm bài rõ ràng\nFile tài liệu dễ sử dụng"}
-              className="w-full border border-slate-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+              className="w-full border border-slate-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary-500"
             />
           </div>
           <div>
@@ -503,7 +503,7 @@ export function ProductForm({
               onChange={(e) => setSuitableForText(e.target.value)}
               rows={3}
               placeholder={"Học sinh lớp 9\nGiáo viên Ngữ văn THCS"}
-              className="w-full border border-slate-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+              className="w-full border border-slate-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary-500"
             />
           </div>
         </section>
@@ -513,7 +513,7 @@ export function ProductForm({
           <button
             type="submit"
             disabled={isPending}
-            className="flex items-center gap-2 bg-blue-600 text-white px-6 py-2.5 rounded-lg text-sm font-medium hover:bg-blue-700 disabled:opacity-50 transition-colors"
+            className="flex items-center gap-2 bg-primary-600 text-white px-6 py-2.5 rounded-lg text-sm font-medium hover:bg-primary-700 disabled:opacity-50 transition-colors"
           >
             {isPending && <Loader2 className="w-4 h-4 animate-spin" />}
             {mode === "create" && !savedProductId
@@ -639,7 +639,7 @@ export function ProductForm({
                     className="flex items-center justify-between p-3 bg-slate-50 rounded-lg"
                   >
                     <div className="flex items-center gap-2 min-w-0">
-                      <File className="w-4 h-4 text-blue-500 flex-shrink-0" />
+                      <File className="w-4 h-4 text-primary-500 flex-shrink-0" />
                       <div className="min-w-0">
                         <p className="text-sm text-slate-900 truncate">
                           {f.file_name}
@@ -688,7 +688,7 @@ export function ProductForm({
       )}
 
       {!canUpload && mode === "create" && (
-        <div className="mt-6 p-4 bg-blue-50 border border-blue-200 rounded-lg text-sm text-blue-700">
+        <div className="mt-6 p-4 bg-primary-50 border border-primary-200 rounded-lg text-sm text-primary-700">
           <p>
             Hãy <strong>tạo sản phẩm nháp</strong> trước để có thể tải ảnh và
             tệp tài liệu.

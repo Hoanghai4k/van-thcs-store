@@ -152,7 +152,7 @@ export default async function AdminOrderDetailPage({ params }: Props) {
             )}
             <div className="flex justify-between font-semibold text-base">
               <span>Tổng cộng</span>
-              <span className="text-blue-600">{formatCurrency(order.totalAmount)}</span>
+              <span className="text-primary-600">{formatCurrency(order.totalAmount)}</span>
             </div>
           </div>
         </div>
