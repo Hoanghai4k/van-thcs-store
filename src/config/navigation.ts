@@ -29,6 +29,7 @@ export const mainNavigation: NavItem[] = [
     ],
   },
   { label: "Liên hệ", href: "/contact" },
+  { label: "Đơn hàng của tôi", href: "/orders" },
 ];
 
 export const footerNavigation = {
@@ -42,7 +43,7 @@ export const footerNavigation = {
   ],
   support: [
     { label: "Liên hệ", href: "/contact" },
-    { label: "Tra cứu đơn hàng", href: "/order/lookup" },
+    { label: "Đơn hàng của tôi", href: "/orders" },
   ],
   legal: [
     { label: "Chính sách bảo mật", href: "/privacy" },

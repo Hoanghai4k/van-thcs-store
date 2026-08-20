@@ -13,6 +13,7 @@
 
 import type { SupabaseClient } from "@supabase/supabase-js";
 import type { Database } from "@/types/database";
+import type { EmailResult } from "./provider";
 import { getEmailProvider } from "./resend-provider";
 import { buildDeliveryEmailSubject, buildDeliveryEmailHtml } from "./templates/delivery-email";
 import { buildDeliveryUrl } from "@/features/downloads/token";
@@ -103,5 +104,56 @@ export async function sendDeliveryEmail(
     const message = error instanceof Error ? error.message : "Unknown error";
     console.error(`[Email] Exception sending delivery email: order=${input.orderCode}`, message);
     return { sent: false, error: message };
+  }
+}
+
+/**
+ * Send a magic link email for My Orders access.
+ *
+ * Uses an idempotency key based on email hash and a 5-minute time bucket
+ * to prevent duplicate sends/abuse.
+ */
+import { buildMyOrdersEmailSubject, buildMyOrdersEmailHtml } from "./templates/my-orders-email";
+import { createHash } from "crypto";
+
+export async function sendMyOrdersAccessEmail(
+  email: string,
+  magicToken: string,
+): Promise<EmailResult> {
+  const provider = getEmailProvider();
+
+  if (!provider) {
+    console.warn("[Email] No email provider configured. Magic link not sent.");
+    return { success: false, error: "Email provider not configured" };
+  }
+
+  // Idempotency: hash email so it's not in plaintext, bucket to 5 minutes
+  const emailHash = createHash("sha256").update(email).digest("hex").substring(0, 16);
+  const timeBucket = Math.floor(Date.now() / (1000 * 60 * 5)); 
+  const idempotencyKey = `my-orders-access/${emailHash}/${timeBucket}`;
+
+  const verifyUrl = `${siteConfig.url}/orders/verify?token=${magicToken}`;
+  const subject = buildMyOrdersEmailSubject();
+  const html = buildMyOrdersEmailHtml({ verifyUrl });
+
+  try {
+    const result = await provider.sendEmail({
+      to: email,
+      subject,
+      html,
+      idempotencyKey,
+    });
+
+    if (result.success) {
+      console.log(`[Email] My Orders magic link sent to hashed email ${emailHash}`);
+    } else {
+      console.error(`[Email] Failed to send My Orders magic link: ${result.error}`);
+    }
+
+    return result;
+  } catch (error) {
+    const message = error instanceof Error ? error.message : "Unknown error";
+    console.error(`[Email] Exception sending magic link`, message);
+    return { success: false, error: message };
   }
 }

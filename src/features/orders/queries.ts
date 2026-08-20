@@ -182,3 +182,90 @@ export async function listOrders(params?: {
     totalPages: Math.ceil(total / pageSize),
   };
 }
+
+/**
+ * Check if any orders exist for a given email address.
+ * Matches all customer rows with the same normalized email.
+ */
+export async function hasOrdersForEmail(email: string): Promise<boolean> {
+  const supabase = getSupabaseAdmin();
+  const normalizedEmail = normalizeEmail(email);
+
+  const { data, error } = await supabase
+    .from("orders")
+    .select(`id, customer:customers!inner(id, email)`)
+    .eq("customer.email", normalizedEmail)
+    .limit(1);
+
+  if (error || !data || data.length === 0) {
+    return false;
+  }
+
+  // Supabase inner join with embedded filters behaves correctly,
+  // but let's double check it in JavaScript just in case
+  const match = data.some((row) => {
+    const customer = row.customer as { email: string } | null;
+    return customer?.email?.toLowerCase() === normalizedEmail;
+  });
+
+  return match;
+}
+
+/**
+ * Get all orders belonging to a normalized email.
+ * Includes items for rendering the list.
+ */
+export async function getOrdersByEmail(email: string): Promise<OrderWithItems[]> {
+  const supabase = getSupabaseAdmin();
+  const normalizedEmail = normalizeEmail(email);
+
+  const { data, error } = await supabase
+    .from("orders")
+    .select(`
+      *,
+      customer:customers!inner(id, name, email, phone),
+      items:order_items(id, product_id, product_name, unit_price)
+    `)
+    .eq("customer.email", normalizedEmail)
+    .order("created_at", { ascending: false });
+
+  if (error || !data) {
+    return [];
+  }
+
+  // Filter out any false positives from the join and map to expected format
+  const validOrders = data.filter((order) => {
+    const customer = order.customer as { email: string } | null;
+    return customer?.email?.toLowerCase() === normalizedEmail;
+  });
+
+  return validOrders.map((order) => {
+    const customer = order.customer as { id: string; name: string; email: string; phone: string | null };
+    const items = (order.items as Array<{ id: string; product_id: string; product_name: string; unit_price: number }>) ?? [];
+
+    return {
+      id: order.id,
+      orderCode: order.order_code,
+      customerId: customer.id,
+      customerName: customer.name,
+      customerEmail: customer.email,
+      customerPhone: customer.phone,
+      subtotal: order.subtotal,
+      discount: order.discount,
+      totalAmount: order.total_amount,
+      paymentMethod: order.payment_method,
+      paymentOrderCode: order.payment_order_code,
+      paymentTransactionId: order.payment_transaction_id,
+      status: order.status,
+      paidAt: order.paid_at,
+      createdAt: order.created_at,
+      updatedAt: order.updated_at,
+      items: items.map((item) => ({
+        id: item.id,
+        productId: item.product_id,
+        productName: item.product_name,
+        unitPrice: item.unit_price,
+      })),
+    };
+  });
+}

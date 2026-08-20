@@ -22,6 +22,8 @@ const serverEnvSchema = z.object({
   ORDER_ACCESS_SECRET: z.string().min(32).optional(),
   // Delivery access cookie signing secret (min 32 chars for production)
   DELIVERY_ACCESS_SECRET: z.string().min(32).optional(),
+  // My Orders access cookie and magic link encryption secret (min 32 chars for production)
+  MY_ORDERS_ACCESS_SECRET: z.string().min(32).optional(),
   // Resend email provider
   RESEND_API_KEY: z.string().min(1).optional(),
 });
