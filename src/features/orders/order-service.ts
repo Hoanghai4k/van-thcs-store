@@ -235,21 +235,40 @@ async function generateUniqueOrderCode(
 /**
  * Generate unique numeric payment order code with collision retry.
  */
-async function generateUniquePaymentOrderCode(
+export async function generateUniquePaymentOrderCode(
   supabase: ReturnType<typeof getSupabaseAdmin>,
   maxRetries = 3,
 ): Promise<number> {
   for (let i = 0; i < maxRetries; i++) {
     const code = generatePaymentOrderCode();
-    const { data: existing } = await supabase
+    
+    // Check orders table
+    const { data: existingOrder } = await supabase
       .from("orders")
       .select("id")
       .eq("payment_order_code", code)
       .limit(1)
-      .single();
+      .maybeSingle();
 
-    if (!existing) return code;
-    console.warn(`[OrderService] Payment order code collision: ${code}, retrying...`);
+    if (existingOrder) {
+      console.warn(`[OrderService] Payment order code collision in orders: ${code}, retrying...`);
+      continue;
+    }
+    
+    // Check payment_attempts table
+    const { data: existingAttempt } = await supabase
+      .from("payment_attempts")
+      .select("id")
+      .eq("provider_order_code", code)
+      .limit(1)
+      .maybeSingle();
+      
+    if (existingAttempt) {
+      console.warn(`[OrderService] Payment order code collision in payment_attempts: ${code}, retrying...`);
+      continue;
+    }
+      
+    return code;
   }
   throw new CheckoutError("Không thể tạo mã thanh toán. Vui lòng thử lại.");
 }

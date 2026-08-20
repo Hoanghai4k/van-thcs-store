@@ -17,9 +17,10 @@
  */
 
 import type { SupabaseClient } from "@supabase/supabase-js";
+import type { DbOrderUpdate, DbPaymentAttemptUpdate } from "@/types/database";
 import type { Database } from "@/types/database";
 import type { VerifiedPaymentEvent } from "./types";
-import { ORDER_STATUS, type OrderStatus } from "@/lib/constants";
+import { ORDER_STATUS, PAYMENT_ATTEMPT_STATUS, type OrderStatus, type PaymentAttemptStatus } from "@/lib/constants";
 import { canTransition } from "./state-machine";
 import { ensureDeliveryGrant } from "@/features/downloads/service";
 import { sendDeliveryEmail } from "@/features/emails/service";
@@ -51,24 +52,56 @@ export async function handleVerifiedPaymentEvent(
     return { success: false, action: "rejected", reason: "Missing provider order code" };
   }
 
-  // 1. Find the order by payment_order_code
-  const { data: order, error: orderError } = await supabaseAdmin
-    .from("orders")
-    .select("id, order_code, total_amount, status, paid_at, payment_transaction_id")
-    .eq("payment_order_code", event.providerOrderCode)
-    .single();
+  const providerName = event.provider ?? "payos";
 
-  if (orderError || !order) {
+  // 1. Find the order by payment_order_code (check payment_attempts first, then legacy fallback)
+  let orderId: string | null = null;
+  let attemptId: string | null = null;
+
+  const { data: attempt } = await supabaseAdmin
+    .from("payment_attempts")
+    .select("id, order_id, status")
+    .eq("provider_order_code", event.providerOrderCode)
+    .eq("provider", providerName)
+    .maybeSingle();
+
+  if (attempt) {
+    orderId = attempt.order_id;
+    attemptId = attempt.id;
+  } else {
+    // Legacy fallback
+    const { data: legacyOrder } = await supabaseAdmin
+      .from("orders")
+      .select("id")
+      .eq("payment_order_code", event.providerOrderCode)
+      .maybeSingle();
+      
+    if (legacyOrder) {
+      orderId = legacyOrder.id;
+    }
+  }
+
+  if (!orderId) {
     // This may be a payOS registration probe (valid signature, unknown orderCode).
     // Return a distinct action so the route handler can acknowledge safely.
     console.log(
-      `[Webhook] No matching order for payment_order_code=${event.providerOrderCode} provider=${event.provider ?? "unknown"}`,
+      `[Webhook] No matching order for payment_order_code=${event.providerOrderCode} provider=${providerName}`,
     );
     return {
       success: false,
       action: "rejected",
       reason: "unknown_order",
     };
+  }
+  
+  const { data: order, error: orderError } = await supabaseAdmin
+    .from("orders")
+    .select("id, order_code, total_amount, status, paid_at, payment_transaction_id")
+    .eq("id", orderId)
+    .single();
+    
+  if (orderError || !order) {
+    return { success: false, action: "rejected", reason: "Order fetch failed" };
   }
 
   // 2. Amount validation
@@ -86,8 +119,10 @@ export async function handleVerifiedPaymentEvent(
   }
 
   // 3. Map provider status to order status
-  const targetStatus = mapProviderStatus(event.status);
-  if (!targetStatus) {
+  const targetOrderStatus = mapProviderStatusToOrder(event.status);
+  const targetAttemptStatus = mapProviderStatusToAttempt(event.status);
+  
+  if (!targetOrderStatus || !targetAttemptStatus) {
     return {
       success: false,
       action: "rejected",
@@ -96,10 +131,23 @@ export async function handleVerifiedPaymentEvent(
       reason: `Unknown provider status: ${event.status}`,
     };
   }
+  
+  // 4. Update payment attempt if it exists
+  if (attemptId && attempt?.status !== targetAttemptStatus) {
+     const attemptUpdateData: DbPaymentAttemptUpdate = { status: targetAttemptStatus };
+     if (targetAttemptStatus === PAYMENT_ATTEMPT_STATUS.PAID) attemptUpdateData.paid_at = new Date().toISOString();
+     if (targetAttemptStatus === PAYMENT_ATTEMPT_STATUS.CANCELLED) attemptUpdateData.cancelled_at = new Date().toISOString();
+     if (event.providerTransactionId) attemptUpdateData.provider_payment_link_id = event.providerTransactionId;
+     
+     await supabaseAdmin
+       .from("payment_attempts")
+       .update(attemptUpdateData)
+       .eq("id", attemptId);
+  }
 
-  // 4. Check idempotency — already in target status
+  // 5. Check order idempotency — already in target status
   const currentStatus = order.status as OrderStatus;
-  if (currentStatus === targetStatus) {
+  if (currentStatus === targetOrderStatus) {
     console.log(
       `[Webhook] Already processed: order=${order.order_code} status=${currentStatus}`,
     );
@@ -110,32 +158,43 @@ export async function handleVerifiedPaymentEvent(
       orderCode: order.order_code,
     };
   }
+  
+  // Never regress a PAID order
+  if (currentStatus === ORDER_STATUS.PAID) {
+    console.warn(`[Webhook] Order already PAID. Ignoring transition to ${targetOrderStatus} for order=${order.order_code}`);
+    return {
+      success: true, // Acknowledge safely
+      action: "already_processed",
+      orderId: order.id,
+      orderCode: order.order_code,
+    };
+  }
 
-  // 5. Validate state transition
-  if (!canTransition(currentStatus, targetStatus)) {
+  // 6. Validate state transition
+  if (!canTransition(currentStatus, targetOrderStatus)) {
     console.warn(
-      `[Webhook] Invalid transition: order=${order.order_code} ${currentStatus} → ${targetStatus}`,
+      `[Webhook] Invalid transition: order=${order.order_code} ${currentStatus} → ${targetOrderStatus}`,
     );
     return {
       success: false,
       action: "rejected",
       orderId: order.id,
       orderCode: order.order_code,
-      reason: `Invalid transition: ${currentStatus} → ${targetStatus}`,
+      reason: `Invalid transition: ${currentStatus} → ${targetOrderStatus}`,
     };
   }
 
-  // 6. Update order
+  // 7. Update order
   const updateData: {
     status: OrderStatus;
     paid_at?: string;
     payment_transaction_id?: string;
   } = {
-    status: targetStatus,
+    status: targetOrderStatus,
   };
 
   // Set paid_at only on first PAID transition
-  if (targetStatus === ORDER_STATUS.PAID && !order.paid_at) {
+  if (targetOrderStatus === ORDER_STATUS.PAID && !order.paid_at) {
     updateData.paid_at = new Date().toISOString();
   }
 
@@ -165,13 +224,13 @@ export async function handleVerifiedPaymentEvent(
   }
 
   console.log(
-    `[Webhook] Order updated: order=${order.order_code} ${currentStatus} → ${targetStatus}` +
+    `[Webhook] Order updated: order=${order.order_code} ${currentStatus} → ${targetOrderStatus}` +
       (event.providerTransactionId ? ` txn=${event.providerTransactionId}` : ""),
   );
 
   // ─── Post-PAID side effects (delivery grant + email) ─────────
   // Only on first PAID transition. Email failure does NOT undo PAID.
-  if (targetStatus === ORDER_STATUS.PAID) {
+  if (targetOrderStatus === ORDER_STATUS.PAID) {
     try {
       await handlePaidDelivery(order.id, order.order_code, supabaseAdmin);
     } catch (deliveryError) {
@@ -194,7 +253,7 @@ export async function handleVerifiedPaymentEvent(
 /**
  * Map provider payment status to our OrderStatus.
  */
-function mapProviderStatus(
+function mapProviderStatusToOrder(
   status: VerifiedPaymentEvent["status"],
 ): OrderStatus | null {
   switch (status) {
@@ -204,6 +263,24 @@ function mapProviderStatus(
       return ORDER_STATUS.FAILED;
     case "cancelled":
       return ORDER_STATUS.CANCELLED;
+    default:
+      return null;
+  }
+}
+
+/**
+ * Map provider payment status to our PaymentAttemptStatus.
+ */
+function mapProviderStatusToAttempt(
+  status: VerifiedPaymentEvent["status"],
+): PaymentAttemptStatus | null {
+  switch (status) {
+    case "success":
+      return PAYMENT_ATTEMPT_STATUS.PAID;
+    case "failed":
+      return PAYMENT_ATTEMPT_STATUS.FAILED;
+    case "cancelled":
+      return PAYMENT_ATTEMPT_STATUS.CANCELLED;
     default:
       return null;
   }

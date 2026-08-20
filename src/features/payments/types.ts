@@ -5,7 +5,7 @@
  * Provider-specific details are encapsulated inside each provider implementation.
  */
 
-import type { OrderStatus } from "@/lib/constants";
+import type { PaymentAttemptStatus } from "@/lib/constants";
 
 // ─── Payment Request ──────────────────────────────────────────────
 
@@ -83,7 +83,7 @@ export interface PaymentStatusResult {
   /** Whether the query succeeded */
   found: boolean;
   /** Current payment status */
-  status?: OrderStatus;
+  status?: PaymentAttemptStatus;
   /** Amount */
   amount?: number;
   /** Provider transaction ID */

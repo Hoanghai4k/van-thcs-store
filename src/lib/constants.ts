@@ -13,6 +13,18 @@ export const ORDER_STATUS = {
 
 export type OrderStatus = (typeof ORDER_STATUS)[keyof typeof ORDER_STATUS];
 
+/** Possible payment attempt statuses */
+export const PAYMENT_ATTEMPT_STATUS = {
+  PENDING: "PENDING",
+  PROCESSING: "PROCESSING",
+  PAID: "PAID",
+  CANCELLED: "CANCELLED",
+  EXPIRED: "EXPIRED",
+  FAILED: "FAILED",
+} as const;
+
+export type PaymentAttemptStatus = (typeof PAYMENT_ATTEMPT_STATUS)[keyof typeof PAYMENT_ATTEMPT_STATUS];
+
 /**
  * Allowed MIME types for product files (private bucket).
  * V1 supports: DOCX and ZIP.

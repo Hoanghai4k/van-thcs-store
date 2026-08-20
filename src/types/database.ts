@@ -25,6 +25,7 @@ export type DbCustomer = Tables<"customers">;
 export type DbOrder = Tables<"orders">;
 export type DbOrderItem = Tables<"order_items">;
 export type DbDownloadToken = Tables<"download_tokens">;
+export type DbPaymentAttempt = Tables<"payment_attempts">;
 
 // Insert types
 export type DbCategoryInsert = TablesInsert<"categories">;
@@ -33,8 +34,10 @@ export type DbProductFileInsert = TablesInsert<"product_files">;
 export type DbCustomerInsert = TablesInsert<"customers">;
 export type DbOrderInsert = TablesInsert<"orders">;
 export type DbOrderItemInsert = TablesInsert<"order_items">;
+export type DbPaymentAttemptInsert = TablesInsert<"payment_attempts">;
 
 // Update types
 export type DbCategoryUpdate = TablesUpdate<"categories">;
 export type DbProductUpdate = TablesUpdate<"products">;
 export type DbOrderUpdate = TablesUpdate<"orders">;
+export type DbPaymentAttemptUpdate = TablesUpdate<"payment_attempts">;

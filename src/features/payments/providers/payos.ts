@@ -21,7 +21,7 @@ import type {
   VerifiedPaymentEvent,
   PaymentStatusResult,
 } from "../types";
-import { ORDER_STATUS } from "@/lib/constants";
+import { PAYMENT_ATTEMPT_STATUS } from "@/lib/constants";
 
 export interface PayOSConfig {
   clientId: string;
@@ -149,17 +149,19 @@ export class PayOSPaymentProvider implements PaymentProvider {
         return { found: false };
       }
 
-      // Map payOS status to our OrderStatus
+      // Map payOS status to our PaymentAttemptStatus
       let status;
       const payosStatus = String(info.status ?? "").toUpperCase();
       if (payosStatus === "PAID") {
-        status = ORDER_STATUS.PAID;
-      } else if (payosStatus === "CANCELLED" || payosStatus === "EXPIRED") {
-        status = ORDER_STATUS.CANCELLED;
-      } else if (payosStatus === "PENDING") {
-        status = ORDER_STATUS.PENDING;
+        status = PAYMENT_ATTEMPT_STATUS.PAID;
+      } else if (payosStatus === "CANCELLED") {
+        status = PAYMENT_ATTEMPT_STATUS.CANCELLED;
+      } else if (payosStatus === "EXPIRED") {
+        status = PAYMENT_ATTEMPT_STATUS.EXPIRED;
+      } else if (payosStatus === "PENDING" || payosStatus === "PROCESSING") {
+        status = PAYMENT_ATTEMPT_STATUS.PENDING;
       } else {
-        status = ORDER_STATUS.FAILED;
+        status = PAYMENT_ATTEMPT_STATUS.FAILED;
       }
 
       return {

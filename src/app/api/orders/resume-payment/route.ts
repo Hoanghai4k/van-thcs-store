@@ -1,8 +1,8 @@
 /**
  * Resume payment API route.
  *
- * For PENDING orders, queries the existing payOS payment status
- * and creates a new payment link if the old one expired.
+ * For PENDING orders, queries the existing active payment attempt.
+ * If expired/cancelled, creates a new payment_attempts row and payOS link.
  *
  * CRITICAL: This route NEVER marks an order as PAID.
  * It only creates/retrieves a checkout URL for the customer.
@@ -10,10 +10,12 @@
 
 import { NextRequest, NextResponse } from "next/server";
 import { getSupabaseAdmin } from "@/lib/supabase/admin";
-import { createPayment, getPaymentStatus } from "@/features/payments/payment-service";
-import { getPaymentProvider } from "@/features/payments/providers";
+import { createPayment, getPaymentStatus, getProviderName } from "@/features/payments/payment-service";
 import type { PaymentItem } from "@/features/payments/types";
 import { getSiteUrl } from "@/lib/url";
+import { getOrderAccessCookie } from "@/lib/auth/order-access";
+import { generateUniquePaymentOrderCode } from "@/features/orders/order-service";
+import { PAYMENT_ATTEMPT_STATUS } from "@/lib/constants";
 
 export async function POST(request: NextRequest) {
   try {
@@ -27,8 +29,17 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    const provider = getPaymentProvider();
-    if (!provider) {
+    // 1. Authorize via order access cookie
+    const authResult = await getOrderAccessCookie(orderCode);
+    if (!authResult.valid) {
+      return NextResponse.json(
+        { success: false, error: "Không có quyền truy cập đơn hàng này." },
+        { status: 403 },
+      );
+    }
+
+    const providerName = getProviderName();
+    if (!providerName) {
       return NextResponse.json(
         { success: false, error: "Hệ thống thanh toán chưa được cấu hình." },
         { status: 503 },
@@ -37,15 +48,15 @@ export async function POST(request: NextRequest) {
 
     const supabase = getSupabaseAdmin();
 
-    // Fetch the order with items and customer
+    // 2. Fetch the order with items and customer
     const { data: order, error: orderError } = await supabase
       .from("orders")
       .select(`
-        id, order_code, total_amount, payment_order_code, status, payment_method,
+        id, order_code, total_amount, status, payment_method,
         customer:customers!inner(name, email, phone),
         items:order_items(product_name, unit_price)
       `)
-      .eq("order_code", orderCode)
+      .eq("id", authResult.orderId)
       .single();
 
     if (orderError || !order) {
@@ -55,7 +66,7 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // Only allow resuming PENDING orders
+    // 3. Only allow resuming PENDING orders
     if (order.status !== "PENDING") {
       return NextResponse.json({
         success: false,
@@ -66,47 +77,63 @@ export async function POST(request: NextRequest) {
       }, { status: 400 });
     }
 
-    if (!order.payment_order_code) {
-      return NextResponse.json(
-        { success: false, error: "Đơn hàng thiếu mã thanh toán." },
-        { status: 400 },
-      );
-    }
-
     const customer = order.customer as { name: string; email: string; phone: string | null };
     const items = (order.items as Array<{ product_name: string; unit_price: number }>) ?? [];
 
-    // Try querying existing payOS payment status first
-    const existingStatus = await getPaymentStatus(order.payment_order_code);
+    // 4. Concurrency & active attempt check
+    // We lock this block conceptually by checking for an active attempt.
+    const { data: activeAttempt } = await supabase
+      .from("payment_attempts")
+      .select("id, provider_order_code, expires_at, checkout_url, status")
+      .eq("order_id", order.id)
+      .eq("provider", providerName)
+      .in("status", [PAYMENT_ATTEMPT_STATUS.PENDING, PAYMENT_ATTEMPT_STATUS.PROCESSING])
+      .maybeSingle();
 
-    // If the existing payment link is still PENDING at payOS, try to reuse it
-    // by redirecting to the same checkout URL. But payOS doesn't return the
-    // checkout URL from getPaymentStatus, so we always create a new payment link.
-    // payOS will handle deduplication on their end if the orderCode is the same.
+    if (activeAttempt) {
+      // Reconcile with provider to check if it's still active
+      const existingStatus = await getPaymentStatus(activeAttempt.provider_order_code);
+      const isExpiredByTime = activeAttempt.expires_at && new Date(activeAttempt.expires_at).getTime() <= Date.now();
 
-    // If the existing payOS link was cancelled/expired, we need to cancel it
-    // and update our payment_order_code to create a fresh one
-    if (existingStatus?.found && existingStatus.status !== "PENDING") {
-      // The payOS link is no longer valid — this shouldn't happen for a
-      // PENDING order (webhook would have changed our status). But handle gracefully.
-      return NextResponse.json({
-        success: false,
-        error: "Link thanh toán đã hết hạn. Vui lòng tạo đơn hàng mới.",
-      }, { status: 400 });
+      if (existingStatus?.status === PAYMENT_ATTEMPT_STATUS.CANCELLED || existingStatus?.status === PAYMENT_ATTEMPT_STATUS.EXPIRED || isExpiredByTime) {
+        // Mark as EXPIRED/CANCELLED
+        const newStatus = existingStatus?.status === PAYMENT_ATTEMPT_STATUS.CANCELLED ? PAYMENT_ATTEMPT_STATUS.CANCELLED : PAYMENT_ATTEMPT_STATUS.EXPIRED;
+        await supabase
+          .from("payment_attempts")
+          .update({
+            status: newStatus,
+            ...(newStatus === PAYMENT_ATTEMPT_STATUS.CANCELLED ? { cancelled_at: new Date().toISOString() } : {})
+          })
+          .eq("id", activeAttempt.id);
+        
+        // We marked it inactive, so we will create a new one below.
+      } else {
+        // Still active and valid, return existing checkoutUrl
+        if (activeAttempt.checkout_url) {
+          return NextResponse.json({
+            success: true,
+            data: { checkoutUrl: activeAttempt.checkout_url },
+          });
+        }
+        // If no checkoutUrl but active, we might need to recreate. Fall through.
+      }
     }
 
-    // Create a (possibly new) payment link using the same payment_order_code
+    // 5. Create new payment attempt
+    const newPaymentOrderCode = await generateUniquePaymentOrderCode(supabase);
     const siteUrl = getSiteUrl();
     const paymentItems: PaymentItem[] = items.map((item) => ({
       name: item.product_name,
       quantity: 1,
       price: item.unit_price,
     }));
+    const expiresInSeconds = 15 * 60;
 
+    // Create via provider first
     const paymentResult = await createPayment({
       orderId: order.id,
       orderCode: order.order_code,
-      paymentOrderCode: order.payment_order_code,
+      paymentOrderCode: newPaymentOrderCode,
       amount: order.total_amount,
       description: `VTS ${order.order_code}`,
       customerEmail: customer.email,
@@ -115,13 +142,36 @@ export async function POST(request: NextRequest) {
       returnUrl: `${siteUrl}/order/${order.order_code}`,
       cancelUrl: `${siteUrl}/order/${order.order_code}`,
       items: paymentItems,
-      expiresInSeconds: 15 * 60,
+      expiresInSeconds,
     });
 
     if (!paymentResult.success || !paymentResult.checkoutUrl) {
       return NextResponse.json({
         success: false,
         error: paymentResult.error || "Không thể tạo link thanh toán.",
+      }, { status: 500 });
+    }
+
+    // Save to payment_attempts
+    const { error: insertError } = await supabase
+      .from("payment_attempts")
+      .insert({
+        order_id: order.id,
+        provider: providerName,
+        provider_order_code: newPaymentOrderCode,
+        amount: order.total_amount,
+        status: PAYMENT_ATTEMPT_STATUS.PENDING,
+        checkout_url: paymentResult.checkoutUrl,
+        provider_payment_link_id: paymentResult.paymentLinkId || null,
+        expires_at: new Date(Date.now() + expiresInSeconds * 1000).toISOString(),
+      });
+
+    if (insertError) {
+      console.error("[Resume Payment] Insert attempt error:", insertError);
+      // Even if it fails to save, we could arguably return the checkoutUrl, but better to fail securely.
+      return NextResponse.json({
+        success: false,
+        error: "Lỗi lưu thông tin thanh toán. Vui lòng thử lại.",
       }, { status: 500 });
     }
 

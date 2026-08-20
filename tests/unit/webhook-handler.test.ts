@@ -10,31 +10,26 @@ import { handleVerifiedPaymentEvent } from "@/features/payments/webhook-handler"
 import type { VerifiedPaymentEvent } from "@/features/payments/types";
 
 // Mock Supabase client
-function createMockSupabase(orderData: Record<string, unknown> | null = null, updateError: Error | null = null) {
-  const selectMock = vi.fn().mockReturnValue({
-    eq: vi.fn().mockReturnValue({
-      single: vi.fn().mockResolvedValue({
-        data: orderData,
-        error: orderData ? null : { message: "Not found" },
-      }),
-    }),
-  });
-
-  const updateMock = vi.fn().mockReturnValue({
-    eq: vi.fn().mockReturnValue({
-      eq: vi.fn().mockResolvedValue({
-        error: updateError,
-      }),
-    }),
-  });
-
+function createMockSupabase(orderData: Record<string, unknown> | null = null, updateError: Error | null = null, attemptData: Record<string, unknown> | null = null) {
   return {
-    from: vi.fn().mockReturnValue({
-      select: selectMock,
-      update: updateMock,
+    from: vi.fn((table: string) => {
+      const isOrders = table === "orders";
+      const eqChain: Record<string, unknown> = {
+        eq: () => eqChain,
+        single: vi.fn().mockResolvedValue({
+          data: isOrders ? orderData : attemptData,
+          error: (isOrders ? orderData : attemptData) ? null : { message: "Not found" },
+        }),
+        maybeSingle: vi.fn().mockResolvedValue({
+          data: isOrders ? orderData : attemptData,
+          error: null, // maybeSingle doesn't throw if not found
+        }),
+      };
+      return {
+        select: vi.fn().mockReturnValue(eqChain),
+        update: vi.fn().mockReturnValue(eqChain),
+      };
     }),
-    _selectMock: selectMock,
-    _updateMock: updateMock,
   } as unknown as Parameters<typeof handleVerifiedPaymentEvent>[1];
 }
 

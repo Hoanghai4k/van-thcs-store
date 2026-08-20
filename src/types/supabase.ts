@@ -1,4 +1,4 @@
-export type Json =
+﻿export type Json =
   | string
   | number
   | boolean
@@ -259,6 +259,62 @@ export type Database = {
           },
         ]
       }
+      payment_attempts: {
+        Row: {
+          amount: number
+          cancelled_at: string | null
+          checkout_url: string | null
+          created_at: string
+          expires_at: string | null
+          id: string
+          order_id: string
+          paid_at: string | null
+          provider: string
+          provider_order_code: number
+          provider_payment_link_id: string | null
+          status: string
+          updated_at: string
+        }
+        Insert: {
+          amount: number
+          cancelled_at?: string | null
+          checkout_url?: string | null
+          created_at?: string
+          expires_at?: string | null
+          id?: string
+          order_id: string
+          paid_at?: string | null
+          provider?: string
+          provider_order_code: number
+          provider_payment_link_id?: string | null
+          status?: string
+          updated_at?: string
+        }
+        Update: {
+          amount?: number
+          cancelled_at?: string | null
+          checkout_url?: string | null
+          created_at?: string
+          expires_at?: string | null
+          id?: string
+          order_id?: string
+          paid_at?: string | null
+          provider?: string
+          provider_order_code?: number
+          provider_payment_link_id?: string | null
+          status?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "payment_attempts_order_id_fkey"
+            columns: ["order_id"]
+            isOneToOne: false
+            referencedRelation: "orders"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       product_files: {
         Row: {
           created_at: string
@@ -374,14 +430,12 @@ export type Database = {
     }
     Functions: {
       consume_download: {
-        Args: {
-          p_token_hash: string
-        }
+        Args: { p_token_hash: string }
         Returns: {
-          dt_id: string
-          dt_order_id: string
           dt_download_count: number
+          dt_id: string
           dt_max_downloads: number
+          dt_order_id: string
         }[]
       }
     }
