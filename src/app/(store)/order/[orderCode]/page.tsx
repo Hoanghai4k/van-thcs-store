@@ -24,6 +24,7 @@ import Link from "next/link";
 import { Clock, CheckCircle, XCircle, AlertTriangle } from "lucide-react";
 import { redirect } from "next/navigation";
 import { ResumePaymentButton } from "@/components/order/resume-payment-button";
+import { CopyOrderCode } from "@/components/order/copy-order-code";
 import { getOrderAccessCookie } from "@/lib/auth/order-access";
 import { DeliveryButton } from "./delivery-button";
 
@@ -39,13 +40,21 @@ async function getOrderByCode(orderCode: string) {
     .select(`
       *,
       customer:customers(name, email, phone),
-      items:order_items(id, product_name, unit_price)
+      items:order_items(id, product_name, unit_price),
+      payment_attempts(status, created_at)
     `)
     .eq("order_code", orderCode)
     .single();
 
   if (error || !order) return null;
-  return order;
+  
+  const paymentAttempts = (order.payment_attempts as Array<{ status: string; created_at: string }>) ?? [];
+  const latestPaymentAttempt = paymentAttempts.sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime())[0] || null;
+  
+  return {
+    ...order,
+    latestPaymentAttempt: latestPaymentAttempt ? { status: latestPaymentAttempt.status } : null,
+  };
 }
 
 export default async function OrderStatusPage({ params }: Props) {
@@ -76,7 +85,7 @@ export default async function OrderStatusPage({ params }: Props) {
   const customer = order.customer as { name: string; email: string; phone: string | null } | null;
   const items = (order.items as Array<{ id: string; product_name: string; unit_price: number }>) ?? [];
 
-  const statusConfig = getStatusConfig(order.status);
+  const statusConfig = getStatusConfig(order.status, order.latestPaymentAttempt?.status);
 
   return (
     <div className="max-w-2xl mx-auto px-4 py-12">
@@ -101,9 +110,9 @@ export default async function OrderStatusPage({ params }: Props) {
         </div>
 
         <div className="space-y-3 text-sm">
-          <div className="flex justify-between">
+          <div className="flex justify-between items-center">
             <span className="text-text-secondary">Mã đơn hàng</span>
-            <span className="font-mono font-bold text-text-primary">{order.order_code}</span>
+            <CopyOrderCode orderCode={order.order_code} />
           </div>
           {customer && (
             <div className="flex justify-between">
@@ -161,6 +170,7 @@ export default async function OrderStatusPage({ params }: Props) {
           <ResumePaymentButton
             orderCode={order.order_code}
             totalAmount={order.total_amount}
+            isRetry={order.latestPaymentAttempt?.status === "CANCELLED" || order.latestPaymentAttempt?.status === "EXPIRED"}
           />
         )}
         <Link
@@ -180,7 +190,7 @@ export default async function OrderStatusPage({ params }: Props) {
   );
 }
 
-function getStatusConfig(status: string) {
+function getStatusConfig(status: string, latestAttemptStatus?: string) {
   switch (status) {
     case "PAID":
       return {
@@ -193,10 +203,21 @@ function getStatusConfig(status: string) {
         badgeText: "Đã thanh toán",
       };
     case "PENDING":
+      if (latestAttemptStatus === "CANCELLED" || latestAttemptStatus === "EXPIRED") {
+        return {
+          Icon: Clock,
+          title: "Đơn hàng đang chờ thanh toán",
+          subtitle: "Lần thanh toán trước chưa hoàn tất. Vui lòng thanh toán lại để nhận tài liệu.",
+          bgColor: "bg-yellow-100",
+          iconColor: "text-yellow-600",
+          badgeClass: "bg-yellow-100 text-yellow-700",
+          badgeText: "Chờ thanh toán",
+        };
+      }
       return {
         Icon: Clock,
         title: "Đơn hàng đang chờ thanh toán",
-        subtitle: "Đơn hàng đã được tạo. Vui lòng hoàn tất thanh toán để nhận tài liệu.",
+        subtitle: "Đơn hàng đã được tạo. Hãy hoàn tất thanh toán để nhận tài liệu.",
         bgColor: "bg-yellow-100",
         iconColor: "text-yellow-600",
         badgeClass: "bg-yellow-100 text-yellow-700",
@@ -215,12 +236,22 @@ function getStatusConfig(status: string) {
     case "FAILED":
       return {
         Icon: AlertTriangle,
-        title: "Thanh toán thất bại",
-        subtitle: "Thanh toán không thành công. Vui lòng tạo đơn hàng mới để thử lại.",
+        title: "Thanh toán chưa thành công",
+        subtitle: "Thanh toán chưa thành công. Vui lòng tạo đơn hàng mới để thử lại.",
         bgColor: "bg-red-100",
         iconColor: "text-red-600",
         badgeClass: "bg-red-100 text-red-700",
         badgeText: "Thất bại",
+      };
+    case "REFUNDED":
+      return {
+        Icon: AlertTriangle,
+        title: "Đơn hàng đã hoàn tiền",
+        subtitle: "Đơn hàng này đã được hoàn tiền.",
+        bgColor: "bg-gray-100",
+        iconColor: "text-gray-500",
+        badgeClass: "bg-gray-100 text-gray-700",
+        badgeText: "Đã hoàn tiền",
       };
     default:
       return {

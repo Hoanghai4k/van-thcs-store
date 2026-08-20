@@ -87,11 +87,11 @@ export function CheckoutForm({
         // Fallback: show order created (provider not configured)
         onOrderCreated(result.data.orderCode);
       } else {
-        setServerError(result.error || "Đã xảy ra lỗi. Vui lòng thử lại.");
+        setServerError(result.error || "Chưa thể tạo đơn hàng. Vui lòng thử lại.");
         setIsSubmitting(false);
       }
     } catch {
-      setServerError("Đã xảy ra lỗi kết nối. Vui lòng thử lại.");
+      setServerError("Chưa thể tạo đơn hàng. Vui lòng thử lại.");
       setIsSubmitting(false);
     }
   }
@@ -213,7 +213,7 @@ export function CheckoutForm({
         {isSubmitting ? (
           <>
             <Loader2 className="w-5 h-5 animate-spin" />
-            Đang xử lý...
+            Đang tạo thanh toán...
           </>
         ) : (
           <>
@@ -223,8 +223,9 @@ export function CheckoutForm({
         )}
       </button>
 
-      <p className="text-xs text-text-muted text-center">
-        Tổng tiền sẽ được tính lại từ hệ thống trước khi xác nhận.
+      <p className="text-xs text-text-muted text-center space-y-1">
+        <span className="block">Bạn sẽ được chuyển sang trang thanh toán VietQR.</span>
+        <span className="block">Sau khi thanh toán thành công, bạn sẽ quay lại Tài Liệu Hằng Cao để nhận tài liệu.</span>
       </p>
     </form>
   );

@@ -95,8 +95,13 @@ export default async function DownloadsPage({ params }: Props) {
 
       {/* Download count info */}
       {grant && (
-        <div className="bg-primary-50 border border-primary-200 rounded-xl p-3 text-sm text-primary-700 mb-6 text-center">
-          Đã tải: {grant.downloadCount}/{grant.maxDownloads} lượt
+        <div className="bg-primary-50 border border-primary-200 rounded-xl p-4 text-sm text-primary-800 mb-6 flex flex-col items-center justify-center">
+          <p className="font-medium mb-1">Đã tải {grant.downloadCount}/{grant.maxDownloads} lượt</p>
+          {grant.downloadCount >= grant.maxDownloads && (
+            <p className="text-xs text-red-600 mt-1">
+              Bạn đã sử dụng hết số lượt tải của đơn hàng này. <a href="/contact" className="hover:underline">Liên hệ hỗ trợ</a>
+            </p>
+          )}
         </div>
       )}
 
@@ -113,7 +118,7 @@ export default async function DownloadsPage({ params }: Props) {
                   {file.productName}
                 </p>
                 <p className="text-sm text-text-secondary truncate">
-                  {file.fileName} • {formatFileSize(file.fileSize)}
+                  {file.fileName.endsWith('.docx') ? 'Tệp Word (.docx)' : file.fileName.endsWith('.zip') ? 'Tệp nén (.zip)' : file.fileName} • {formatFileSize(file.fileSize)}
                 </p>
               </div>
               <DownloadButton fileId={file.fileId} fileName={file.fileName} />

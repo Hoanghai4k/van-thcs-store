@@ -17,9 +17,10 @@ import { formatCurrency } from "@/lib/utils";
 interface ResumePaymentButtonProps {
   orderCode: string;
   totalAmount: number;
+  isRetry?: boolean;
 }
 
-export function ResumePaymentButton({ orderCode, totalAmount }: ResumePaymentButtonProps) {
+export function ResumePaymentButton({ orderCode, totalAmount, isRetry }: ResumePaymentButtonProps) {
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
@@ -43,10 +44,10 @@ export function ResumePaymentButton({ orderCode, totalAmount }: ResumePaymentBut
         return; // Keep loading while redirecting
       }
 
-      setError(result.error || "Không thể tạo link thanh toán. Vui lòng thử lại.");
+      setError(result.error || "Chưa thể tạo lại thanh toán. Vui lòng thử lại sau.");
       setIsLoading(false);
     } catch {
-      setError("Lỗi kết nối. Vui lòng thử lại.");
+      setError("Chưa thể tạo lại thanh toán. Vui lòng thử lại sau.");
       setIsLoading(false);
     }
   }
@@ -61,12 +62,12 @@ export function ResumePaymentButton({ orderCode, totalAmount }: ResumePaymentBut
         {isLoading ? (
           <>
             <Loader2 className="w-5 h-5 animate-spin" />
-            Đang xử lý...
+            Đang tạo phiên thanh toán mới...
           </>
         ) : (
           <>
             <CreditCard className="w-5 h-5" />
-            Tiếp tục thanh toán — {formatCurrency(totalAmount)}
+            {isRetry ? "Thanh toán lại" : "Tiếp tục thanh toán"} — {formatCurrency(totalAmount)}
           </>
         )}
       </button>

@@ -32,6 +32,7 @@ export default async function MyOrdersPage() {
     status: o.status as OrderStatus,
     createdAt: o.createdAt,
     items: o.items.map((i) => ({ productName: i.productName })),
+    latestPaymentAttemptStatus: o.latestPaymentAttempt?.status,
   }));
 
   return (

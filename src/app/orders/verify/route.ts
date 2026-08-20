@@ -43,14 +43,20 @@ function errorResponse(message: string) {
       <meta charset="utf-8">
       <title>Lỗi Xác Minh</title>
       <style>
-        body { font-family: sans-serif; text-align: center; padding: 50px; }
-        .btn { display: inline-block; padding: 10px 20px; background: #000; color: #fff; text-decoration: none; border-radius: 4px; margin-top: 20px; }
+        body { font-family: 'Be Vietnam Pro', sans-serif; text-align: center; padding: 50px; background: #f9fafb; color: #172033; }
+        .container { max-w: 400px; margin: 0 auto; background: white; padding: 30px; border-radius: 16px; border: 1px solid #e5e7eb; }
+        .btn { display: inline-block; padding: 10px 20px; background: #2563eb; color: #fff; text-decoration: none; border-radius: 8px; margin-top: 20px; font-weight: 500; }
+        .btn-secondary { display: inline-block; padding: 10px 20px; background: white; color: #4b5563; text-decoration: none; border-radius: 8px; margin-top: 10px; font-weight: 500; border: 1px solid #e5e7eb; }
       </style>
     </head>
     <body>
-      <h2>Xác Minh Thất Bại</h2>
-      <p>${message}</p>
-      <a href="/orders" class="btn">Gửi liên kết mới</a>
+      <div class="container">
+        <h2>Xác Minh Thất Bại</h2>
+        <p>${message}</p>
+        <a href="/orders" class="btn">Gửi liên kết mới</a>
+        <br />
+        <a href="/order/lookup" class="btn-secondary">Tra cứu bằng mã đơn</a>
+      </div>
     </body>
     </html>
   `, {

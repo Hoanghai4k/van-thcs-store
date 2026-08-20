@@ -22,6 +22,9 @@ export interface OrderWithItems {
   createdAt: string;
   updatedAt: string;
   items: OrderItemDetail[];
+  latestPaymentAttempt?: {
+    status: string;
+  } | null;
 }
 
 export interface OrderItemDetail {

@@ -44,12 +44,13 @@ export function MyOrdersForm() {
     <div className="max-w-md mx-auto p-6 bg-white rounded-xl shadow-sm border border-neutral-200">
       <h1 className="text-2xl font-bold mb-4 text-center">Đơn hàng của tôi</h1>
       <p className="text-neutral-600 mb-6 text-center text-sm">
-        Nhập email đã dùng khi đặt hàng. Chúng tôi sẽ gửi một liên kết xác minh để bạn xem các đơn hàng của mình.
+        Nhập email đã dùng khi đặt hàng. Chúng tôi sẽ gửi liên kết xác minh để bạn xem các đơn hàng của mình.
       </p>
 
       {message && (
         <div className="mb-4 p-3 bg-green-50 text-green-800 rounded border border-green-200 text-sm text-center">
-          {message}
+          Nếu email này có đơn hàng, liên kết xác minh đã được gửi.
+          <p className="mt-1 text-xs text-green-700">Vui lòng kiểm tra cả mục Spam/Thư rác nếu chưa thấy email.</p>
         </div>
       )}
 
@@ -106,6 +107,7 @@ type OrderListProps = {
     status: OrderStatus;
     createdAt: string;
     items: Array<{ productName: string }>;
+    latestPaymentAttemptStatus?: string;
   }>;
 };
 
@@ -152,24 +154,27 @@ export function MyOrdersList({ email, orders }: OrderListProps) {
       <div className="flex flex-col sm:flex-row items-center justify-between bg-neutral-50 p-4 rounded-xl border border-neutral-200">
         <div>
           <h1 className="text-xl font-bold">Đơn hàng của tôi</h1>
-          <p className="text-sm text-neutral-600">Xác minh bằng: <span className="font-medium text-black">{email}</span></p>
+          <p className="text-sm text-neutral-600">Đang xem đơn hàng của: <span className="font-medium text-black">{email.replace(/(.{2})(.*)(@.*)/, "$1***$3")}</span></p>
         </div>
-        <div className="mt-4 sm:mt-0 flex gap-3">
-          <Link href="/order/lookup" className="text-sm font-medium text-neutral-600 hover:text-black py-2 px-3">
+        <div className="mt-4 sm:mt-0 flex gap-3 items-center">
+          <Link href="/order/lookup" className="text-sm font-medium text-primary-600 hover:underline py-2 px-3">
             Tra cứu mã đơn
           </Link>
           <button
             onClick={handleLogout}
-            className="text-sm font-medium text-red-600 hover:text-red-700 bg-red-50 hover:bg-red-100 py-2 px-4 rounded-md transition-colors"
+            className="text-sm font-medium text-text-secondary hover:text-text-primary py-2 px-3 transition-colors"
           >
-            Thoát
+            Dùng email khác
           </button>
         </div>
       </div>
 
       {orders.length === 0 ? (
-        <div className="text-center py-12 bg-white rounded-xl border border-neutral-200">
-          <p className="text-neutral-500">Chưa có đơn hàng nào với email này.</p>
+        <div className="text-center py-16 bg-white rounded-xl border border-neutral-200">
+          <p className="text-text-primary mb-4 font-medium">Chưa có đơn hàng nào với email này.</p>
+          <Link href="/products" className="inline-block bg-primary-600 text-white font-medium py-2 px-6 rounded-md hover:bg-primary-700 transition-colors">
+            Xem tài liệu
+          </Link>
         </div>
       ) : (
         <div className="grid gap-4">
@@ -209,12 +214,16 @@ export function MyOrdersList({ email, orders }: OrderListProps) {
                 <button
                   onClick={() => handleOpenOrder(order.orderCode)}
                   disabled={loadingCode === order.orderCode}
-                  className="bg-black text-white font-medium py-2 px-6 rounded-md hover:bg-neutral-800 disabled:opacity-50 transition-colors whitespace-nowrap"
+                  className="bg-primary-600 text-white font-medium py-2.5 px-6 rounded-md hover:bg-primary-700 disabled:opacity-50 transition-colors whitespace-nowrap min-w-[200px]"
                 >
                   {loadingCode === order.orderCode
                     ? "Đang tải..."
                     : order.status === ORDER_STATUS.PAID
-                    ? "Xem đơn / Nhận tài liệu"
+                    ? "Xem / Nhận tài liệu"
+                    : order.status === ORDER_STATUS.REFUNDED
+                    ? "Xem đơn"
+                    : (order.latestPaymentAttemptStatus === "CANCELLED" || order.latestPaymentAttemptStatus === "EXPIRED")
+                    ? "Xem / Thanh toán lại"
                     : "Xem / Thanh toán"}
                 </button>
               </div>

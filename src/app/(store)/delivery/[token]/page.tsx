@@ -61,21 +61,21 @@ function DeliveryError({ message }: { message: string }) {
           <ShieldX className="w-8 h-8 text-red-500" />
         </div>
         <h1 className="text-xl font-bold text-text-primary mb-2">
-          Liên kết không hợp lệ
+          Liên kết nhận tài liệu không còn hiệu lực
         </h1>
         <p className="text-text-secondary mb-6">{message}</p>
         <div className="flex flex-col sm:flex-row gap-3 justify-center">
           <Link
-            href="/order/lookup"
+            href="/orders"
             className="px-6 py-3 bg-primary-600 text-white font-medium rounded-xl hover:bg-primary-700 transition-colors text-center"
           >
-            Tra cứu đơn hàng
+            Đơn hàng của tôi
           </Link>
           <Link
-            href="/products"
+            href="/order/lookup"
             className="px-6 py-3 border border-border text-text-primary font-medium rounded-xl hover:bg-surface-alt transition-colors text-center"
           >
-            Tiếp tục mua sắm
+            Tra cứu bằng mã đơn
           </Link>
         </div>
         <div className="mt-8 text-center text-sm text-text-muted">

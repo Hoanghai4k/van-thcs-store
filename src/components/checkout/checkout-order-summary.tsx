@@ -60,16 +60,16 @@ export function CheckoutOrderSummary() {
       <div className="bg-white rounded-2xl border border-border p-5">
         <div className="space-y-3 text-sm text-text-secondary">
           <div className="flex items-center gap-2.5">
+            <ShieldCheck className="w-4 h-4 text-primary-500 flex-shrink-0" />
+            <span>Thanh toán an toàn qua VietQR</span>
+          </div>
+          <div className="flex items-center gap-2.5">
             <Download className="w-4 h-4 text-primary-500 flex-shrink-0" />
-            <span>Tải ngay sau khi thanh toán</span>
+            <span>Nhận tài liệu sau khi thanh toán</span>
           </div>
           <div className="flex items-center gap-2.5">
             <FileText className="w-4 h-4 text-primary-500 flex-shrink-0" />
-            <span>Tệp tài liệu số</span>
-          </div>
-          <div className="flex items-center gap-2.5">
-            <ShieldCheck className="w-4 h-4 text-primary-500 flex-shrink-0" />
-            <span>Thanh toán an toàn</span>
+            <span>Có thể tra cứu lại đơn hàng bằng email</span>
           </div>
           <div className="flex items-center gap-2.5">
             <Headphones className="w-4 h-4 text-primary-500 flex-shrink-0" />

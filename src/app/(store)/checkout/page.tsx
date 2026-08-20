@@ -30,16 +30,13 @@ export default function CheckoutPage() {
           <ShoppingBag className="w-10 h-10 text-text-muted" />
         </div>
         <h1 className="text-2xl font-bold text-text-primary mb-3">
-          Chưa có sản phẩm để thanh toán
+          Giỏ hàng của bạn đang trống.
         </h1>
-        <p className="text-text-secondary mb-6">
-          Hãy thêm tài liệu vào giỏ hàng trước khi thanh toán.
-        </p>
         <Link
           href="/products"
-          className="inline-flex items-center gap-2 bg-primary-600 text-white font-medium px-6 py-3 rounded-xl hover:bg-primary-700 transition-colors"
+          className="inline-flex items-center gap-2 bg-primary-600 text-white font-medium px-6 py-3 rounded-xl hover:bg-primary-700 transition-colors mt-2"
         >
-          Xem sản phẩm
+          Xem tài liệu
           <ArrowRight className="w-4 h-4" />
         </Link>
       </div>

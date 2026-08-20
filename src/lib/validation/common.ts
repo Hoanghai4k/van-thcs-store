@@ -6,13 +6,13 @@ import { z } from "zod";
 
 export const emailSchema = z
   .string()
-  .min(1, "Email là bắt buộc")
-  .email("Email không hợp lệ")
+  .min(1, "Vui lòng nhập email.")
+  .email("Email chưa đúng định dạng.")
   .transform((v) => v.trim().toLowerCase());
 
 export const phoneSchema = z
   .string()
-  .min(1, "Số điện thoại là bắt buộc")
+  .min(1, "Vui lòng nhập số điện thoại.")
   .transform((v) => v.trim().replace(/\s+/g, ""))
   .pipe(
     z
@@ -25,7 +25,7 @@ export const phoneSchema = z
 
 export const nameSchema = z
   .string()
-  .min(1, "Họ tên là bắt buộc")
+  .min(1, "Vui lòng nhập họ và tên.")
   .min(2, "Họ tên phải có ít nhất 2 ký tự")
   .max(100, "Họ tên không được quá 100 ký tự")
   .transform((v) => v.trim());

@@ -26,7 +26,8 @@ export async function lookupOrder(
     .select(`
       *,
       customer:customers!inner(id, name, email, phone),
-      items:order_items(id, product_id, product_name, unit_price)
+      items:order_items(id, product_id, product_name, unit_price),
+      payment_attempts(status, created_at)
     `)
     .eq("order_code", orderCode)
     .single();
@@ -42,6 +43,8 @@ export async function lookupOrder(
   }
 
   const items = (order.items as Array<{ id: string; product_id: string; product_name: string; unit_price: number }>) ?? [];
+  const paymentAttempts = (order.payment_attempts as Array<{ status: string; created_at: string }>) ?? [];
+  const latestPaymentAttempt = paymentAttempts.sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime())[0] || null;
 
   return {
     id: order.id,
@@ -66,6 +69,7 @@ export async function lookupOrder(
       productName: item.product_name,
       unitPrice: item.unit_price,
     })),
+    latestPaymentAttempt: latestPaymentAttempt ? { status: latestPaymentAttempt.status } : null,
   };
 }
 
@@ -224,7 +228,8 @@ export async function getOrdersByEmail(email: string): Promise<OrderWithItems[]>
     .select(`
       *,
       customer:customers!inner(id, name, email, phone),
-      items:order_items(id, product_id, product_name, unit_price)
+      items:order_items(id, product_id, product_name, unit_price),
+      payment_attempts(status, created_at)
     `)
     .eq("customer.email", normalizedEmail)
     .order("created_at", { ascending: false });
@@ -242,6 +247,8 @@ export async function getOrdersByEmail(email: string): Promise<OrderWithItems[]>
   return validOrders.map((order) => {
     const customer = order.customer as { id: string; name: string; email: string; phone: string | null };
     const items = (order.items as Array<{ id: string; product_id: string; product_name: string; unit_price: number }>) ?? [];
+    const paymentAttempts = (order.payment_attempts as Array<{ status: string; created_at: string }>) ?? [];
+    const latestPaymentAttempt = paymentAttempts.sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime())[0] || null;
 
     return {
       id: order.id,
@@ -266,6 +273,7 @@ export async function getOrdersByEmail(email: string): Promise<OrderWithItems[]>
         productName: item.product_name,
         unitPrice: item.unit_price,
       })),
+      latestPaymentAttempt: latestPaymentAttempt ? { status: latestPaymentAttempt.status } : null,
     };
   });
 }

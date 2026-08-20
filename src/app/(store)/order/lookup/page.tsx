@@ -22,7 +22,7 @@ function OrderLookupSkeleton() {
         </div>
         <h1 className="text-2xl font-bold text-text-primary mb-2">Tra cứu đơn hàng</h1>
         <p className="text-text-secondary">
-          Nhập mã đơn hàng và email đã đặt để xem chi tiết đơn hàng.
+          Nhập mã đơn hàng và email đã dùng khi đặt hàng.
         </p>
       </div>
       <div className="bg-white rounded-2xl border border-border p-6 space-y-4 animate-pulse">
@@ -55,7 +55,7 @@ function OrderLookupForm() {
       const data = await res.json();
 
       if (!data.success) {
-        setError(data.error || "Không tìm thấy đơn hàng.");
+        setError(data.error || "Không thể xác minh thông tin đơn hàng. Vui lòng kiểm tra lại mã đơn và email.");
         setIsLoading(false);
       } else {
         // Cookie was set by the API — redirect to the protected order page
@@ -75,7 +75,7 @@ function OrderLookupForm() {
         </div>
         <h1 className="text-2xl font-bold text-text-primary mb-2">Tra cứu đơn hàng</h1>
         <p className="text-text-secondary">
-          Nhập mã đơn hàng và email đã đặt để xem chi tiết đơn hàng.
+          Nhập mã đơn hàng và email đã dùng khi đặt hàng.
         </p>
       </div>
 
@@ -118,13 +118,30 @@ function OrderLookupForm() {
           disabled={isLoading}
           className="w-full flex items-center justify-center gap-2 bg-primary-600 text-white font-medium py-3 rounded-xl hover:bg-primary-700 transition-colors disabled:opacity-50"
         >
-          {isLoading ? <Loader2 className="w-4 h-4 animate-spin" /> : <Search className="w-4 h-4" />}
-          Xác minh và xem đơn hàng
+          {isLoading ? (
+            <>
+              <Loader2 className="w-4 h-4 animate-spin" />
+              Đang tra cứu...
+            </>
+          ) : (
+            <>
+              <Search className="w-4 h-4" />
+              Tra cứu
+            </>
+          )}
         </button>
       </form>
 
-      <div className="mt-8 text-center text-sm text-text-muted">
-        Cần hỗ trợ? <a href="/contact" className="text-primary-600 hover:underline">Liên hệ với chúng tôi</a>
+      <div className="mt-8 text-center text-sm space-y-3">
+        <p className="text-text-secondary">
+          Không nhớ mã đơn?{" "}
+          <a href="/orders" className="text-primary-600 font-medium hover:underline">
+            Xem Đơn hàng của tôi
+          </a>
+        </p>
+        <p className="text-text-muted text-xs">
+          Cần hỗ trợ? <a href="/contact" className="hover:underline">Liên hệ với chúng tôi</a>
+        </p>
       </div>
     </div>
   );
