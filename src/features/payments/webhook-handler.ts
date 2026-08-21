@@ -17,7 +17,7 @@
  */
 
 import type { SupabaseClient } from "@supabase/supabase-js";
-import type { DbOrderUpdate, DbPaymentAttemptUpdate } from "@/types/database";
+import type { DbPaymentAttemptUpdate } from "@/types/database";
 import type { Database } from "@/types/database";
 import type { VerifiedPaymentEvent } from "./types";
 import { ORDER_STATUS, PAYMENT_ATTEMPT_STATUS, type OrderStatus, type PaymentAttemptStatus } from "@/lib/constants";

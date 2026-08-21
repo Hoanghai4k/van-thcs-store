@@ -231,7 +231,6 @@ describe("activation rules (application level)", () => {
 
   it("activation with zero files is blocked", () => {
     const fileCount = 0;
-    const wantsActive = true;
     // Application rule: cannot activate with 0 files
     const canActivate = fileCount >= 1;
     expect(canActivate).toBe(false);
@@ -239,7 +238,6 @@ describe("activation rules (application level)", () => {
 
   it("activation with one or more files is allowed", () => {
     const fileCount = 1;
-    const wantsActive = true;
     const canActivate = fileCount >= 1;
     expect(canActivate).toBe(true);
   });

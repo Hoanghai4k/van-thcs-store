@@ -13,6 +13,7 @@ import {
   Loader2,
   Package,
 } from "lucide-react";
+import Image from "next/image";
 import type { ProductWithCategory } from "@/features/products/types";
 import type { DbCategory } from "@/types/database";
 import { toggleProductActive } from "@/features/products/actions";
@@ -220,12 +221,14 @@ export function AdminProductList({
                     >
                       <td className="px-4 py-3">
                         <div className="flex items-center gap-3 min-w-[200px]">
-                          <div className="w-10 h-10 bg-slate-100 rounded-lg flex items-center justify-center flex-shrink-0 overflow-hidden border border-slate-200">
+                          <div className="relative w-10 h-10 bg-slate-100 rounded-lg flex items-center justify-center flex-shrink-0 overflow-hidden border border-slate-200">
                             {thumbUrl ? (
-                              <img
+                              <Image
                                 src={thumbUrl}
                                 alt=""
-                                className="w-full h-full object-cover"
+                                fill
+                                sizes="40px"
+                                className="object-cover"
                               />
                             ) : (
                               <FileText className="w-5 h-5 text-slate-400" />
@@ -280,6 +283,7 @@ export function AdminProductList({
                             href={`/admin/products/${product.id}`}
                             className="p-1.5 text-slate-400 hover:text-primary-600 rounded-lg hover:bg-primary-50 transition-colors"
                             title="Chỉnh sửa"
+                            aria-label="Chỉnh sửa sản phẩm"
                           >
                             <Pencil className="w-4 h-4" />
                           </Link>
@@ -290,6 +294,9 @@ export function AdminProductList({
                             disabled={isPending}
                             className="p-1.5 text-slate-400 hover:text-orange-600 rounded-lg hover:bg-orange-50 transition-colors disabled:opacity-50"
                             title={
+                              product.is_active ? "Ẩn sản phẩm" : "Kích hoạt"
+                            }
+                            aria-label={
                               product.is_active ? "Ẩn sản phẩm" : "Kích hoạt"
                             }
                           >

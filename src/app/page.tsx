@@ -8,7 +8,6 @@ import {
   Clock,
   FileText,
   Star,
-  CheckCircle,
   ChevronDown,
   Zap,
 } from "lucide-react";

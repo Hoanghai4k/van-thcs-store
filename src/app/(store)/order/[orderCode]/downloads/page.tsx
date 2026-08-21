@@ -22,7 +22,6 @@ import { getDeliveryAccessCookie } from "@/lib/auth/delivery-access";
 import { getPurchasedFiles, getActiveDeliveryGrant } from "@/features/downloads/service";
 import { ORDER_STATUS } from "@/lib/constants";
 import { formatFileSize } from "@/lib/utils";
-import { siteConfig } from "@/config/site";
 import { FileText, ShieldCheck } from "lucide-react";
 import Link from "next/link";
 import { DownloadButton } from "./download-button";

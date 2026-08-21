@@ -10,7 +10,7 @@ import { handleVerifiedPaymentEvent } from "@/features/payments/webhook-handler"
 import type { VerifiedPaymentEvent } from "@/features/payments/types";
 
 // Mock Supabase client
-function createMockSupabase(orderData: Record<string, unknown> | null = null, updateError: Error | null = null, attemptData: Record<string, unknown> | null = null) {
+function createMockSupabase(orderData: Record<string, unknown> | null = null, attemptData: Record<string, unknown> | null = null) {
   return {
     from: vi.fn((table: string) => {
       const isOrders = table === "orders";

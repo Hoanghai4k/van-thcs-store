@@ -2,7 +2,7 @@
 
 import Image from "next/image";
 import Link from "next/link";
-import { ShoppingCart, Check, FileText, Tag, FileType } from "lucide-react";
+import { ShoppingCart, Check, FileText, Tag } from "lucide-react";
 import { formatCurrency } from "@/lib/utils";
 import { useCart } from "@/components/cart/cart-provider";
 import { getProductAssetUrl } from "@/lib/storage/storage";

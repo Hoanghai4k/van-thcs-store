@@ -22,7 +22,6 @@ import { getSupabaseAdmin } from "@/lib/supabase/admin";
 import { validateDeliveryToken } from "@/features/downloads/service";
 import { setDeliveryAccessCookieServerAction } from "@/lib/auth/delivery-access";
 import { ShieldX } from "lucide-react";
-import { siteConfig } from "@/config/site";
 import Link from "next/link";
 
 interface Props {

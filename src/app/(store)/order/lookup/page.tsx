@@ -3,7 +3,6 @@
 import { Suspense, useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { Search, Loader2, ShieldCheck } from "lucide-react";
-import { siteConfig } from "@/config/site";
 
 export default function OrderLookupPage() {
   return (

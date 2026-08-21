@@ -2,7 +2,7 @@
  * Tests for cart version migration — legacy mock data cleanup.
  */
 
-import { describe, it, expect, beforeEach } from "vitest";
+import { describe, it, expect } from "vitest";
 
 // UUID regex matching the cart provider's validation
 const UUID_RE =

@@ -11,6 +11,7 @@ import {
   File,
   AlertCircle,
 } from "lucide-react";
+import Image from "next/image";
 import type { ProductWithCategory } from "@/features/products/types";
 import type { DbCategory, DbProductFile } from "@/types/database";
 import { createProduct, updateProduct, toggleProductActive } from "@/features/products/actions";
@@ -527,11 +528,13 @@ export function ProductForm({
               <div className="space-y-3">
                 <h3 className="text-sm font-medium text-slate-700">Ảnh đại diện (Thumbnail)</h3>
                 {thumbUrl && (
-                  <div className="w-32 h-32 rounded-lg overflow-hidden border border-slate-200">
-                    <img
+                  <div className="relative w-32 h-32 rounded-lg overflow-hidden border border-slate-200">
+                    <Image
                       src={thumbUrl}
                       alt="Thumbnail"
-                      className="w-full h-full object-cover"
+                      fill
+                      sizes="128px"
+                      className="object-cover"
                     />
                   </div>
                 )}
@@ -567,10 +570,12 @@ export function ProductForm({
                           className="relative w-24 h-24 rounded-lg overflow-hidden border border-slate-200 group"
                         >
                           {url && (
-                            <img
+                            <Image
                               src={url}
                               alt="Preview"
-                              className="w-full h-full object-cover"
+                              fill
+                              sizes="96px"
+                              className="object-cover"
                             />
                           )}
                           <button
@@ -578,6 +583,7 @@ export function ProductForm({
                             onClick={() => handleRemovePreview(path)}
                             className="absolute top-1 right-1 w-5 h-5 bg-red-500 text-white rounded-full flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity"
                             title="Xóa"
+                            aria-label="Xóa ảnh xem trước"
                           >
                             <X className="w-3 h-3" />
                           </button>
@@ -641,6 +647,7 @@ export function ProductForm({
                         disabled={isPending}
                         className="p-2 text-slate-400 hover:text-red-500 rounded-lg hover:bg-red-50 transition-colors disabled:opacity-50"
                         title="Xóa file"
+                        aria-label="Xóa file"
                       >
                         <X className="w-4 h-4" />
                       </button>
