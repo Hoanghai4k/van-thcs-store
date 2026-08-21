@@ -1,12 +1,12 @@
 import Link from "next/link";
 import { Package, FolderOpen, ShoppingBag, Users, BarChart3, AlertCircle, Clock, CheckCircle2, FileWarning } from "lucide-react";
-import { getSupabaseServerClient } from "@/lib/supabase/server";
+import { getSupabaseAdmin } from "@/lib/supabase/admin";
 import { formatCurrency, getStartOfDayVN, getEndOfDayVN, getStartOfMonthVN, getEndOfMonthVN } from "@/lib/utils";
 
 export const dynamic = "force-dynamic";
 
 async function getDashboardStats() {
-  const supabase = await getSupabaseServerClient();
+  const supabase = getSupabaseAdmin();
 
   const startOfDay = getStartOfDayVN().toISOString();
   const endOfDay = getEndOfDayVN().toISOString();
@@ -15,14 +15,14 @@ async function getDashboardStats() {
   const threeDaysAgo = new Date(Date.now() - 3 * 24 * 60 * 60 * 1000).toISOString();
 
   // Basic KPIs
-  const [productsRes, ordersTodayRes, customersRes, revenueRes] = await Promise.all([
+  const [productsRes, ordersTodayRes, ordersRes, revenueRes] = await Promise.all([
     supabase.from("products").select("id", { count: "exact", head: true }).eq("is_active", true),
     supabase
       .from("orders")
       .select("id", { count: "exact", head: true })
       .gte("created_at", startOfDay)
       .lt("created_at", endOfDay),
-    supabase.from("customers").select("id", { count: "exact", head: true }),
+    supabase.from("orders").select("customer_id"),
     supabase
       .from("orders")
       .select("total_amount")
@@ -48,11 +48,17 @@ async function getDashboardStats() {
   if (!productsWithFilesRes.error) {
     noFileProducts = productsWithFilesRes.data?.filter(p => !p.product_files || p.product_files.length === 0).length ?? 0;
   }
+  
+  let customerCount: number | null = null;
+  if (!ordersRes.error) {
+    const uniqueCustomerIds = new Set(ordersRes.data?.map(o => o.customer_id) || []);
+    customerCount = uniqueCustomerIds.size;
+  }
 
   return {
     productCount: productsRes.error ? null : (productsRes.count ?? 0),
     ordersToday: ordersTodayRes.error ? null : (ordersTodayRes.count ?? 0),
-    customerCount: customersRes.error ? null : (customersRes.count ?? 0),
+    customerCount,
     monthlyRevenue,
     alerts: {
       pendingOrders: pendingOrdersRes.error ? null : (pendingOrdersRes.count ?? 0),
