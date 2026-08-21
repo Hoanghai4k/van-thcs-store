@@ -109,7 +109,7 @@ export default async function AdminDashboard() {
       {/* Metrics Grid */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
         {metrics.map((metric) => (
-          <div key={metric.label} className={`bg-white rounded-xl border p-5 shadow-sm ${metric.color.split(' ')[2] || 'border-slate-200'}`}>
+          <div key={metric.label} className={`bg-surface rounded-xl border p-5 shadow-sm ${metric.color.split(' ')[2] || 'border-slate-200'}`}>
             <div className="flex items-center gap-4">
               <div className={`w-12 h-12 rounded-xl flex items-center justify-center shrink-0 ${metric.color.split(' ').slice(0,2).join(' ')}`}>
                 <metric.icon className="w-6 h-6" />
@@ -132,7 +132,7 @@ export default async function AdminDashboard() {
               Thao tác nhanh
             </h2>
             <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-              <Link href="/admin/products/new" className="group flex flex-col items-center justify-center gap-3 bg-white rounded-xl border border-slate-200 p-6 hover:border-primary-400 hover:shadow-md transition-all text-center">
+              <Link href="/admin/products/new" className="group flex flex-col items-center justify-center gap-3 bg-surface rounded-xl border border-slate-200 p-6 hover:border-primary-400 hover:shadow-md transition-all text-center">
                 <div className="w-12 h-12 rounded-full bg-primary-50 text-primary-600 flex items-center justify-center group-hover:scale-110 transition-transform">
                   <Package className="w-6 h-6" />
                 </div>
@@ -142,7 +142,7 @@ export default async function AdminDashboard() {
                 </div>
               </Link>
               
-              <Link href="/admin/categories" className="group flex flex-col items-center justify-center gap-3 bg-white rounded-xl border border-slate-200 p-6 hover:border-purple-400 hover:shadow-md transition-all text-center">
+              <Link href="/admin/categories" className="group flex flex-col items-center justify-center gap-3 bg-surface rounded-xl border border-slate-200 p-6 hover:border-purple-400 hover:shadow-md transition-all text-center">
                 <div className="w-12 h-12 rounded-full bg-purple-50 text-purple-600 flex items-center justify-center group-hover:scale-110 transition-transform">
                   <FolderOpen className="w-6 h-6" />
                 </div>
@@ -152,7 +152,7 @@ export default async function AdminDashboard() {
                 </div>
               </Link>
               
-              <Link href="/admin/orders" className="group flex flex-col items-center justify-center gap-3 bg-white rounded-xl border border-slate-200 p-6 hover:border-green-400 hover:shadow-md transition-all text-center">
+              <Link href="/admin/orders" className="group flex flex-col items-center justify-center gap-3 bg-surface rounded-xl border border-slate-200 p-6 hover:border-green-400 hover:shadow-md transition-all text-center">
                 <div className="w-12 h-12 rounded-full bg-green-50 text-green-600 flex items-center justify-center group-hover:scale-110 transition-transform">
                   <ShoppingBag className="w-6 h-6" />
                 </div>
@@ -172,7 +172,7 @@ export default async function AdminDashboard() {
               <span className="w-1.5 h-6 bg-orange-500 rounded-full inline-block"></span>
               Cảnh báo vận hành
             </h2>
-            <div className="bg-white rounded-xl border border-slate-200 overflow-hidden shadow-sm">
+            <div className="bg-surface rounded-xl border border-slate-200 overflow-hidden shadow-sm">
               <div className="divide-y divide-slate-100">
                 <Link href="/admin/orders?status=PENDING" className="flex items-center justify-between p-4 hover:bg-slate-50 transition-colors">
                   <div className="flex items-center gap-3">

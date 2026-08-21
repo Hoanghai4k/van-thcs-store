@@ -63,7 +63,7 @@ export default function CartPage() {
             return (
             <div
               key={item.productId}
-              className="flex items-center gap-4 bg-white p-4 rounded-xl border border-border hover:border-primary-200 transition-colors shadow-sm"
+              className="flex items-center gap-4 bg-surface p-4 rounded-xl border border-border hover:border-primary-200 transition-colors shadow-sm"
             >
               <div className="w-20 h-20 bg-surface-alt rounded-lg flex items-center justify-center flex-shrink-0 relative overflow-hidden border border-border/50">
                 {thumbUrl ? (
@@ -114,7 +114,7 @@ export default function CartPage() {
 
         {/* Order Summary */}
         <div className="lg:col-span-1">
-          <div className="sticky top-20 bg-white rounded-2xl border border-border p-6 shadow-sm">
+          <div className="sticky top-20 bg-surface rounded-2xl border border-border p-6 shadow-sm">
             <h2 className="font-semibold text-text-primary mb-4">
               Tóm tắt đơn hàng
             </h2>

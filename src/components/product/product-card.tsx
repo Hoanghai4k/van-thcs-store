@@ -37,7 +37,7 @@ export function ProductCard({ product }: ProductCardProps) {
   }
 
   return (
-    <div className="group bg-white rounded-2xl border border-border hover:border-primary-200 shadow-sm hover:shadow-md transition-all duration-300 overflow-hidden flex flex-col">
+    <div className="group bg-surface rounded-2xl border border-border hover:border-primary-200 shadow-sm hover:shadow-md transition-all duration-300 overflow-hidden flex flex-col">
       {/* Thumbnail */}
       <div className="relative h-44 bg-gradient-to-br from-primary-50 via-primary-50 to-accent-50 flex items-center justify-center overflow-hidden">
         {(() => {
@@ -60,7 +60,7 @@ export function ProductCard({ product }: ProductCardProps) {
           </span>
         )}
         {product.category && (
-          <span className="absolute top-3 left-3 bg-white/90 backdrop-blur-sm text-primary-600 text-xs font-medium px-2.5 py-1 rounded-full flex items-center gap-1">
+          <span className="absolute top-3 left-3 bg-surface/90 backdrop-blur-sm text-primary-600 text-xs font-medium px-2.5 py-1 rounded-full flex items-center gap-1">
             <Tag className="w-3 h-3" />
             {product.category.name}
           </span>

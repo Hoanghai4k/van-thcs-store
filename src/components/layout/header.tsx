@@ -7,6 +7,7 @@ import { ShoppingCart, Menu, X, BookOpen, ChevronDown } from "lucide-react";
 import { siteConfig } from "@/config/site";
 import { mainNavigation } from "@/config/navigation";
 import { useCart } from "@/components/cart/cart-provider";
+import { ThemeToggle } from "@/components/theme/theme-toggle";
 
 export function Header() {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
@@ -16,7 +17,7 @@ export function Header() {
   const cartCount = items.length;
 
   return (
-    <header className="sticky top-0 z-50 bg-white/95 backdrop-blur-sm border-b border-border">
+    <header className="sticky top-0 z-50 bg-surface/95 backdrop-blur-sm border-b border-border">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex items-center justify-between h-16">
           {/* Logo */}
@@ -44,7 +45,7 @@ export function Header() {
                       <ChevronDown className="w-4 h-4" />
                     </button>
                     {categoryDropdownOpen && (
-                      <div className="absolute top-full left-0 mt-1 w-56 bg-white rounded-xl shadow-xl border border-border py-2 animate-in fade-in slide-in-from-top-2">
+                      <div className="absolute top-full left-0 mt-1 w-56 bg-surface rounded-xl shadow-xl border border-border py-2 animate-in fade-in slide-in-from-top-2">
                         {item.children.map((child) => (
                           <Link
                             key={child.href}
@@ -74,7 +75,9 @@ export function Header() {
           </nav>
 
           {/* Right Section */}
-          <div className="flex items-center gap-3">
+          <div className="flex items-center gap-2 sm:gap-3">
+            <ThemeToggle />
+            
             {/* Cart Button */}
             <Link
               href="/cart"
@@ -107,7 +110,7 @@ export function Header() {
 
       {/* Mobile Menu */}
       {mobileMenuOpen && (
-        <div className="md:hidden border-t border-border bg-white">
+        <div className="md:hidden border-t border-border bg-surface">
           <nav className="px-4 py-3 space-y-1">
             {mainNavigation.map((item) => (
               <div key={item.href}>

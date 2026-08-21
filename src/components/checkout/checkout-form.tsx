@@ -106,7 +106,7 @@ export function CheckoutForm({
 
   return (
     <form onSubmit={handleSubmit} className="space-y-5">
-      <div className="bg-white rounded-2xl border border-border p-6">
+      <div className="bg-surface rounded-2xl border border-border p-6">
         <h2 className="font-semibold text-text-primary mb-4">
           Thông tin khách hàng
         </h2>

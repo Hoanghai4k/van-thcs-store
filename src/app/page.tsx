@@ -100,7 +100,7 @@ export default async function HomePage() {
               <Link
                 key={category.id}
                 href={`/categories/${category.slug}`}
-                className="group flex flex-col items-center p-5 bg-white rounded-xl border border-border hover:border-primary-200 hover:shadow-md transition-all duration-200"
+                className="group flex flex-col items-center p-5 bg-surface rounded-xl border border-border hover:border-primary-200 hover:shadow-md transition-all duration-200"
               >
                 <div className="w-12 h-12 bg-primary-50 group-hover:bg-primary-100 rounded-xl flex items-center justify-center mb-3 transition-colors">
                   <BookOpen className="w-6 h-6 text-primary-500" />
@@ -186,7 +186,7 @@ export default async function HomePage() {
             ].map((benefit) => (
               <div
                 key={benefit.title}
-                className="bg-white p-6 rounded-2xl border border-border hover:shadow-md transition-shadow"
+                className="bg-surface p-6 rounded-2xl border border-border hover:shadow-md transition-shadow"
               >
                 <div className="w-12 h-12 bg-primary-50 rounded-xl flex items-center justify-center mb-4">
                   <benefit.icon className="w-6 h-6 text-primary-500" />
@@ -288,7 +288,7 @@ export default async function HomePage() {
             ].map((faq) => (
               <details
                 key={faq.q}
-                className="group bg-white rounded-xl border border-border hover:border-primary-200 transition-colors"
+                className="group bg-surface rounded-xl border border-border hover:border-primary-200 transition-colors"
               >
                 <summary className="flex items-center justify-between p-5 cursor-pointer font-medium text-text-primary list-none">
                   {faq.q}

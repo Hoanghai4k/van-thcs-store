@@ -88,11 +88,11 @@ export default async function AdminOrdersPage({ searchParams }: Props) {
             : "Chưa có đơn hàng nào."}
         </div>
       ) : (
-        <div className="bg-white rounded-xl border border-slate-200 overflow-hidden">
+        <div className="bg-surface rounded-xl border border-border overflow-hidden">
           <div className="overflow-x-auto">
-            <table className="w-full text-sm">
+            <table className="w-full text-left border-collapse">
               <thead>
-                <tr className="bg-slate-50 border-b border-slate-200">
+                <tr className="bg-surface-alt border-b border-border">
                   <th className="text-left py-3 px-4 font-medium text-slate-600">Mã đơn</th>
                   <th className="text-left py-3 px-4 font-medium text-slate-600">Khách hàng</th>
                   <th className="text-center py-3 px-4 font-medium text-slate-600">SP</th>
@@ -104,7 +104,7 @@ export default async function AdminOrdersPage({ searchParams }: Props) {
               </thead>
               <tbody className="divide-y divide-slate-100">
                 {result.orders.map((order) => (
-                  <tr key={order.id} className="hover:bg-slate-50 transition-colors">
+                  <tr key={order.id} className="hover:bg-surface-hover transition-colors">
                     <td className="py-3 px-4">
                       <Link
                         href={`/admin/orders/${order.id}`}
