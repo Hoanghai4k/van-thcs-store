@@ -129,3 +129,82 @@ export function formatFileSize(bytes: number): string {
 export function cn(...classes: (string | undefined | null | false)[]): string {
   return classes.filter(Boolean).join(" ");
 }
+
+/**
+ * Get the precise UTC Date object representing 00:00:00 local time in Vietnam
+ * for the current day.
+ */
+export function getStartOfDayVN(): Date {
+  const now = new Date();
+  const vnFormatter = new Intl.DateTimeFormat('en-US', {
+    timeZone: 'Asia/Ho_Chi_Minh',
+    year: 'numeric',
+    month: 'numeric',
+    day: 'numeric'
+  });
+  const parts = vnFormatter.formatToParts(now);
+  const year = parseInt(parts.find(p => p.type === 'year')!.value, 10);
+  const month = parseInt(parts.find(p => p.type === 'month')!.value, 10) - 1;
+  const day = parseInt(parts.find(p => p.type === 'day')!.value, 10);
+  
+  // GMT+7 offset is -7 hours relative to UTC
+  return new Date(Date.UTC(year, month, day, -7, 0, 0, 0));
+}
+
+/**
+ * Get the precise UTC Date object representing 00:00:00 local time in Vietnam
+ * for the next day.
+ */
+export function getEndOfDayVN(): Date {
+  const now = new Date();
+  const vnFormatter = new Intl.DateTimeFormat('en-US', {
+    timeZone: 'Asia/Ho_Chi_Minh',
+    year: 'numeric',
+    month: 'numeric',
+    day: 'numeric'
+  });
+  const parts = vnFormatter.formatToParts(now);
+  const year = parseInt(parts.find(p => p.type === 'year')!.value, 10);
+  const month = parseInt(parts.find(p => p.type === 'month')!.value, 10) - 1;
+  const day = parseInt(parts.find(p => p.type === 'day')!.value, 10);
+  
+  return new Date(Date.UTC(year, month, day + 1, -7, 0, 0, 0));
+}
+
+/**
+ * Get the precise UTC Date object representing 00:00:00 local time in Vietnam
+ * for the first day of the current month.
+ */
+export function getStartOfMonthVN(): Date {
+  const now = new Date();
+  const vnFormatter = new Intl.DateTimeFormat('en-US', {
+    timeZone: 'Asia/Ho_Chi_Minh',
+    year: 'numeric',
+    month: 'numeric',
+    day: 'numeric'
+  });
+  const parts = vnFormatter.formatToParts(now);
+  const year = parseInt(parts.find(p => p.type === 'year')!.value, 10);
+  const month = parseInt(parts.find(p => p.type === 'month')!.value, 10) - 1;
+  
+  return new Date(Date.UTC(year, month, 1, -7, 0, 0, 0));
+}
+
+/**
+ * Get the precise UTC Date object representing 00:00:00 local time in Vietnam
+ * for the first day of the next month.
+ */
+export function getEndOfMonthVN(): Date {
+  const now = new Date();
+  const vnFormatter = new Intl.DateTimeFormat('en-US', {
+    timeZone: 'Asia/Ho_Chi_Minh',
+    year: 'numeric',
+    month: 'numeric',
+    day: 'numeric'
+  });
+  const parts = vnFormatter.formatToParts(now);
+  const year = parseInt(parts.find(p => p.type === 'year')!.value, 10);
+  const month = parseInt(parts.find(p => p.type === 'month')!.value, 10) - 1;
+  
+  return new Date(Date.UTC(year, month + 1, 1, -7, 0, 0, 0));
+}

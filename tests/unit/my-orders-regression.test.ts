@@ -21,7 +21,7 @@ describe("My Orders Regression Tests", () => {
     vi.mocked(resendProvider.getEmailProvider).mockReturnValue({
       name: "resend",
       sendEmail: mockSendEmail,
-    } as any);
+    } as ReturnType<typeof resendProvider.getEmailProvider>);
   });
 
   afterEach(() => {

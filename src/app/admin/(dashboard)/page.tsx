@@ -1,10 +1,18 @@
 import Link from "next/link";
 import { Package, FolderOpen, ShoppingBag, Users, BarChart3, AlertCircle, Clock, CheckCircle2, FileWarning } from "lucide-react";
 import { getSupabaseServerClient } from "@/lib/supabase/server";
-import { formatCurrency } from "@/lib/utils";
+import { formatCurrency, getStartOfDayVN, getEndOfDayVN, getStartOfMonthVN, getEndOfMonthVN } from "@/lib/utils";
+
+export const dynamic = "force-dynamic";
 
 async function getDashboardStats() {
   const supabase = await getSupabaseServerClient();
+
+  const startOfDay = getStartOfDayVN().toISOString();
+  const endOfDay = getEndOfDayVN().toISOString();
+  const startOfMonth = getStartOfMonthVN().toISOString();
+  const endOfMonth = getEndOfMonthVN().toISOString();
+  const threeDaysAgo = new Date(Date.now() - 3 * 24 * 60 * 60 * 1000).toISOString();
 
   // Basic KPIs
   const [productsRes, ordersTodayRes, customersRes, revenueRes] = await Promise.all([
@@ -12,41 +20,45 @@ async function getDashboardStats() {
     supabase
       .from("orders")
       .select("id", { count: "exact", head: true })
-      .gte("created_at", new Date().toISOString().slice(0, 10)),
+      .gte("created_at", startOfDay)
+      .lt("created_at", endOfDay),
     supabase.from("customers").select("id", { count: "exact", head: true }),
     supabase
       .from("orders")
       .select("total_amount")
       .eq("status", "PAID")
-      .gte(
-        "created_at",
-        new Date(new Date().getFullYear(), new Date().getMonth(), 1).toISOString(),
-      ),
+      .gte("paid_at", startOfMonth)
+      .lt("paid_at", endOfMonth),
   ]);
 
   // Operational Alerts
-  const [pendingOrdersRes, recentPaidOrdersRes, draftProductsRes, noFileProductsRes] = await Promise.all([
+  const [pendingOrdersRes, recentPaidOrdersRes, draftProductsRes, productsWithFilesRes] = await Promise.all([
     supabase.from("orders").select("id", { count: "exact", head: true }).eq("status", "PENDING"),
-    supabase.from("orders").select("id", { count: "exact", head: true }).eq("status", "PAID").gte("updated_at", new Date(Date.now() - 3 * 24 * 60 * 60 * 1000).toISOString()), // Last 3 days
+    supabase.from("orders").select("id", { count: "exact", head: true }).eq("status", "PAID").gte("paid_at", threeDaysAgo),
     supabase.from("products").select("id", { count: "exact", head: true }).eq("is_active", false),
-    supabase.from("products").select("id", { count: "exact", head: true }).eq("file_count", 0),
+    supabase.from("products").select("id, product_files(id)"),
   ]);
 
-  const monthlyRevenue = (revenueRes.data ?? []).reduce(
-    (sum, o) => sum + (o.total_amount ?? 0),
-    0,
-  );
+  let monthlyRevenue: number | null = null;
+  if (!revenueRes.error) {
+    monthlyRevenue = (revenueRes.data ?? []).reduce((sum, o) => sum + (o.total_amount ?? 0), 0);
+  }
+
+  let noFileProducts: number | null = null;
+  if (!productsWithFilesRes.error) {
+    noFileProducts = productsWithFilesRes.data?.filter(p => !p.product_files || p.product_files.length === 0).length ?? 0;
+  }
 
   return {
-    productCount: productsRes.count ?? 0,
-    ordersToday: ordersTodayRes.count ?? 0,
-    customerCount: customersRes.count ?? 0,
+    productCount: productsRes.error ? null : (productsRes.count ?? 0),
+    ordersToday: ordersTodayRes.error ? null : (ordersTodayRes.count ?? 0),
+    customerCount: customersRes.error ? null : (customersRes.count ?? 0),
     monthlyRevenue,
     alerts: {
-      pendingOrders: pendingOrdersRes.count ?? 0,
-      recentPaidOrders: recentPaidOrdersRes.count ?? 0,
-      draftProducts: draftProductsRes.count ?? 0,
-      noFileProducts: noFileProductsRes.count ?? 0,
+      pendingOrders: pendingOrdersRes.error ? null : (pendingOrdersRes.count ?? 0),
+      recentPaidOrders: recentPaidOrdersRes.error ? null : (recentPaidOrdersRes.count ?? 0),
+      draftProducts: draftProductsRes.error ? null : (draftProductsRes.count ?? 0),
+      noFileProducts,
     }
   };
 }
@@ -57,25 +69,25 @@ export default async function AdminDashboard() {
   const metrics = [
     {
       label: "Đơn hàng hôm nay",
-      value: String(stats.ordersToday),
+      value: stats.ordersToday !== null ? String(stats.ordersToday) : "—",
       icon: ShoppingBag,
       color: "text-primary-600 bg-primary-50 border-primary-100",
     },
     {
       label: "Doanh thu tháng",
-      value: formatCurrency(stats.monthlyRevenue),
+      value: stats.monthlyRevenue !== null ? formatCurrency(stats.monthlyRevenue) : "—",
       icon: BarChart3,
       color: "text-green-600 bg-green-50 border-green-100",
     },
     {
       label: "Sản phẩm đang bán",
-      value: String(stats.productCount),
+      value: stats.productCount !== null ? String(stats.productCount) : "—",
       icon: Package,
       color: "text-purple-600 bg-purple-50 border-purple-100",
     },
     {
       label: "Khách hàng",
-      value: String(stats.customerCount),
+      value: stats.customerCount !== null ? String(stats.customerCount) : "—",
       icon: Users,
       color: "text-orange-600 bg-orange-50 border-orange-100",
     },
@@ -162,7 +174,7 @@ export default async function AdminDashboard() {
                     <span className="text-sm font-medium text-slate-700">Đơn chờ thanh toán</span>
                   </div>
                   <span className="bg-yellow-100 text-yellow-700 font-bold px-2.5 py-0.5 rounded-full text-xs">
-                    {stats.alerts.pendingOrders}
+                    {stats.alerts.pendingOrders !== null ? stats.alerts.pendingOrders : "—"}
                   </span>
                 </Link>
                 <Link href="/admin/orders?status=PAID" className="flex items-center justify-between p-4 hover:bg-slate-50 transition-colors">
@@ -171,7 +183,7 @@ export default async function AdminDashboard() {
                     <span className="text-sm font-medium text-slate-700">Đã thanh toán (3 ngày)</span>
                   </div>
                   <span className="bg-green-100 text-green-700 font-bold px-2.5 py-0.5 rounded-full text-xs">
-                    {stats.alerts.recentPaidOrders}
+                    {stats.alerts.recentPaidOrders !== null ? stats.alerts.recentPaidOrders : "—"}
                   </span>
                 </Link>
                 <Link href="/admin/products?status=inactive" className="flex items-center justify-between p-4 hover:bg-slate-50 transition-colors">
@@ -180,7 +192,7 @@ export default async function AdminDashboard() {
                     <span className="text-sm font-medium text-slate-700">Sản phẩm nháp</span>
                   </div>
                   <span className="bg-slate-100 text-slate-600 font-bold px-2.5 py-0.5 rounded-full text-xs">
-                    {stats.alerts.draftProducts}
+                    {stats.alerts.draftProducts !== null ? stats.alerts.draftProducts : "—"}
                   </span>
                 </Link>
                 <Link href="/admin/products" className="flex items-center justify-between p-4 hover:bg-slate-50 transition-colors">
@@ -188,8 +200,8 @@ export default async function AdminDashboard() {
                     <FileWarning className="w-5 h-5 text-red-400" />
                     <span className="text-sm font-medium text-slate-700">SP chưa có file</span>
                   </div>
-                  <span className={`font-bold px-2.5 py-0.5 rounded-full text-xs ${stats.alerts.noFileProducts > 0 ? "bg-red-100 text-red-700" : "bg-slate-100 text-slate-600"}`}>
-                    {stats.alerts.noFileProducts}
+                  <span className={`font-bold px-2.5 py-0.5 rounded-full text-xs ${(stats.alerts.noFileProducts ?? 0) > 0 ? "bg-red-100 text-red-700" : "bg-slate-100 text-slate-600"}`}>
+                    {stats.alerts.noFileProducts !== null ? stats.alerts.noFileProducts : "—"}
                   </span>
                 </Link>
               </div>
