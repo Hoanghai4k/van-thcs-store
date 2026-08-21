@@ -169,12 +169,20 @@ export function AdminProductList({
 
       {/* Product Table */}
       {products.length === 0 ? (
-        <div className="text-center py-16 bg-white rounded-xl border border-slate-200">
+        <div className="text-center py-16 bg-white rounded-xl border border-slate-200 shadow-sm">
           <Package className="w-12 h-12 text-slate-300 mx-auto mb-3" />
-          <p className="text-slate-500">Không tìm thấy sản phẩm nào.</p>
+          <h3 className="text-lg font-medium text-slate-900 mb-1">Chưa có sản phẩm</h3>
+          <p className="text-slate-500 mb-4">Bạn chưa có sản phẩm nào phù hợp với tìm kiếm này.</p>
+          <Link
+            href="/admin/products/new"
+            className="inline-flex items-center gap-2 bg-primary-600 text-white px-4 py-2 rounded-lg text-sm font-medium hover:bg-primary-700 transition-colors"
+          >
+            <Plus className="w-4 h-4" />
+            Thêm sản phẩm
+          </Link>
         </div>
       ) : (
-        <div className="bg-white rounded-xl border border-slate-200 overflow-hidden">
+        <div className="bg-white rounded-xl border border-slate-200 overflow-hidden shadow-sm">
           <div className="overflow-x-auto">
             <table className="w-full text-sm">
               <thead className="bg-slate-50 border-b border-slate-200">
@@ -185,14 +193,17 @@ export function AdminProductList({
                   <th className="text-left px-4 py-3 font-medium text-slate-600">
                     Danh mục
                   </th>
+                  <th className="text-center px-4 py-3 font-medium text-slate-600">
+                    Định dạng
+                  </th>
                   <th className="text-right px-4 py-3 font-medium text-slate-600">
                     Giá
                   </th>
                   <th className="text-center px-4 py-3 font-medium text-slate-600">
-                    Files
+                    Trạng thái
                   </th>
                   <th className="text-center px-4 py-3 font-medium text-slate-600">
-                    Trạng thái
+                    Cập nhật
                   </th>
                   <th className="text-right px-4 py-3 font-medium text-slate-600">
                     Thao tác
@@ -208,8 +219,8 @@ export function AdminProductList({
                       className="hover:bg-slate-50 transition-colors"
                     >
                       <td className="px-4 py-3">
-                        <div className="flex items-center gap-3">
-                          <div className="w-10 h-10 bg-slate-100 rounded-lg flex items-center justify-center flex-shrink-0 overflow-hidden">
+                        <div className="flex items-center gap-3 min-w-[200px]">
+                          <div className="w-10 h-10 bg-slate-100 rounded-lg flex items-center justify-center flex-shrink-0 overflow-hidden border border-slate-200">
                             {thumbUrl ? (
                               <img
                                 src={thumbUrl}
@@ -221,30 +232,32 @@ export function AdminProductList({
                             )}
                           </div>
                           <div className="min-w-0">
-                            <p className="font-medium text-slate-900 truncate max-w-xs">
+                            <p className="font-medium text-slate-900 truncate max-w-[200px]" title={product.name}>
                               {product.name}
                             </p>
-                            <p className="text-xs text-slate-400 font-mono truncate">
+                            <p className="text-xs text-slate-400 font-mono truncate max-w-[200px]" title={product.slug}>
                               {product.slug}
                             </p>
                           </div>
                         </div>
                       </td>
-                      <td className="px-4 py-3 text-slate-500 text-xs">
+                      <td className="px-4 py-3 text-slate-500 text-xs whitespace-nowrap">
                         {product.category?.name ?? "—"}
                       </td>
-                      <td className="px-4 py-3 text-right font-medium text-slate-900">
+                      <td className="px-4 py-3 text-center">
+                        <span className="inline-flex items-center justify-center px-2 py-0.5 rounded text-xs font-medium bg-slate-100 text-slate-600 uppercase border border-slate-200">
+                          {product.file_format || "—"}
+                        </span>
+                      </td>
+                      <td className="px-4 py-3 text-right font-medium text-slate-900 whitespace-nowrap">
                         {formatCurrency(product.price)}
                       </td>
-                      <td className="px-4 py-3 text-center text-slate-500">
-                        {product.file_count}
-                      </td>
-                      <td className="px-4 py-3 text-center">
+                      <td className="px-4 py-3 text-center whitespace-nowrap">
                         <span
-                          className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-medium ${
+                          className={`inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-xs font-medium ${
                             product.is_active
-                              ? "bg-green-50 text-green-700"
-                              : "bg-slate-100 text-slate-500"
+                              ? "bg-green-50 text-green-700 border border-green-200"
+                              : "bg-slate-50 text-slate-600 border border-slate-200"
                           }`}
                         >
                           {product.is_active ? (
@@ -253,10 +266,13 @@ export function AdminProductList({
                             </>
                           ) : (
                             <>
-                              <EyeOff className="w-3 h-3" /> Nháp
+                              <EyeOff className="w-3 h-3" /> Bản nháp
                             </>
                           )}
                         </span>
+                      </td>
+                      <td className="px-4 py-3 text-center text-slate-500 text-xs whitespace-nowrap">
+                        {new Date(product.updated_at).toLocaleDateString("vi-VN")}
                       </td>
                       <td className="px-4 py-3 text-right">
                         <div className="flex items-center gap-1 justify-end">

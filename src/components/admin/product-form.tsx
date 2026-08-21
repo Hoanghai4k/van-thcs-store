@@ -300,6 +300,15 @@ export function ProductForm({
   // ─── Toggle Active ─────────────────────────────────────────────
   async function handleToggleActive() {
     if (!savedProductId || !product) return;
+    
+    if (!product.is_active && files.length === 0) {
+      setFeedback({
+        type: "error",
+        message: "Sản phẩm cần ít nhất một tệp DOCX hoặc ZIP trước khi kích hoạt.",
+      });
+      return;
+    }
+
     setFeedback(null);
 
     startTransition(async () => {
@@ -508,193 +517,203 @@ export function ProductForm({
           </div>
         </section>
 
-        {/* ─── Save Button ─── */}
-        <div className="flex items-center gap-3">
-          <button
-            type="submit"
-            disabled={isPending}
-            className="flex items-center gap-2 bg-primary-600 text-white px-6 py-2.5 rounded-lg text-sm font-medium hover:bg-primary-700 disabled:opacity-50 transition-colors"
-          >
-            {isPending && <Loader2 className="w-4 h-4 animate-spin" />}
-            {mode === "create" && !savedProductId
-              ? "Tạo sản phẩm nháp"
-              : "Lưu thay đổi"}
-          </button>
-
-          {product && savedProductId && (
-            <button
-              type="button"
-              onClick={handleToggleActive}
-              disabled={isPending}
-              className={`px-4 py-2.5 rounded-lg text-sm font-medium transition-colors ${
-                product.is_active
-                  ? "bg-orange-50 text-orange-700 hover:bg-orange-100 border border-orange-200"
-                  : "bg-green-50 text-green-700 hover:bg-green-100 border border-green-200"
-              }`}
-            >
-              {product.is_active ? "Ẩn sản phẩm" : "Kích hoạt sản phẩm"}
-            </button>
-          )}
-        </div>
-      </form>
-
-      {/* ─── File Uploads (only after product is saved) ─── */}
-      {canUpload && (
-        <div className="mt-8 space-y-6">
-          {/* Thumbnail */}
-          <section className="bg-white rounded-xl border border-slate-200 p-5 space-y-3">
-            <h2 className="font-semibold text-slate-900">
-              Ảnh đại diện (Thumbnail)
-            </h2>
-            {thumbUrl && (
-              <div className="w-32 h-32 rounded-lg overflow-hidden border border-slate-200">
-                <img
-                  src={thumbUrl}
-                  alt="Thumbnail"
-                  className="w-full h-full object-cover"
-                />
+        {/* ─── File Uploads (only after product is saved) ─── */}
+        {canUpload && (
+          <div className="space-y-6">
+            {/* Hình ảnh */}
+            <section className="bg-white rounded-xl border border-slate-200 p-5 space-y-4">
+              <h2 className="font-semibold text-slate-900">Hình ảnh</h2>
+              
+              <div className="space-y-3">
+                <h3 className="text-sm font-medium text-slate-700">Ảnh đại diện (Thumbnail)</h3>
+                {thumbUrl && (
+                  <div className="w-32 h-32 rounded-lg overflow-hidden border border-slate-200">
+                    <img
+                      src={thumbUrl}
+                      alt="Thumbnail"
+                      className="w-full h-full object-cover"
+                    />
+                  </div>
+                )}
+                <label className="flex items-center gap-2 w-fit px-4 py-2 border border-slate-300 rounded-lg text-sm text-slate-700 hover:bg-slate-50 cursor-pointer transition-colors">
+                  {uploading === "thumbnail" ? (
+                    <Loader2 className="w-4 h-4 animate-spin" />
+                  ) : (
+                    <Upload className="w-4 h-4" />
+                  )}
+                  {thumbnailPath ? "Thay ảnh" : "Tải ảnh lên"}
+                  <input
+                    type="file"
+                    accept="image/jpeg,image/png,image/webp"
+                    onChange={handleThumbnailUpload}
+                    disabled={!!uploading}
+                    className="hidden"
+                  />
+                </label>
+                <p className="text-xs text-slate-400">
+                  JPEG, PNG, WebP — tối đa 10 MB
+                </p>
               </div>
-            )}
-            <label className="flex items-center gap-2 w-fit px-4 py-2 border border-slate-300 rounded-lg text-sm text-slate-700 hover:bg-slate-50 cursor-pointer transition-colors">
-              {uploading === "thumbnail" ? (
-                <Loader2 className="w-4 h-4 animate-spin" />
-              ) : (
-                <Upload className="w-4 h-4" />
-              )}
-              {thumbnailPath ? "Thay ảnh" : "Tải ảnh lên"}
-              <input
-                type="file"
-                accept="image/jpeg,image/png,image/webp"
-                onChange={handleThumbnailUpload}
-                disabled={!!uploading}
-                className="hidden"
-              />
-            </label>
-            <p className="text-xs text-slate-400">
-              JPEG, PNG, WebP — tối đa 10 MB
-            </p>
-          </section>
 
-          {/* Preview Images */}
-          <section className="bg-white rounded-xl border border-slate-200 p-5 space-y-3">
-            <h2 className="font-semibold text-slate-900">Ảnh xem trước</h2>
-            {previewImages.length > 0 && (
-              <div className="flex flex-wrap gap-2">
-                {previewImages.map((path) => {
-                  const url = getProductAssetUrl(path);
-                  return (
+              <div className="space-y-3 pt-4 border-t border-slate-100">
+                <h3 className="text-sm font-medium text-slate-700">Ảnh xem trước</h3>
+                {previewImages.length > 0 && (
+                  <div className="flex flex-wrap gap-2">
+                    {previewImages.map((path) => {
+                      const url = getProductAssetUrl(path);
+                      return (
+                        <div
+                          key={path}
+                          className="relative w-24 h-24 rounded-lg overflow-hidden border border-slate-200 group"
+                        >
+                          {url && (
+                            <img
+                              src={url}
+                              alt="Preview"
+                              className="w-full h-full object-cover"
+                            />
+                          )}
+                          <button
+                            type="button"
+                            onClick={() => handleRemovePreview(path)}
+                            className="absolute top-1 right-1 w-5 h-5 bg-red-500 text-white rounded-full flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity"
+                            title="Xóa"
+                          >
+                            <X className="w-3 h-3" />
+                          </button>
+                        </div>
+                      );
+                    })}
+                  </div>
+                )}
+                <label className="flex items-center gap-2 w-fit px-4 py-2 border border-slate-300 rounded-lg text-sm text-slate-700 hover:bg-slate-50 cursor-pointer transition-colors">
+                  {uploading === "preview" ? (
+                    <Loader2 className="w-4 h-4 animate-spin" />
+                  ) : (
+                    <ImageIcon className="w-4 h-4" />
+                  )}
+                  Thêm ảnh xem trước
+                  <input
+                    type="file"
+                    accept="image/jpeg,image/png,image/webp"
+                    onChange={handlePreviewUpload}
+                    disabled={!!uploading}
+                    className="hidden"
+                  />
+                </label>
+              </div>
+            </section>
+
+            {/* Tệp tài liệu */}
+            <section className="bg-white rounded-xl border border-slate-200 p-5 space-y-3">
+              <h2 className="font-semibold text-slate-900">
+                Tệp tài liệu{" "}
+                <span className="text-sm font-normal text-slate-500">
+                  ({files.length} file)
+                </span>
+              </h2>
+              {files.length > 0 && (
+                <div className="space-y-2">
+                  {files.map((f) => (
                     <div
-                      key={path}
-                      className="relative w-24 h-24 rounded-lg overflow-hidden border border-slate-200 group"
+                      key={f.id}
+                      className="flex items-center justify-between p-3 bg-slate-50 rounded-lg"
                     >
-                      {url && (
-                        <img
-                          src={url}
-                          alt="Preview"
-                          className="w-full h-full object-cover"
-                        />
-                      )}
+                      <div className="flex items-center gap-3 min-w-0">
+                        <div className="w-10 h-10 rounded bg-white border border-slate-200 flex items-center justify-center flex-shrink-0">
+                          <File className="w-5 h-5 text-primary-500" />
+                        </div>
+                        <div className="min-w-0 flex-1">
+                          <p className="text-sm font-medium text-slate-900 truncate">
+                            {f.file_name}
+                          </p>
+                          <p className="text-xs text-slate-500 mt-0.5 flex items-center gap-2">
+                            <span className="inline-flex items-center px-1.5 py-0.5 rounded bg-slate-200 text-slate-700 font-medium text-[10px] uppercase">
+                              {f.file_name.split(".").pop()}
+                            </span>
+                            {(f.file_size / 1024 / 1024).toFixed(2)} MB
+                          </p>
+                        </div>
+                      </div>
                       <button
-                        onClick={() => handleRemovePreview(path)}
-                        className="absolute top-1 right-1 w-5 h-5 bg-red-500 text-white rounded-full flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity"
-                        title="Xóa"
+                        type="button"
+                        onClick={() => handleRemoveFile(f)}
+                        disabled={isPending}
+                        className="p-2 text-slate-400 hover:text-red-500 rounded-lg hover:bg-red-50 transition-colors disabled:opacity-50"
+                        title="Xóa file"
                       >
-                        <X className="w-3 h-3" />
+                        <X className="w-4 h-4" />
                       </button>
                     </div>
-                  );
-                })}
-              </div>
-            )}
-            <label className="flex items-center gap-2 w-fit px-4 py-2 border border-slate-300 rounded-lg text-sm text-slate-700 hover:bg-slate-50 cursor-pointer transition-colors">
-              {uploading === "preview" ? (
-                <Loader2 className="w-4 h-4 animate-spin" />
-              ) : (
-                <ImageIcon className="w-4 h-4" />
+                  ))}
+                </div>
               )}
-              Thêm ảnh xem trước
-              <input
-                type="file"
-                accept="image/jpeg,image/png,image/webp"
-                onChange={handlePreviewUpload}
-                disabled={!!uploading}
-                className="hidden"
-              />
-            </label>
-          </section>
+              <label className="flex items-center gap-2 w-fit px-4 py-2 border border-slate-300 rounded-lg text-sm text-slate-700 hover:bg-slate-50 cursor-pointer transition-colors">
+                {uploading === "file" ? (
+                  <Loader2 className="w-4 h-4 animate-spin" />
+                ) : (
+                  <FileText className="w-4 h-4" />
+                )}
+                Tải tệp
+                <input
+                  type="file"
+                  accept=".docx,.zip,application/vnd.openxmlformats-officedocument.wordprocessingml.document,application/zip,application/x-zip-compressed"
+                  onChange={handleFileUpload}
+                  disabled={!!uploading}
+                  className="hidden"
+                />
+              </label>
+              <p className="text-xs text-slate-400">
+                Hỗ trợ DOCX và ZIP — tối đa 50 MB
+              </p>
+            </section>
+          </div>
+        )}
 
-          {/* Product Files */}
-          <section className="bg-white rounded-xl border border-slate-200 p-5 space-y-3">
-            <h2 className="font-semibold text-slate-900">
-              Tệp tài liệu{" "}
-              <span className="text-sm font-normal text-slate-500">
-                ({files.length} file)
-              </span>
-            </h2>
-            {files.length > 0 && (
-              <div className="space-y-2">
-                {files.map((f) => (
-                  <div
-                    key={f.id}
-                    className="flex items-center justify-between p-3 bg-slate-50 rounded-lg"
-                  >
-                    <div className="flex items-center gap-2 min-w-0">
-                      <File className="w-4 h-4 text-primary-500 flex-shrink-0" />
-                      <div className="min-w-0">
-                        <p className="text-sm text-slate-900 truncate">
-                          {f.file_name}
-                        </p>
-                      <p className="text-xs text-slate-400">
-                          {(f.file_size / 1024 / 1024).toFixed(2)} MB
-                          {" · "}
-                          <span className="font-medium uppercase">
-                            {f.file_name.split(".").pop()}
-                          </span>
-                        </p>
-                      </div>
-                    </div>
-                    <button
-                      onClick={() => handleRemoveFile(f)}
-                      disabled={isPending}
-                      className="p-1.5 text-slate-400 hover:text-red-500 rounded-lg hover:bg-red-50 transition-colors disabled:opacity-50"
-                      title="Xóa file"
-                    >
-                      <X className="w-4 h-4" />
-                    </button>
-                  </div>
-                ))}
-              </div>
-            )}
-            <label className="flex items-center gap-2 w-fit px-4 py-2 border border-slate-300 rounded-lg text-sm text-slate-700 hover:bg-slate-50 cursor-pointer transition-colors">
-              {uploading === "file" ? (
-                <Loader2 className="w-4 h-4 animate-spin" />
-              ) : (
-                <FileText className="w-4 h-4" />
-              )}
-              Tải tệp
-              <input
-                type="file"
-                accept=".docx,.zip,application/vnd.openxmlformats-officedocument.wordprocessingml.document,application/zip,application/x-zip-compressed"
-                onChange={handleFileUpload}
-                disabled={!!uploading}
-                className="hidden"
-              />
-            </label>
-            <p className="text-xs text-slate-400">
-              DOCX hoặc ZIP — tối đa 50 MB
+        {!canUpload && mode === "create" && (
+          <div className="p-4 bg-primary-50 border border-primary-200 rounded-lg text-sm text-primary-700">
+            <p>
+              Hãy <strong>tạo sản phẩm nháp</strong> trước để có thể tải ảnh và
+              tệp tài liệu.
             </p>
-          </section>
-        </div>
-      )}
+          </div>
+        )}
 
-      {!canUpload && mode === "create" && (
-        <div className="mt-6 p-4 bg-primary-50 border border-primary-200 rounded-lg text-sm text-primary-700">
-          <p>
-            Hãy <strong>tạo sản phẩm nháp</strong> trước để có thể tải ảnh và
-            tệp tài liệu.
-          </p>
-        </div>
-      )}
+        {/* ─── Save Button / Status ─── */}
+        <section className="bg-slate-50 rounded-xl border border-slate-200 p-5 flex items-center justify-between">
+          <div>
+            <h2 className="font-semibold text-slate-900 mb-1">Trạng thái</h2>
+            <p className="text-sm text-slate-500">
+              {product?.is_active ? "Sản phẩm đang được hiển thị trên cửa hàng." : "Sản phẩm đang ở trạng thái nháp."}
+            </p>
+          </div>
+          <div className="flex items-center gap-3">
+            {product && savedProductId && (
+              <button
+                type="button"
+                onClick={handleToggleActive}
+                disabled={isPending}
+                className={`px-4 py-2.5 rounded-lg text-sm font-medium transition-colors ${
+                  product.is_active
+                    ? "bg-orange-50 text-orange-700 hover:bg-orange-100 border border-orange-200"
+                    : "bg-green-50 text-green-700 hover:bg-green-100 border border-green-200"
+                }`}
+              >
+                {product.is_active ? "Chuyển thành bản nháp" : "Kích hoạt sản phẩm"}
+              </button>
+            )}
+
+            <button
+              type="submit"
+              disabled={isPending}
+              className="flex items-center gap-2 bg-primary-600 text-white px-6 py-2.5 rounded-lg text-sm font-medium hover:bg-primary-700 disabled:opacity-50 transition-colors"
+            >
+              {isPending && <Loader2 className="w-4 h-4 animate-spin" />}
+              {isPending ? "Đang lưu..." : (mode === "create" && !savedProductId ? "Tạo sản phẩm nháp" : "Lưu thay đổi")}
+            </button>
+          </div>
+        </section>
+      </form>
     </div>
   );
 }

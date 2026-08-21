@@ -53,7 +53,7 @@ export const footerNavigation = {
 };
 
 export const adminNavigation: NavItem[] = [
-  { label: "Dashboard", href: "/admin" },
+  { label: "Tổng quan", href: "/admin" },
   { label: "Sản phẩm", href: "/admin/products" },
   { label: "Danh mục", href: "/admin/categories" },
   { label: "Đơn hàng", href: "/admin/orders" },

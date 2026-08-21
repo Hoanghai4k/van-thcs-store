@@ -1,6 +1,6 @@
 import { requireAdmin } from "@/lib/auth/admin-auth";
 import { siteConfig } from "@/config/site";
-import { logoutAdmin } from "@/app/admin/login/actions";
+import { AdminSidebar } from "@/components/admin/admin-sidebar";
 
 export const metadata = { title: `Admin | ${siteConfig.name}` };
 
@@ -17,22 +17,11 @@ export default async function AdminDashboardLayout({
   const admin = await requireAdmin();
 
   return (
-    <div className="min-h-screen bg-slate-50">
-      {/* Admin top bar */}
-      <div className="bg-white border-b border-slate-200 px-4 py-2 flex items-center justify-between">
-        <p className="text-sm text-slate-600">
-          Xin chào, <span className="font-medium">{admin.email}</span>
-        </p>
-        <form action={logoutAdmin}>
-          <button
-            type="submit"
-            className="text-sm text-slate-500 hover:text-slate-700 transition-colors"
-          >
-            Đăng xuất
-          </button>
-        </form>
+    <div className="min-h-screen bg-slate-50 flex flex-col lg:flex-row">
+      <AdminSidebar email={admin.email} />
+      <div className="flex-1 min-w-0 overflow-y-auto lg:h-[100dvh]">
+        {children}
       </div>
-      {children}
     </div>
   );
 }

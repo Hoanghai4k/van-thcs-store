@@ -84,7 +84,8 @@ export async function getOrderById(id: string): Promise<OrderWithItems | null> {
     .select(`
       *,
       customer:customers(id, name, email, phone),
-      items:order_items(id, product_id, product_name, unit_price)
+      items:order_items(id, product_id, product_name, unit_price),
+      payment_attempts(status, created_at)
     `)
     .eq("id", id)
     .single();
@@ -95,6 +96,8 @@ export async function getOrderById(id: string): Promise<OrderWithItems | null> {
 
   const customer = order.customer as { id: string; name: string; email: string; phone: string | null } | null;
   const items = (order.items as Array<{ id: string; product_id: string; product_name: string; unit_price: number }>) ?? [];
+  const paymentAttempts = (order.payment_attempts as Array<{ status: string; created_at: string }>) ?? [];
+  const latestPaymentAttempt = paymentAttempts.sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime())[0] || null;
 
   return {
     id: order.id,
@@ -119,6 +122,7 @@ export async function getOrderById(id: string): Promise<OrderWithItems | null> {
       productName: item.product_name,
       unitPrice: item.unit_price,
     })),
+    latestPaymentAttempt: latestPaymentAttempt ? { status: latestPaymentAttempt.status } : null,
   };
 }
 
@@ -129,6 +133,7 @@ export async function listOrders(params?: {
   page?: number;
   pageSize?: number;
   status?: string;
+  search?: string;
 }) {
   const page = params?.page ?? 1;
   const pageSize = params?.pageSize ?? PAGINATION.DEFAULT_PAGE_SIZE;
@@ -148,6 +153,10 @@ export async function listOrders(params?: {
 
   if (params?.status) {
     query = query.eq("status", params.status as "PENDING" | "PAID" | "FAILED" | "CANCELLED" | "REFUNDED");
+  }
+
+  if (params?.search) {
+    query = query.ilike("order_code", `%${params.search}%`);
   }
 
   query = query.range(from, to);

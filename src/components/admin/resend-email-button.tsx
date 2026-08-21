@@ -43,8 +43,12 @@ export function ResendEmailButton({ orderId, orderCode }: ResendEmailButtonProps
     <div>
       <button
         onClick={handleResend}
-        disabled={isLoading}
-        className="flex items-center gap-2 px-4 py-2 text-sm bg-primary-600 text-white rounded-lg hover:bg-primary-700 transition-colors disabled:opacity-50"
+        disabled={isLoading || result?.sent}
+        className={`flex items-center gap-2 px-4 py-2.5 text-sm rounded-lg font-medium transition-colors disabled:opacity-50 ${
+          result?.sent 
+            ? "bg-green-100 text-green-700 cursor-default" 
+            : "bg-primary-600 text-white hover:bg-primary-700"
+        }`}
       >
         {isLoading ? (
           <Loader2 className="w-4 h-4 animate-spin" />
@@ -53,11 +57,11 @@ export function ResendEmailButton({ orderId, orderCode }: ResendEmailButtonProps
         ) : (
           <Mail className="w-4 h-4" />
         )}
-        Gửi lại email tài liệu
+        {result?.sent ? "Đã gửi lại thành công" : "Gửi lại email tài liệu"}
       </button>
-      {result && (
-        <p className={`text-xs mt-1 ${result.sent ? "text-green-600" : "text-red-600"}`}>
-          {result.sent ? "Email đã được gửi." : result.error ?? "Gửi email thất bại."}
+      {result?.error && (
+        <p className="text-sm mt-2 text-red-600 font-medium">
+          Lỗi: {result.error}
         </p>
       )}
     </div>

@@ -253,12 +253,10 @@ export function AdminCategoryList({
 
       {/* Category Table */}
       {initialCategories.length === 0 ? (
-        <div className="text-center py-16 bg-white rounded-xl border border-slate-200">
+        <div className="text-center py-16 bg-white rounded-xl border border-slate-200 shadow-sm">
           <FolderOpen className="w-12 h-12 text-slate-300 mx-auto mb-3" />
-          <p className="text-slate-500">Chưa có danh mục nào.</p>
-          <p className="text-sm text-slate-400">
-            Nhấn &quot;Thêm danh mục&quot; để bắt đầu.
-          </p>
+          <h3 className="text-lg font-medium text-slate-900 mb-1">Chưa có danh mục</h3>
+          <p className="text-slate-500 mb-4">Nhấn &quot;Thêm danh mục&quot; để bắt đầu phân loại sản phẩm.</p>
         </div>
       ) : (
         <div className="bg-white rounded-xl border border-slate-200 overflow-hidden">
@@ -285,15 +283,15 @@ export function AdminCategoryList({
                   <td className="px-4 py-3 font-medium text-slate-900">
                     {cat.name}
                   </td>
-                  <td className="px-4 py-3 text-slate-500 font-mono text-xs">
+                  <td className="px-4 py-3 text-slate-500 font-mono text-xs whitespace-nowrap">
                     {cat.slug}
                   </td>
                   <td className="px-4 py-3">
                     <span
-                      className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-medium ${
+                      className={`inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-xs font-medium ${
                         cat.is_active
-                          ? "bg-green-50 text-green-700"
-                          : "bg-slate-100 text-slate-500"
+                          ? "bg-green-50 text-green-700 border border-green-200"
+                          : "bg-slate-50 text-slate-600 border border-slate-200"
                       }`}
                     >
                       {cat.is_active ? (

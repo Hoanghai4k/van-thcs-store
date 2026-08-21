@@ -15,40 +15,69 @@ const STATUS_FILTERS = [
   { label: "Đã hủy", value: "CANCELLED" },
 ];
 
+import { Search } from "lucide-react";
+
 interface Props {
-  searchParams: Promise<{ status?: string; page?: string }>;
+  searchParams: Promise<{ status?: string; page?: string; search?: string }>;
 }
 
 export default async function AdminOrdersPage({ searchParams }: Props) {
   const params = await searchParams;
   const statusFilter = params.status ?? "";
+  const searchFilter = params.search ?? "";
   const page = parseInt(params.page ?? "1", 10);
 
   const result = await listOrders({
     page,
     pageSize: 20,
     status: statusFilter || undefined,
+    search: searchFilter || undefined,
   });
 
   return (
     <div className="p-6">
       <h1 className="text-2xl font-bold text-slate-900 mb-6">Quản lý đơn hàng</h1>
 
-      {/* Status Filters */}
-      <div className="flex flex-wrap gap-2 mb-6">
-        {STATUS_FILTERS.map((filter) => (
-          <Link
-            key={filter.value}
-            href={`/admin/orders${filter.value ? `?status=${filter.value}` : ""}`}
-            className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
-              statusFilter === filter.value
-                ? "bg-primary-600 text-white"
-                : "bg-slate-100 text-slate-600 hover:bg-slate-200"
-            }`}
+      {/* Filters & Search */}
+      <div className="flex flex-col md:flex-row gap-4 mb-6">
+        <form className="flex-1 flex gap-2" method="GET" action="/admin/orders">
+          {statusFilter && <input type="hidden" name="status" value={statusFilter} />}
+          <div className="relative flex-1 max-w-md">
+            <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
+            <input
+              type="text"
+              name="search"
+              defaultValue={searchFilter}
+              placeholder="Tìm theo mã đơn hàng..."
+              className="w-full pl-9 pr-3 py-2 border border-slate-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-primary-500"
+            />
+          </div>
+          <button
+            type="submit"
+            className="px-4 py-2 bg-slate-100 text-slate-700 rounded-lg text-sm font-medium hover:bg-slate-200 transition-colors"
           >
-            {filter.label}
-          </Link>
-        ))}
+            Tìm kiếm
+          </button>
+        </form>
+        
+        <div className="flex flex-wrap gap-2">
+          {STATUS_FILTERS.map((filter) => (
+            <Link
+              key={filter.value}
+              href={`/admin/orders?${new URLSearchParams({
+                ...(searchFilter ? { search: searchFilter } : {}),
+                ...(filter.value ? { status: filter.value } : {}),
+              }).toString()}`}
+              className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
+                statusFilter === filter.value
+                  ? "bg-primary-600 text-white shadow-sm"
+                  : "bg-white text-slate-600 border border-slate-200 hover:bg-slate-50"
+              }`}
+            >
+              {filter.label}
+            </Link>
+          ))}
+        </div>
       </div>
 
       {/* Orders Table */}
@@ -143,15 +172,15 @@ export default async function AdminOrdersPage({ searchParams }: Props) {
 
 function StatusBadge({ status }: { status: string }) {
   const config: Record<string, { class: string; label: string }> = {
-    PENDING: { class: "bg-yellow-100 text-yellow-700", label: "Chờ TT" },
-    PAID: { class: "bg-green-100 text-green-700", label: "Đã TT" },
-    FAILED: { class: "bg-red-100 text-red-700", label: "Thất bại" },
-    CANCELLED: { class: "bg-gray-100 text-gray-600", label: "Đã hủy" },
-    REFUNDED: { class: "bg-purple-100 text-purple-700", label: "Hoàn tiền" },
+    PENDING: { class: "bg-yellow-50 text-yellow-700 border border-yellow-200", label: "Chờ thanh toán" },
+    PAID: { class: "bg-green-50 text-green-700 border border-green-200", label: "Đã thanh toán" },
+    FAILED: { class: "bg-red-50 text-red-700 border border-red-200", label: "Thất bại" },
+    CANCELLED: { class: "bg-slate-50 text-slate-600 border border-slate-200", label: "Đã hủy" },
+    REFUNDED: { class: "bg-purple-50 text-purple-700 border border-purple-200", label: "Hoàn tiền" },
   };
-  const c = config[status] ?? { class: "bg-gray-100 text-gray-600", label: status };
+  const c = config[status] ?? { class: "bg-slate-50 text-slate-600 border border-slate-200", label: status };
   return (
-    <span className={`inline-block px-2 py-0.5 rounded-full text-xs font-medium ${c.class}`}>
+    <span className={`inline-flex items-center justify-center px-2.5 py-0.5 rounded-full text-xs font-medium whitespace-nowrap ${c.class}`}>
       {c.label}
     </span>
   );
