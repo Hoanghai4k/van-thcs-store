@@ -18,6 +18,12 @@ export const siteConfig = {
     address: "",
   },
 
+  support: {
+    zaloPhone: "0943413890",
+    zaloUrl: "https://zalo.me/0943413890",
+    facebookUrl: "https://www.facebook.com/share/1BnypsziyB/",
+  },
+
   social: {
     facebook: "",
     zalo: "",
