@@ -99,7 +99,7 @@ export default async function ProductDetailPage({ params }: ProductPageProps) {
         <div className="lg:col-span-5 order-2">
           <div className="sticky top-20 space-y-4">
             {/* Main Info Card */}
-            <div className="bg-white rounded-2xl border border-border p-6 shadow-sm">
+            <div className="bg-surface rounded-2xl border border-border p-6 shadow-sm">
               {product.category && (
                 <div className="flex items-center gap-1.5 text-primary-600 text-sm font-medium mb-3">
                   <Tag className="w-4 h-4" />
@@ -135,7 +135,7 @@ export default async function ProductDetailPage({ params }: ProductPageProps) {
                         </span>
                       )}
                     {discount && (
-                      <span className="text-sm font-semibold text-error bg-red-50 px-2 py-0.5 rounded-full">
+                      <span className="text-sm font-semibold text-error bg-red-50 dark:bg-red-900/30 px-2 py-0.5 rounded-full">
                         -{discount}%
                       </span>
                     )}
@@ -193,13 +193,13 @@ export default async function ProductDetailPage({ params }: ProductPageProps) {
 
             {/* Relations Section (Full version for FREE, Free preview for PAID) */}
             {product.product_type === "FREE" && relations.fullVersions.length > 0 && (
-              <div className="bg-primary-50 rounded-2xl border border-primary-100 p-5">
-                <h3 className="font-bold text-primary-800 mb-3 text-sm uppercase tracking-wide">Bản đầy đủ</h3>
+              <div className="bg-primary-50 dark:bg-primary-900/20 rounded-2xl border border-primary-100 dark:border-primary-800 p-5">
+                <h3 className="font-bold text-primary-800 dark:text-primary-300 mb-3 text-sm uppercase tracking-wide">Bản đầy đủ</h3>
                 <div className="space-y-3">
                   {relations.fullVersions.map((fullProduct) => (
-                    <Link key={fullProduct.id} href={`/products/${fullProduct.slug}`} className="block group/related bg-white p-3 rounded-xl border border-primary-200 hover:border-primary-400 hover:shadow-md transition-all">
-                      <p className="font-semibold text-text-primary group-hover/related:text-primary-700 text-sm mb-1">{fullProduct.name}</p>
-                      <p className="text-primary-600 font-bold text-sm">{formatCurrency(fullProduct.price)}</p>
+                    <Link key={fullProduct.id} href={`/products/${fullProduct.slug}`} className="block group/related bg-surface p-3 rounded-xl border border-primary-200 dark:border-primary-800 hover:border-primary-400 hover:shadow-md transition-all">
+                      <p className="font-semibold text-text-primary group-hover/related:text-primary-700 dark:group-hover/related:text-primary-400 text-sm mb-1">{fullProduct.name}</p>
+                      <p className="text-primary-600 dark:text-primary-400 font-bold text-sm">{formatCurrency(fullProduct.price)}</p>
                     </Link>
                   ))}
                 </div>
@@ -207,13 +207,13 @@ export default async function ProductDetailPage({ params }: ProductPageProps) {
             )}
 
             {product.product_type === "PAID" && relations.freePreviews.length > 0 && (
-              <div className="bg-green-50 rounded-2xl border border-green-100 p-5">
-                <h3 className="font-bold text-green-800 mb-3 text-sm uppercase tracking-wide">Xem bản mẫu miễn phí</h3>
+              <div className="bg-green-50 dark:bg-green-900/20 rounded-2xl border border-green-100 dark:border-green-800/50 p-5">
+                <h3 className="font-bold text-green-800 dark:text-green-300 mb-3 text-sm uppercase tracking-wide">Xem bản mẫu miễn phí</h3>
                 <div className="space-y-3">
                   {relations.freePreviews.map((freeProduct) => (
-                    <Link key={freeProduct.id} href={`/products/${freeProduct.slug}`} className="block group/related bg-white p-3 rounded-xl border border-green-200 hover:border-green-400 hover:shadow-md transition-all">
-                      <p className="font-semibold text-text-primary group-hover/related:text-green-700 text-sm mb-1">{freeProduct.name}</p>
-                      <p className="text-green-600 font-bold text-sm">MIỄN PHÍ</p>
+                    <Link key={freeProduct.id} href={`/products/${freeProduct.slug}`} className="block group/related bg-surface p-3 rounded-xl border border-green-200 dark:border-green-800/50 hover:border-green-400 hover:shadow-md transition-all">
+                      <p className="font-semibold text-text-primary group-hover/related:text-green-700 dark:group-hover/related:text-green-400 text-sm mb-1">{freeProduct.name}</p>
+                      <p className="text-green-600 dark:text-green-400 font-bold text-sm">MIỄN PHÍ</p>
                     </Link>
                   ))}
                 </div>
@@ -221,7 +221,7 @@ export default async function ProductDetailPage({ params }: ProductPageProps) {
             )}
 
             {/* Trust Section */}
-            <div className="bg-white rounded-2xl border border-border p-5">
+            <div className="bg-surface rounded-2xl border border-border p-5">
               <div className="space-y-2.5 text-sm text-text-secondary">
                 <div className="flex items-center gap-2.5">
                   <CheckCircle className="w-4 h-4 text-green-500 flex-shrink-0" />
@@ -270,9 +270,9 @@ export default async function ProductDetailPage({ params }: ProductPageProps) {
                 {product.features.map((feature, idx) => (
                   <div
                     key={idx}
-                    className="flex items-start gap-2.5 p-3 bg-green-50/60 rounded-xl"
+                    className="flex items-start gap-2.5 p-3 bg-green-50/60 dark:bg-green-900/20 rounded-xl"
                   >
-                    <CheckCircle className="w-4.5 h-4.5 text-green-500 flex-shrink-0 mt-0.5" />
+                    <CheckCircle className="w-4.5 h-4.5 text-green-500 dark:text-green-400 flex-shrink-0 mt-0.5" />
                     <span className="text-sm text-text-primary">
                       {feature}
                     </span>
@@ -292,7 +292,7 @@ export default async function ProductDetailPage({ params }: ProductPageProps) {
                 {product.suitable_for.map((audience, idx) => (
                   <span
                     key={idx}
-                    className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-primary-50 text-primary-700 text-sm font-medium rounded-full"
+                    className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-primary-50 dark:bg-primary-900/30 text-primary-700 dark:text-primary-300 text-sm font-medium rounded-full"
                   >
                     <Users className="w-3.5 h-3.5" />
                     {audience}
@@ -316,7 +316,7 @@ export default async function ProductDetailPage({ params }: ProductPageProps) {
                   {freeFiles.map((file) => (
                     <div key={file.id} className="flex flex-col sm:flex-row items-center justify-between p-4 bg-surface rounded-xl border border-border shadow-sm hover:border-green-300 transition-colors gap-4">
                       <div className="flex items-center gap-3 w-full sm:w-auto">
-                        <div className="w-10 h-10 bg-green-100 text-green-600 rounded-lg flex items-center justify-center flex-shrink-0">
+                        <div className="w-10 h-10 bg-green-100 dark:bg-green-900/30 text-green-600 dark:text-green-400 rounded-lg flex items-center justify-center flex-shrink-0">
                           <FileText className="w-5 h-5" />
                         </div>
                         <div className="truncate">

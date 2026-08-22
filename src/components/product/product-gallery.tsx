@@ -59,7 +59,7 @@ export function ProductGallery({
                 className={`flex-shrink-0 w-20 h-20 rounded-xl overflow-hidden border-2 transition-all focus:outline-none focus:ring-2 focus:ring-primary-500 focus:ring-offset-1 ${
                   idx === activeIndex
                     ? "border-primary-600 shadow-md ring-1 ring-primary-600"
-                    : "border-transparent hover:border-primary-300 opacity-60 hover:opacity-100 bg-surface-alt"
+                    : "border-transparent hover:border-primary-300 dark:hover:border-primary-700 opacity-60 hover:opacity-100 bg-surface-alt"
                 }`}
                 aria-label={`Xem ảnh ${idx + 1}`}
               >
@@ -81,11 +81,11 @@ export function ProductGallery({
 
   // Fallback: beautiful gradient placeholder
   return (
-    <div className="relative bg-gradient-to-br from-primary-50 via-primary-50 to-accent-50 rounded-2xl h-64 sm:h-80 md:h-96 flex flex-col items-center justify-center gap-3">
-      <div className="w-24 h-24 bg-white/60 rounded-2xl flex items-center justify-center shadow-sm">
-        <FileText className="w-14 h-14 text-primary-300" />
+    <div className="relative bg-gradient-to-br from-primary-50 dark:from-primary-900/20 via-primary-50 dark:via-primary-900/20 to-accent-50 dark:to-accent-900/20 rounded-2xl h-64 sm:h-80 md:h-96 flex flex-col items-center justify-center gap-3">
+      <div className="w-24 h-24 bg-white/60 dark:bg-black/30 rounded-2xl flex items-center justify-center shadow-sm">
+        <FileText className="w-14 h-14 text-primary-300 dark:text-primary-700" />
       </div>
-      <span className="text-sm text-primary-400 font-medium">
+      <span className="text-sm text-primary-400 dark:text-primary-600 font-medium">
         Tài liệu số
       </span>
       {discount && (

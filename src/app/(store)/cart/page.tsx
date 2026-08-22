@@ -63,24 +63,24 @@ export default function CartPage() {
             return (
             <div
               key={item.productId}
-              className="flex items-center gap-4 bg-surface p-4 rounded-xl border border-border hover:border-primary-200 transition-colors shadow-sm"
+              className="flex items-center gap-4 bg-surface p-4 rounded-xl border border-border hover:border-primary-200 dark:hover:border-primary-800 transition-colors shadow-sm"
             >
               <div className="w-20 h-20 bg-surface-alt rounded-lg flex items-center justify-center flex-shrink-0 relative overflow-hidden border border-border/50">
                 {thumbUrl ? (
                   <Image src={thumbUrl} alt={item.name} fill className="object-cover" sizes="80px" />
                 ) : (
-                  <FileText className="w-8 h-8 text-primary-300" />
+                  <FileText className="w-8 h-8 text-primary-300 dark:text-primary-700" />
                 )}
               </div>
               <div className="flex-1 min-w-0">
                 <Link
                   href={`/products/${item.slug}`}
-                  className="font-medium text-text-primary text-sm hover:text-primary-600 transition-colors line-clamp-2"
+                  className="font-medium text-text-primary text-sm hover:text-primary-600 dark:hover:text-primary-400 transition-colors line-clamp-2"
                 >
                   {item.name}
                 </Link>
                 <div className="flex items-center gap-2 mt-1">
-                  <span className="text-sm font-bold text-primary-600">
+                  <span className="text-sm font-bold text-primary-600 dark:text-primary-400">
                     {formatCurrency(item.price)}
                   </span>
                   {item.originalPrice && item.originalPrice > item.price && (
@@ -95,7 +95,7 @@ export default function CartPage() {
               </div>
               <button
                 onClick={() => removeItem(item.productId)}
-                className="p-2 text-text-muted hover:text-error hover:bg-red-50 rounded-lg transition-colors"
+                className="p-2 text-text-muted hover:text-error hover:bg-red-50 dark:hover:bg-red-900/30 rounded-lg transition-colors"
                 aria-label={`Xóa ${item.name}`}
               >
                 <Trash2 className="w-4 h-4" />
@@ -125,7 +125,7 @@ export default function CartPage() {
               </div>
               <div className="border-t border-border pt-3 flex justify-between font-semibold text-text-primary text-base">
                 <span>Tổng cộng</span>
-                <span className="text-primary-600">
+                <span className="text-primary-600 dark:text-primary-400">
                   {formatCurrency(totalPrice)}
                 </span>
               </div>

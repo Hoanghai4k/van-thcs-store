@@ -125,9 +125,9 @@ export function CheckoutForm({
               type="text"
               value={form.customerName}
               onChange={(e) => handleChange("customerName", e.target.value)}
-              className={`w-full px-4 py-2.5 rounded-xl border outline-none transition-all text-sm ${
+              className={`w-full px-4 py-2.5 rounded-xl border outline-none bg-surface text-text-primary placeholder:text-text-muted transition-all text-sm ${
                 fieldErrors.customerName
-                  ? "border-error focus:ring-2 focus:ring-red-200"
+                  ? "border-error focus:ring-2 focus:ring-red-200 dark:focus:ring-red-900/50"
                   : "border-border focus:ring-2 focus:ring-primary-500 focus:border-primary-500"
               }`}
               placeholder="Nguyễn Văn A"
@@ -153,9 +153,9 @@ export function CheckoutForm({
               type="email"
               value={form.customerEmail}
               onChange={(e) => handleChange("customerEmail", e.target.value)}
-              className={`w-full px-4 py-2.5 rounded-xl border outline-none transition-all text-sm ${
+              className={`w-full px-4 py-2.5 rounded-xl border outline-none bg-surface text-text-primary placeholder:text-text-muted transition-all text-sm ${
                 fieldErrors.customerEmail
-                  ? "border-error focus:ring-2 focus:ring-red-200"
+                  ? "border-error focus:ring-2 focus:ring-red-200 dark:focus:ring-red-900/50"
                   : "border-border focus:ring-2 focus:ring-primary-500 focus:border-primary-500"
               }`}
               placeholder="email@example.com"
@@ -181,9 +181,9 @@ export function CheckoutForm({
               type="tel"
               value={form.customerPhone}
               onChange={(e) => handleChange("customerPhone", e.target.value)}
-              className={`w-full px-4 py-2.5 rounded-xl border outline-none transition-all text-sm ${
+              className={`w-full px-4 py-2.5 rounded-xl border outline-none bg-surface text-text-primary placeholder:text-text-muted transition-all text-sm ${
                 fieldErrors.customerPhone
-                  ? "border-error focus:ring-2 focus:ring-red-200"
+                  ? "border-error focus:ring-2 focus:ring-red-200 dark:focus:ring-red-900/50"
                   : "border-border focus:ring-2 focus:ring-primary-500 focus:border-primary-500"
               }`}
               placeholder="0912345678"
@@ -199,7 +199,7 @@ export function CheckoutForm({
       </div>
 
       {serverError && (
-        <div className="bg-red-50 border border-red-200 text-red-600 rounded-xl p-4 text-sm flex items-start gap-2">
+        <div className="bg-red-50 dark:bg-red-900/30 border border-red-200 dark:border-red-800/50 text-red-600 dark:text-red-400 rounded-xl p-4 text-sm flex items-start gap-2">
           <span className="shrink-0">⚠</span>
           {serverError}
         </div>

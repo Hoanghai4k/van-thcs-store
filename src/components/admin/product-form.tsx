@@ -371,24 +371,24 @@ export function ProductForm({
 
       <form onSubmit={handleSave} className="space-y-6">
         {/* ─── Basic Info ─── */}
-        <section className="bg-white rounded-xl border border-slate-200 p-5 space-y-4">
-          <h2 className="font-semibold text-slate-900">Thông tin cơ bản</h2>
+        <section className="bg-surface rounded-xl border border-border p-5 space-y-4 shadow-sm">
+          <h2 className="font-semibold text-text-primary">Thông tin cơ bản</h2>
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div>
-              <label className="block text-sm font-medium text-slate-700 mb-1">
+              <label className="block text-sm font-medium text-text-primary mb-1">
                 Tên sản phẩm <span className="text-red-500">*</span>
               </label>
               <input
                 type="text"
                 value={name}
                 onChange={(e) => handleNameChange(e.target.value)}
-                className="w-full border border-slate-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary-500"
+                className="w-full border border-border bg-transparent text-text-primary rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary-500"
                 required
               />
             </div>
             <div>
-              <label className="block text-sm font-medium text-slate-700 mb-1">
+              <label className="block text-sm font-medium text-text-primary mb-1">
                 Slug <span className="text-red-500">*</span>
               </label>
               <input
@@ -398,20 +398,20 @@ export function ProductForm({
                   setSlugManual(true);
                   setSlug(e.target.value);
                 }}
-                className="w-full border border-slate-300 rounded-lg px-3 py-2 text-sm font-mono focus:outline-none focus:ring-2 focus:ring-primary-500"
+                className="w-full border border-border bg-transparent text-text-primary rounded-lg px-3 py-2 text-sm font-mono focus:outline-none focus:ring-2 focus:ring-primary-500"
                 required
               />
             </div>
           </div>
 
           <div>
-            <label className="block text-sm font-medium text-slate-700 mb-1">
+            <label className="block text-sm font-medium text-text-primary mb-1">
               Danh mục
             </label>
             <select
               value={categoryId}
               onChange={(e) => setCategoryId(e.target.value)}
-              className="w-full border border-slate-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary-500"
+              className="w-full border border-border bg-transparent text-text-primary rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary-500"
             >
               <option value="">— Chọn danh mục —</option>
               {categories.map((cat) => (
@@ -423,7 +423,7 @@ export function ProductForm({
           </div>
 
           <div>
-            <label className="block text-sm font-medium text-slate-700 mb-1">
+            <label className="block text-sm font-medium text-text-primary mb-1">
               Mô tả ngắn
             </label>
             <input
@@ -431,37 +431,37 @@ export function ProductForm({
               value={shortDesc}
               onChange={(e) => setShortDesc(e.target.value)}
               maxLength={500}
-              className="w-full border border-slate-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary-500"
+              className="w-full border border-border bg-transparent text-text-primary rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary-500"
             />
           </div>
 
           <div>
-            <label className="block text-sm font-medium text-slate-700 mb-1">
+            <label className="block text-sm font-medium text-text-primary mb-1">
               Mô tả chi tiết
             </label>
             <textarea
               value={description}
               onChange={(e) => setDescription(e.target.value)}
               rows={4}
-              className="w-full border border-slate-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary-500"
+              className="w-full border border-border bg-transparent text-text-primary rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary-500"
             />
           </div>
         </section>
 
         {/* ─── Product Type & Pricing ─── */}
-        <section className="bg-white rounded-xl border border-slate-200 p-5 space-y-4">
+        <section className="bg-surface rounded-xl border border-border p-5 space-y-4 shadow-sm">
           <div className="flex items-center justify-between">
-            <h2 className="font-semibold text-slate-900">Phân loại & Giá</h2>
+            <h2 className="font-semibold text-text-primary">Phân loại & Giá</h2>
           </div>
           <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
             <div className="md:col-span-1">
-              <label className="block text-sm font-medium text-slate-700 mb-1">
+              <label className="block text-sm font-medium text-text-primary mb-1">
                 Loại sản phẩm <span className="text-red-500">*</span>
               </label>
               <select
                 value={productType}
                 onChange={(e) => setProductType(e.target.value as "PAID" | "FREE")}
-                className="w-full border border-slate-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary-500 bg-white"
+                className="w-full border border-border bg-transparent text-text-primary rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary-500"
               >
                 <option value="PAID">Sản phẩm trả phí</option>
                 <option value="FREE">Tài liệu miễn phí</option>
@@ -469,7 +469,7 @@ export function ProductForm({
             </div>
             
             <div className="md:col-span-1">
-              <label className="block text-sm font-medium text-slate-700 mb-1">
+              <label className="block text-sm font-medium text-text-primary mb-1">
                 Giá bán (VND) {productType !== "FREE" && <span className="text-red-500">*</span>}
               </label>
               <input
@@ -477,13 +477,13 @@ export function ProductForm({
                 value={productType === "FREE" ? 0 : price}
                 onChange={(e) => setPrice(e.target.value)}
                 min={0}
-                className="w-full border border-slate-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary-500 disabled:bg-slate-100 disabled:text-slate-500"
+                className="w-full border border-border bg-transparent text-text-primary rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary-500 disabled:bg-surface-alt disabled:text-text-muted disabled:border-border"
                 required={productType === "PAID"}
                 disabled={productType === "FREE"}
               />
             </div>
             <div className="md:col-span-1">
-              <label className="block text-sm font-medium text-slate-700 mb-1">
+              <label className="block text-sm font-medium text-text-primary mb-1">
                 Giá gốc (VND)
               </label>
               <input
@@ -492,12 +492,12 @@ export function ProductForm({
                 onChange={(e) => setOriginalPrice(e.target.value)}
                 min={0}
                 placeholder="Để trống nếu không giảm giá"
-                className="w-full border border-slate-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary-500 disabled:bg-slate-100 disabled:text-slate-500"
+                className="w-full border border-border bg-transparent text-text-primary rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary-500 disabled:bg-surface-alt disabled:text-text-muted placeholder:text-text-muted disabled:border-border"
                 disabled={productType === "FREE"}
               />
             </div>
             <div className="md:col-span-1">
-              <label className="block text-sm font-medium text-slate-700 mb-1">
+              <label className="block text-sm font-medium text-text-primary mb-1">
                 Số trang
               </label>
               <input
@@ -505,12 +505,12 @@ export function ProductForm({
                 value={pageCount}
                 onChange={(e) => setPageCount(e.target.value)}
                 min={1}
-                className="w-full border border-slate-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary-500"
+                className="w-full border border-border bg-transparent text-text-primary rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary-500"
               />
             </div>
           </div>
           {price && productType !== "FREE" && (
-            <p className="text-sm text-slate-500">
+            <p className="text-sm text-text-secondary">
               Hiển thị: {formatCurrency(parseInt(price, 10) || 0)}
               {originalPrice &&
                 parseInt(originalPrice, 10) > parseInt(price, 10) &&
@@ -518,57 +518,57 @@ export function ProductForm({
             </p>
           )}
           {productType === "FREE" && (
-            <p className="text-sm text-green-600 font-medium bg-green-50 px-3 py-2 rounded-lg border border-green-100">
+            <p className="text-sm text-green-700 dark:text-green-300 font-medium bg-green-50 dark:bg-green-900/30 px-3 py-2 rounded-lg border border-green-100 dark:border-green-800/50">
               Sản phẩm này sẽ được hiển thị miễn phí và khách hàng có thể tải xuống trực tiếp mà không cần qua thanh toán.
             </p>
           )}
         </section>
 
         {/* ─── Enrichment ─── */}
-        <section className="bg-white rounded-xl border border-slate-200 p-5 space-y-4">
-          <h2 className="font-semibold text-slate-900">Nội dung hiển thị</h2>
+        <section className="bg-surface rounded-xl border border-border p-5 space-y-4 shadow-sm">
+          <h2 className="font-semibold text-text-primary">Nội dung hiển thị</h2>
           <div>
-            <label className="block text-sm font-medium text-slate-700 mb-1">
+            <label className="block text-sm font-medium text-text-primary mb-1">
               Tính năng nổi bật{" "}
-              <span className="text-xs text-slate-400">(mỗi dòng 1 mục)</span>
+              <span className="text-xs text-text-muted">(mỗi dòng 1 mục)</span>
             </label>
             <textarea
               value={featuresText}
               onChange={(e) => setFeaturesText(e.target.value)}
               rows={4}
               placeholder={"50 đề đọc hiểu có đáp án\nHướng dẫn chấm bài rõ ràng\nFile tài liệu dễ sử dụng"}
-              className="w-full border border-slate-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary-500"
+              className="w-full border border-border bg-transparent text-text-primary placeholder:text-text-muted rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary-500"
             />
           </div>
           <div>
-            <label className="block text-sm font-medium text-slate-700 mb-1">
+            <label className="block text-sm font-medium text-text-primary mb-1">
               Phù hợp với{" "}
-              <span className="text-xs text-slate-400">(mỗi dòng 1 mục)</span>
+              <span className="text-xs text-text-muted">(mỗi dòng 1 mục)</span>
             </label>
             <textarea
               value={suitableForText}
               onChange={(e) => setSuitableForText(e.target.value)}
               rows={3}
               placeholder={"Học sinh lớp 9\nGiáo viên Ngữ văn THCS"}
-              className="w-full border border-slate-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary-500"
+              className="w-full border border-border bg-transparent text-text-primary placeholder:text-text-muted rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary-500"
             />
           </div>
         </section>
 
         {/* ─── Relations ─── */}
-        <section className="bg-white rounded-xl border border-slate-200 p-5 space-y-4">
-          <h2 className="font-semibold text-slate-900">Sản phẩm liên kết</h2>
+        <section className="bg-surface rounded-xl border border-border p-5 space-y-4 shadow-sm">
+          <h2 className="font-semibold text-text-primary">Sản phẩm liên kết</h2>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             {productType === "FREE" && (
               <div>
-                <label className="block text-sm font-medium text-slate-700 mb-2">
+                <label className="block text-sm font-medium text-text-primary mb-2">
                   Bản đầy đủ (PREVIEW_OF)
                 </label>
-                <div className="space-y-2 max-h-48 overflow-y-auto border border-slate-200 rounded-lg p-3 bg-slate-50">
+                <div className="space-y-2 max-h-48 overflow-y-auto border border-border rounded-lg p-3 bg-surface-alt">
                   {allProducts
                     .filter((p) => p.product_type === "PAID" && p.is_active && p.id !== savedProductId)
                     .map((p) => (
-                      <label key={p.id} className="flex items-center gap-2 text-sm text-slate-700 cursor-pointer">
+                      <label key={p.id} className="flex items-center gap-2 text-sm text-text-primary cursor-pointer">
                         <input
                           type="checkbox"
                           checked={previewOfIds.includes(p.id)}
@@ -579,30 +579,30 @@ export function ProductForm({
                               setPreviewOfIds(previewOfIds.filter((id) => id !== p.id));
                             }
                           }}
-                          className="rounded border-slate-300 text-primary-600 focus:ring-primary-500"
+                          className="rounded border-border text-primary-600 focus:ring-primary-500 bg-transparent"
                         />
                         {p.name}
                       </label>
                     ))}
                   {allProducts.filter((p) => p.product_type === "PAID" && p.is_active && p.id !== savedProductId).length === 0 && (
-                    <span className="text-xs text-slate-500">Không có sản phẩm PAID nào.</span>
+                    <span className="text-xs text-text-muted">Không có sản phẩm PAID nào.</span>
                   )}
                 </div>
-                <p className="text-xs text-slate-500 mt-2">
+                <p className="text-xs text-text-muted mt-2">
                   Sản phẩm trả phí tương ứng với tài liệu xem trước này.
                 </p>
               </div>
             )}
             
             <div className={productType !== "FREE" ? "md:col-span-2" : ""}>
-              <label className="block text-sm font-medium text-slate-700 mb-2">
+              <label className="block text-sm font-medium text-text-primary mb-2">
                 Tài liệu liên quan (RELATED)
               </label>
-              <div className="space-y-2 max-h-48 overflow-y-auto border border-slate-200 rounded-lg p-3 bg-slate-50">
+              <div className="space-y-2 max-h-48 overflow-y-auto border border-border rounded-lg p-3 bg-surface-alt">
                 {allProducts
                   .filter((p) => p.is_active && p.id !== savedProductId)
                   .map((p) => (
-                    <label key={p.id} className="flex items-center gap-2 text-sm text-slate-700 cursor-pointer">
+                    <label key={p.id} className="flex items-center gap-2 text-sm text-text-primary cursor-pointer">
                       <input
                         type="checkbox"
                         checked={relatedIds.includes(p.id)}
@@ -613,16 +613,16 @@ export function ProductForm({
                             setRelatedIds(relatedIds.filter((id) => id !== p.id));
                           }
                         }}
-                        className="rounded border-slate-300 text-primary-600 focus:ring-primary-500"
+                        className="rounded border-border text-primary-600 focus:ring-primary-500 bg-transparent"
                       />
-                      {p.name} <span className="text-xs text-slate-400">({p.product_type})</span>
+                      {p.name} <span className="text-xs text-text-muted">({p.product_type})</span>
                     </label>
                   ))}
                 {allProducts.filter((p) => p.is_active && p.id !== savedProductId).length === 0 && (
-                  <span className="text-xs text-slate-500">Không có sản phẩm nào.</span>
+                  <span className="text-xs text-text-muted">Không có sản phẩm nào.</span>
                 )}
               </div>
-              <p className="text-xs text-slate-500 mt-2">
+              <p className="text-xs text-text-muted mt-2">
                 Sản phẩm sẽ hiển thị ở mục &quot;Tài liệu liên quan&quot; cuối trang.
               </p>
             </div>
@@ -633,13 +633,13 @@ export function ProductForm({
         {canUpload && (
           <div className="space-y-6">
             {/* Hình ảnh */}
-            <section className="bg-white rounded-xl border border-slate-200 p-5 space-y-4">
-              <h2 className="font-semibold text-slate-900">Hình ảnh</h2>
+            <section className="bg-surface rounded-xl border border-border p-5 space-y-4 shadow-sm">
+              <h2 className="font-semibold text-text-primary">Hình ảnh</h2>
               
               <div className="space-y-3">
-                <h3 className="text-sm font-medium text-slate-700">Ảnh đại diện (Thumbnail)</h3>
+                <h3 className="text-sm font-medium text-text-secondary">Ảnh đại diện (Thumbnail)</h3>
                 {thumbUrl && (
-                  <div className="relative w-32 h-32 rounded-lg overflow-hidden border border-slate-200">
+                  <div className="relative w-32 h-32 rounded-lg overflow-hidden border border-border">
                     <Image
                       src={thumbUrl}
                       alt="Thumbnail"
@@ -649,7 +649,7 @@ export function ProductForm({
                     />
                   </div>
                 )}
-                <label className="flex items-center gap-2 w-fit px-4 py-2 border border-slate-300 rounded-lg text-sm text-slate-700 hover:bg-slate-50 cursor-pointer transition-colors">
+                <label className="flex items-center gap-2 w-fit px-4 py-2 border border-border bg-surface-alt rounded-lg text-sm text-text-secondary hover:bg-surface-hover cursor-pointer transition-colors">
                   {uploading === "thumbnail" ? (
                     <Loader2 className="w-4 h-4 animate-spin" />
                   ) : (
@@ -664,13 +664,13 @@ export function ProductForm({
                     className="hidden"
                   />
                 </label>
-                <p className="text-xs text-slate-400">
+                <p className="text-xs text-text-muted">
                   JPEG, PNG, WebP — tối đa 10 MB
                 </p>
               </div>
 
-              <div className="space-y-3 pt-4 border-t border-slate-100">
-                <h3 className="text-sm font-medium text-slate-700">Ảnh xem trước</h3>
+              <div className="space-y-3 pt-4 border-t border-border">
+                <h3 className="text-sm font-medium text-text-secondary">Ảnh xem trước</h3>
                 {previewImages.length > 0 && (
                   <div className="flex flex-wrap gap-2">
                     {previewImages.map((path) => {
@@ -678,7 +678,7 @@ export function ProductForm({
                       return (
                         <div
                           key={path}
-                          className="relative w-24 h-24 rounded-lg overflow-hidden border border-slate-200 group"
+                          className="relative w-24 h-24 rounded-lg overflow-hidden border border-border group"
                         >
                           {url && (
                             <Image
@@ -703,7 +703,7 @@ export function ProductForm({
                     })}
                   </div>
                 )}
-                <label className="flex items-center gap-2 w-fit px-4 py-2 border border-slate-300 rounded-lg text-sm text-slate-700 hover:bg-slate-50 cursor-pointer transition-colors">
+                <label className="flex items-center gap-2 w-fit px-4 py-2 border border-border bg-surface-alt rounded-lg text-sm text-text-secondary hover:bg-surface-hover cursor-pointer transition-colors">
                   {uploading === "preview" ? (
                     <Loader2 className="w-4 h-4 animate-spin" />
                   ) : (
@@ -722,10 +722,10 @@ export function ProductForm({
             </section>
 
             {/* Tệp tài liệu */}
-            <section className="bg-white rounded-xl border border-slate-200 p-5 space-y-3">
-              <h2 className="font-semibold text-slate-900">
+            <section className="bg-surface rounded-xl border border-border p-5 space-y-3 shadow-sm">
+              <h2 className="font-semibold text-text-primary">
                 Tệp tài liệu{" "}
-                <span className="text-sm font-normal text-slate-500">
+                <span className="text-sm font-normal text-text-muted">
                   ({files.length} file)
                 </span>
               </h2>
@@ -734,18 +734,18 @@ export function ProductForm({
                   {files.map((f) => (
                     <div
                       key={f.id}
-                      className="flex items-center justify-between p-3 bg-slate-50 rounded-lg"
+                      className="flex items-center justify-between p-3 bg-surface-alt rounded-lg border border-border"
                     >
                       <div className="flex items-center gap-3 min-w-0">
-                        <div className="w-10 h-10 rounded bg-white border border-slate-200 flex items-center justify-center flex-shrink-0">
+                        <div className="w-10 h-10 rounded bg-surface border border-border flex items-center justify-center flex-shrink-0">
                           <File className="w-5 h-5 text-primary-500" />
                         </div>
                         <div className="min-w-0 flex-1">
-                          <p className="text-sm font-medium text-slate-900 truncate">
+                          <p className="text-sm font-medium text-text-primary truncate">
                             {f.file_name}
                           </p>
-                          <p className="text-xs text-slate-500 mt-0.5 flex items-center gap-2">
-                            <span className="inline-flex items-center px-1.5 py-0.5 rounded bg-slate-200 text-slate-700 font-medium text-[10px] uppercase">
+                          <p className="text-xs text-text-muted mt-0.5 flex items-center gap-2">
+                            <span className="inline-flex items-center px-1.5 py-0.5 rounded bg-surface text-text-secondary border border-border font-medium text-[10px] uppercase">
                               {f.file_name.split(".").pop()}
                             </span>
                             {(f.file_size / 1024 / 1024).toFixed(2)} MB
@@ -766,7 +766,7 @@ export function ProductForm({
                   ))}
                 </div>
               )}
-              <label className="flex items-center gap-2 w-fit px-4 py-2 border border-slate-300 rounded-lg text-sm text-slate-700 hover:bg-slate-50 cursor-pointer transition-colors">
+              <label className="flex items-center gap-2 w-fit px-4 py-2 border border-border bg-surface-alt rounded-lg text-sm text-text-secondary hover:bg-surface-hover cursor-pointer transition-colors">
                 {uploading === "file" ? (
                   <Loader2 className="w-4 h-4 animate-spin" />
                 ) : (
@@ -781,7 +781,7 @@ export function ProductForm({
                   className="hidden"
                 />
               </label>
-              <p className="text-xs text-slate-400">
+              <p className="text-xs text-text-muted">
                 Hỗ trợ DOCX và ZIP — tối đa 50 MB
               </p>
             </section>
@@ -798,10 +798,10 @@ export function ProductForm({
         )}
 
         {/* ─── Save Button / Status ─── */}
-        <section className="bg-slate-50 rounded-xl border border-slate-200 p-5 flex items-center justify-between">
+        <section className="bg-surface-alt rounded-xl border border-border p-5 flex items-center justify-between">
           <div>
-            <h2 className="font-semibold text-slate-900 mb-1">Trạng thái</h2>
-            <p className="text-sm text-slate-500">
+            <h2 className="font-semibold text-text-primary mb-1">Trạng thái</h2>
+            <p className="text-sm text-text-secondary">
               {product?.is_active ? "Sản phẩm đang được hiển thị trên cửa hàng." : "Sản phẩm đang ở trạng thái nháp."}
             </p>
           </div>
@@ -813,8 +813,8 @@ export function ProductForm({
                 disabled={isPending}
                 className={`px-4 py-2.5 rounded-lg text-sm font-medium transition-colors ${
                   product.is_active
-                    ? "bg-orange-50 text-orange-700 hover:bg-orange-100 border border-orange-200"
-                    : "bg-green-50 text-green-700 hover:bg-green-100 border border-green-200"
+                    ? "bg-orange-50 dark:bg-orange-900/30 text-orange-700 dark:text-orange-300 hover:bg-orange-100 dark:hover:bg-orange-900/50 border border-orange-200 dark:border-orange-800/50"
+                    : "bg-green-50 dark:bg-green-900/30 text-green-700 dark:text-green-300 hover:bg-green-100 dark:hover:bg-green-900/50 border border-green-200 dark:border-green-800/50"
                 }`}
               >
                 {product.is_active ? "Chuyển thành bản nháp" : "Kích hoạt sản phẩm"}

@@ -36,7 +36,7 @@ export function ProductFAQ() {
         {faqs.map((faq, idx) => (
           <details
             key={idx}
-            className="group bg-white border border-border rounded-xl overflow-hidden"
+            className="group bg-surface border border-border rounded-xl overflow-hidden shadow-sm"
           >
             <summary className="flex items-center justify-between px-5 py-3.5 cursor-pointer text-sm font-medium text-text-primary hover:bg-surface-alt transition-colors list-none [&::-webkit-details-marker]:hidden">
               {faq.question}
@@ -50,7 +50,7 @@ export function ProductFAQ() {
                   Vui lòng xem{" "}
                   <Link
                     href="/refund-policy"
-                    className="text-primary-600 hover:text-primary-700 underline"
+                    className="text-primary-600 dark:text-primary-400 hover:text-primary-700 dark:hover:text-primary-300 underline"
                   >
                     chính sách hoàn tiền
                   </Link>{" "}

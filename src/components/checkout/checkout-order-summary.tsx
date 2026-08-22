@@ -23,15 +23,15 @@ export function CheckoutOrderSummary() {
         <div className="space-y-3 mb-4">
           {items.map((item) => (
             <div key={item.productId} className="flex items-start gap-3">
-              <div className="w-10 h-10 bg-primary-50 rounded-lg flex items-center justify-center flex-shrink-0">
-                <FileText className="w-5 h-5 text-primary-300" />
+              <div className="w-10 h-10 bg-primary-50 dark:bg-primary-900/30 rounded-lg flex items-center justify-center flex-shrink-0">
+                <FileText className="w-5 h-5 text-primary-300 dark:text-primary-700" />
               </div>
               <div className="flex-1 min-w-0">
                 <p className="text-sm text-text-primary line-clamp-2">
                   {item.name}
                 </p>
                 <div className="flex items-center gap-2 mt-0.5">
-                  <span className="text-sm font-medium text-primary-600">
+                  <span className="text-sm font-medium text-primary-600 dark:text-primary-400">
                     {formatCurrency(item.price)}
                   </span>
                   <span className="text-xs text-text-muted bg-surface-alt px-1.5 py-0.5 rounded">
@@ -49,7 +49,7 @@ export function CheckoutOrderSummary() {
           </div>
           <div className="flex justify-between font-semibold text-text-primary text-base pt-1">
             <span>Tổng cộng</span>
-            <span className="text-primary-600">
+            <span className="text-primary-600 dark:text-primary-400">
               {formatCurrency(totalPrice)}
             </span>
           </div>

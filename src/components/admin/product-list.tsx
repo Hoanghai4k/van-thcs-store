@@ -133,12 +133,12 @@ export function AdminProductList({
               value={search}
               onChange={(e) => setSearch(e.target.value)}
               placeholder="Tìm kiếm sản phẩm..."
-              className="w-full pl-9 pr-3 py-2 border border-slate-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-primary-500"
-            />
-          </div>
-          <button
-            type="submit"
-            className="px-3 py-2 bg-slate-100 text-slate-700 rounded-lg text-sm hover:bg-slate-200 transition-colors"
+            className="w-full pl-9 pr-3 py-2 border border-border bg-transparent text-text-primary placeholder:text-text-muted rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-primary-500"
+          />
+        </div>
+        <button
+          type="submit"
+          className="px-3 py-2 bg-surface-alt text-text-secondary rounded-lg text-sm hover:bg-surface-hover transition-colors border border-border"
           >
             Tìm
           </button>
@@ -147,7 +147,7 @@ export function AdminProductList({
         <select
           value={currentCategory ?? ""}
           onChange={(e) => handleFilter("category", e.target.value)}
-          className="border border-slate-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary-500"
+          className="border border-border bg-transparent text-text-primary rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary-500"
         >
           <option value="">Tất cả danh mục</option>
           {categories.map((cat) => (
@@ -160,7 +160,7 @@ export function AdminProductList({
         <select
           value={currentStatus ?? ""}
           onChange={(e) => handleFilter("status", e.target.value)}
-          className="border border-slate-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary-500"
+          className="border border-border bg-transparent text-text-primary rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary-500"
         >
           <option value="">Tất cả trạng thái</option>
           <option value="active">Đang bán</option>
@@ -170,10 +170,10 @@ export function AdminProductList({
 
       {/* Product Table */}
       {products.length === 0 ? (
-        <div className="text-center py-16 bg-white rounded-xl border border-slate-200 shadow-sm">
-          <Package className="w-12 h-12 text-slate-300 mx-auto mb-3" />
-          <h3 className="text-lg font-medium text-slate-900 mb-1">Chưa có sản phẩm</h3>
-          <p className="text-slate-500 mb-4">Bạn chưa có sản phẩm nào phù hợp với tìm kiếm này.</p>
+        <div className="text-center py-16 bg-surface rounded-xl border border-border shadow-sm">
+          <Package className="w-12 h-12 text-text-muted mx-auto mb-3" />
+          <h3 className="text-lg font-medium text-text-primary mb-1">Chưa có sản phẩm</h3>
+          <p className="text-text-secondary mb-4">Bạn chưa có sản phẩm nào phù hợp với tìm kiếm này.</p>
           <Link
             href="/admin/products/new"
             className="inline-flex items-center gap-2 bg-primary-600 text-white px-4 py-2 rounded-lg text-sm font-medium hover:bg-primary-700 transition-colors"
@@ -183,45 +183,45 @@ export function AdminProductList({
           </Link>
         </div>
       ) : (
-        <div className="bg-white rounded-xl border border-slate-200 overflow-hidden shadow-sm">
+        <div className="bg-surface rounded-xl border border-border overflow-hidden shadow-sm">
           <div className="overflow-x-auto">
             <table className="w-full text-sm">
-              <thead className="bg-slate-50 border-b border-slate-200">
+              <thead className="bg-surface-alt border-b border-border">
                 <tr>
-                  <th className="text-left px-4 py-3 font-medium text-slate-600">
+                  <th className="text-left px-4 py-3 font-medium text-text-secondary">
                     Sản phẩm
                   </th>
-                  <th className="text-left px-4 py-3 font-medium text-slate-600">
+                  <th className="text-left px-4 py-3 font-medium text-text-secondary">
                     Danh mục
                   </th>
-                  <th className="text-center px-4 py-3 font-medium text-slate-600">
+                  <th className="text-center px-4 py-3 font-medium text-text-secondary">
                     Định dạng
                   </th>
-                  <th className="text-right px-4 py-3 font-medium text-slate-600">
+                  <th className="text-right px-4 py-3 font-medium text-text-secondary">
                     Giá
                   </th>
-                  <th className="text-center px-4 py-3 font-medium text-slate-600">
+                  <th className="text-center px-4 py-3 font-medium text-text-secondary">
                     Trạng thái
                   </th>
-                  <th className="text-center px-4 py-3 font-medium text-slate-600">
+                  <th className="text-center px-4 py-3 font-medium text-text-secondary">
                     Cập nhật
                   </th>
-                  <th className="text-right px-4 py-3 font-medium text-slate-600">
+                  <th className="text-right px-4 py-3 font-medium text-text-secondary">
                     Thao tác
                   </th>
                 </tr>
               </thead>
-              <tbody className="divide-y divide-slate-100">
+              <tbody className="divide-y divide-border">
                 {products.map((product) => {
                   const thumbUrl = getProductAssetUrl(product.thumbnail_path);
                   return (
                     <tr
                       key={product.id}
-                      className="hover:bg-slate-50 transition-colors"
+                      className="hover:bg-surface-hover transition-colors"
                     >
                       <td className="px-4 py-3">
                         <div className="flex items-center gap-3 min-w-[200px]">
-                          <div className="relative w-10 h-10 bg-slate-100 rounded-lg flex items-center justify-center flex-shrink-0 overflow-hidden border border-slate-200">
+                          <div className="relative w-10 h-10 bg-surface-alt rounded-lg flex items-center justify-center flex-shrink-0 overflow-hidden border border-border">
                             {thumbUrl ? (
                               <Image
                                 src={thumbUrl}
@@ -231,30 +231,30 @@ export function AdminProductList({
                                 className="object-cover"
                               />
                             ) : (
-                              <FileText className="w-5 h-5 text-slate-400" />
+                              <FileText className="w-5 h-5 text-text-muted" />
                             )}
                           </div>
                           <div className="min-w-0">
-                            <p className="font-medium text-slate-900 truncate max-w-[200px]" title={product.name}>
+                            <p className="font-medium text-text-primary truncate max-w-[200px]" title={product.name}>
                               {product.name}
                             </p>
-                            <p className="text-xs text-slate-400 font-mono truncate max-w-[200px]" title={product.slug}>
+                            <p className="text-xs text-text-muted font-mono truncate max-w-[200px]" title={product.slug}>
                               {product.slug}
                             </p>
                           </div>
                         </div>
                       </td>
-                      <td className="px-4 py-3 text-slate-500 text-xs whitespace-nowrap">
+                      <td className="px-4 py-3 text-text-secondary text-xs whitespace-nowrap">
                         {product.category?.name ?? "—"}
                       </td>
                       <td className="px-4 py-3 text-center">
-                        <span className="inline-flex items-center justify-center px-2 py-0.5 rounded text-xs font-medium bg-slate-100 text-slate-600 uppercase border border-slate-200">
+                        <span className="inline-flex items-center justify-center px-2 py-0.5 rounded text-xs font-medium bg-surface-alt text-text-secondary uppercase border border-border">
                           {product.file_format || "—"}
                         </span>
                       </td>
-                      <td className="px-4 py-3 text-right font-medium text-slate-900 whitespace-nowrap">
+                      <td className="px-4 py-3 text-right font-medium text-text-primary whitespace-nowrap">
                         {product.product_type === "FREE" ? (
-                          <span className="text-green-600 font-bold text-xs uppercase tracking-wider">Miễn phí</span>
+                          <span className="text-green-600 dark:text-green-400 font-bold text-xs uppercase tracking-wider">Miễn phí</span>
                         ) : (
                           formatCurrency(product.price)
                         )}
@@ -263,8 +263,8 @@ export function AdminProductList({
                         <span
                           className={`inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-xs font-medium ${
                             product.is_active
-                              ? "bg-green-50 text-green-700 border border-green-200"
-                              : "bg-slate-50 text-slate-600 border border-slate-200"
+                              ? "bg-green-50 dark:bg-green-900/30 text-green-700 dark:text-green-300 border border-green-200 dark:border-green-800/50"
+                              : "bg-surface-alt text-text-secondary border border-border"
                           }`}
                         >
                           {product.is_active ? (
@@ -278,14 +278,14 @@ export function AdminProductList({
                           )}
                         </span>
                       </td>
-                      <td className="px-4 py-3 text-center text-slate-500 text-xs whitespace-nowrap">
+                      <td className="px-4 py-3 text-center text-text-muted text-xs whitespace-nowrap">
                         {new Date(product.updated_at).toLocaleDateString("vi-VN")}
                       </td>
                       <td className="px-4 py-3 text-right">
                         <div className="flex items-center gap-1 justify-end">
                           <Link
                             href={`/admin/products/${product.id}`}
-                            className="p-1.5 text-slate-400 hover:text-primary-600 rounded-lg hover:bg-primary-50 transition-colors"
+                            className="p-1.5 text-text-muted hover:text-primary-600 dark:hover:text-primary-400 rounded-lg hover:bg-primary-50 dark:hover:bg-primary-900/30 transition-colors"
                             title="Chỉnh sửa"
                             aria-label="Chỉnh sửa sản phẩm"
                           >
@@ -296,7 +296,7 @@ export function AdminProductList({
                               handleToggle(product.id, product.is_active)
                             }
                             disabled={isPending}
-                            className="p-1.5 text-slate-400 hover:text-orange-600 rounded-lg hover:bg-orange-50 transition-colors disabled:opacity-50"
+                            className="p-1.5 text-text-muted hover:text-orange-600 dark:hover:text-orange-400 rounded-lg hover:bg-orange-50 dark:hover:bg-orange-900/30 transition-colors disabled:opacity-50"
                             title={
                               product.is_active ? "Ẩn sản phẩm" : "Kích hoạt"
                             }
@@ -323,15 +323,15 @@ export function AdminProductList({
 
           {/* Pagination */}
           {totalPages > 1 && (
-            <div className="flex items-center justify-between px-4 py-3 border-t border-slate-200">
-              <p className="text-sm text-slate-500">
+            <div className="flex items-center justify-between px-4 py-3 border-t border-border">
+              <p className="text-sm text-text-secondary">
                 Trang {page} / {totalPages}
               </p>
               <div className="flex gap-1">
                 {page > 1 && (
                   <Link
                     href={`/admin/products?page=${page - 1}${currentSearch ? `&search=${currentSearch}` : ""}${currentCategory ? `&category=${currentCategory}` : ""}${currentStatus ? `&status=${currentStatus}` : ""}`}
-                    className="px-3 py-1 text-sm border rounded-lg hover:bg-slate-50"
+                    className="px-3 py-1 text-sm border border-border text-text-secondary rounded-lg hover:bg-surface-hover"
                   >
                     Trước
                   </Link>
@@ -339,7 +339,7 @@ export function AdminProductList({
                 {page < totalPages && (
                   <Link
                     href={`/admin/products?page=${page + 1}${currentSearch ? `&search=${currentSearch}` : ""}${currentCategory ? `&category=${currentCategory}` : ""}${currentStatus ? `&status=${currentStatus}` : ""}`}
-                    className="px-3 py-1 text-sm border rounded-lg hover:bg-slate-50"
+                    className="px-3 py-1 text-sm border border-border text-text-secondary rounded-lg hover:bg-surface-hover"
                   >
                     Sau
                   </Link>

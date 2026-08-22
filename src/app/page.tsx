@@ -100,12 +100,12 @@ export default async function HomePage() {
               <Link
                 key={category.id}
                 href={`/categories/${category.slug}`}
-                className="group flex flex-col items-center p-5 bg-surface rounded-xl border border-border hover:border-primary-200 hover:shadow-md transition-all duration-200"
+                className="group flex flex-col items-center p-5 bg-surface rounded-xl border border-border hover:border-primary-200 dark:hover:border-primary-800 hover:shadow-md transition-all duration-200"
               >
-                <div className="w-12 h-12 bg-primary-50 group-hover:bg-primary-100 rounded-xl flex items-center justify-center mb-3 transition-colors">
+                <div className="w-12 h-12 bg-primary-50 dark:bg-primary-900/30 group-hover:bg-primary-100 dark:group-hover:bg-primary-900/50 rounded-xl flex items-center justify-center mb-3 transition-colors">
                   <BookOpen className="w-6 h-6 text-primary-500" />
                 </div>
-                <span className="text-sm font-medium text-text-primary text-center group-hover:text-primary-600 transition-colors">
+                <span className="text-sm font-medium text-text-primary text-center group-hover:text-primary-600 dark:group-hover:text-primary-400 transition-colors">
                   {category.name}
                 </span>
               </Link>
@@ -128,7 +128,7 @@ export default async function HomePage() {
             </div>
             <Link
               href="/products"
-              className="hidden sm:flex items-center gap-1 text-primary-600 font-medium hover:text-primary-700 transition-colors"
+              className="hidden sm:flex items-center gap-1 text-primary-600 dark:text-primary-400 font-medium hover:text-primary-700 dark:hover:text-primary-300 transition-colors"
             >
               Xem tất cả
               <ArrowRight className="w-4 h-4" />
@@ -144,7 +144,7 @@ export default async function HomePage() {
           <div className="text-center mt-8 sm:hidden">
             <Link
               href="/products"
-              className="inline-flex items-center gap-2 text-primary-600 font-medium"
+              className="inline-flex items-center gap-2 text-primary-600 dark:text-primary-400 font-medium"
             >
               Xem tất cả sản phẩm
               <ArrowRight className="w-4 h-4" />
@@ -188,7 +188,7 @@ export default async function HomePage() {
                 key={benefit.title}
                 className="bg-surface p-6 rounded-2xl border border-border hover:shadow-md transition-shadow"
               >
-                <div className="w-12 h-12 bg-primary-50 rounded-xl flex items-center justify-center mb-4">
+                <div className="w-12 h-12 bg-primary-50 dark:bg-primary-900/30 rounded-xl flex items-center justify-center mb-4">
                   <benefit.icon className="w-6 h-6 text-primary-500" />
                 </div>
                 <h3 className="font-semibold text-text-primary mb-2">
@@ -288,7 +288,7 @@ export default async function HomePage() {
             ].map((faq) => (
               <details
                 key={faq.q}
-                className="group bg-surface rounded-xl border border-border hover:border-primary-200 transition-colors"
+                className="group bg-surface rounded-xl border border-border hover:border-primary-200 dark:hover:border-primary-800 transition-colors"
               >
                 <summary className="flex items-center justify-between p-5 cursor-pointer font-medium text-text-primary list-none">
                   {faq.q}

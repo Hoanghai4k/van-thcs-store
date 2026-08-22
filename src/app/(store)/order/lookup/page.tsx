@@ -16,15 +16,15 @@ function OrderLookupSkeleton() {
   return (
     <div className="max-w-lg mx-auto px-4 py-12">
       <div className="text-center mb-8">
-        <div className="w-14 h-14 bg-primary-100 rounded-full flex items-center justify-center mx-auto mb-4">
-          <ShieldCheck className="w-7 h-7 text-primary-600" />
+        <div className="w-14 h-14 bg-primary-50 dark:bg-primary-900/30 rounded-full flex items-center justify-center mx-auto mb-4">
+          <ShieldCheck className="w-7 h-7 text-primary-600 dark:text-primary-400" />
         </div>
         <h1 className="text-2xl font-bold text-text-primary mb-2">Tra cứu đơn hàng</h1>
         <p className="text-text-secondary">
           Nhập mã đơn hàng và email đã dùng khi đặt hàng.
         </p>
       </div>
-      <div className="bg-white rounded-2xl border border-border p-6 space-y-4 animate-pulse">
+      <div className="bg-surface rounded-2xl border border-border p-6 space-y-4 animate-pulse shadow-sm">
         <div className="h-10 bg-surface-alt rounded-xl" />
         <div className="h-10 bg-surface-alt rounded-xl" />
         <div className="h-12 bg-primary-200 rounded-xl" />
@@ -69,8 +69,8 @@ function OrderLookupForm() {
   return (
     <div className="max-w-lg mx-auto px-4 py-12">
       <div className="text-center mb-8">
-        <div className="w-14 h-14 bg-primary-100 rounded-full flex items-center justify-center mx-auto mb-4">
-          <ShieldCheck className="w-7 h-7 text-primary-600" />
+        <div className="w-14 h-14 bg-primary-50 dark:bg-primary-900/30 rounded-full flex items-center justify-center mx-auto mb-4">
+          <ShieldCheck className="w-7 h-7 text-primary-600 dark:text-primary-400" />
         </div>
         <h1 className="text-2xl font-bold text-text-primary mb-2">Tra cứu đơn hàng</h1>
         <p className="text-text-secondary">
@@ -78,7 +78,7 @@ function OrderLookupForm() {
         </p>
       </div>
 
-      <form onSubmit={handleSubmit} className="bg-white rounded-2xl border border-border p-6 space-y-4">
+      <form onSubmit={handleSubmit} className="bg-surface rounded-2xl border border-border p-6 space-y-4 shadow-sm">
         <div>
           <label htmlFor="lookup-order-code" className="block text-sm font-medium text-text-primary mb-1.5">
             Mã đơn hàng
@@ -89,7 +89,7 @@ function OrderLookupForm() {
             required
             value={orderCode}
             onChange={(e) => setOrderCode(e.target.value)}
-            className="w-full px-4 py-2.5 rounded-xl border border-border focus:ring-2 focus:ring-primary-500 focus:border-primary-500 outline-none transition-all text-sm"
+            className="w-full px-4 py-2.5 rounded-xl border border-border bg-surface text-text-primary placeholder:text-text-muted focus:ring-2 focus:ring-primary-500 focus:border-primary-500 outline-none transition-all text-sm"
             placeholder="VTS-20240101-XXXXX"
           />
         </div>
@@ -103,13 +103,13 @@ function OrderLookupForm() {
             required
             value={email}
             onChange={(e) => setEmail(e.target.value)}
-            className="w-full px-4 py-2.5 rounded-xl border border-border focus:ring-2 focus:ring-primary-500 focus:border-primary-500 outline-none transition-all text-sm"
+            className="w-full px-4 py-2.5 rounded-xl border border-border bg-surface text-text-primary placeholder:text-text-muted focus:ring-2 focus:ring-primary-500 focus:border-primary-500 outline-none transition-all text-sm"
             placeholder="email@example.com"
           />
         </div>
 
         {error && (
-          <div className="bg-red-50 border border-red-200 text-red-600 rounded-xl p-3 text-sm">{error}</div>
+          <div className="bg-red-50 dark:bg-red-900/30 border border-red-200 dark:border-red-800/50 text-red-600 dark:text-red-400 rounded-xl p-3 text-sm">{error}</div>
         )}
 
         <button

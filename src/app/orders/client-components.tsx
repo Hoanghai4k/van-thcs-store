@@ -41,28 +41,28 @@ export function MyOrdersForm() {
   };
 
   return (
-    <div className="max-w-md mx-auto p-6 bg-white rounded-xl shadow-sm border border-neutral-200">
-      <h1 className="text-2xl font-bold mb-4 text-center">Đơn hàng của tôi</h1>
-      <p className="text-neutral-600 mb-6 text-center text-sm">
+    <div className="max-w-md mx-auto p-6 bg-surface rounded-xl shadow-sm border border-border">
+      <h1 className="text-2xl font-bold mb-4 text-center text-text-primary">Đơn hàng của tôi</h1>
+      <p className="text-text-secondary mb-6 text-center text-sm">
         Nhập email đã dùng khi đặt hàng. Chúng tôi sẽ gửi liên kết xác minh để bạn xem các đơn hàng của mình.
       </p>
 
       {message && (
-        <div className="mb-4 p-3 bg-green-50 text-green-800 rounded border border-green-200 text-sm text-center">
+        <div className="mb-4 p-3 bg-green-50 dark:bg-green-900/30 text-green-800 dark:text-green-300 rounded border border-green-200 dark:border-green-800/50 text-sm text-center">
           Nếu email này có đơn hàng, liên kết xác minh đã được gửi.
-          <p className="mt-1 text-xs text-green-700">Vui lòng kiểm tra cả mục Spam/Thư rác nếu chưa thấy email.</p>
+          <p className="mt-1 text-xs text-green-700 dark:text-green-400">Vui lòng kiểm tra cả mục Spam/Thư rác nếu chưa thấy email.</p>
         </div>
       )}
 
       {error && (
-        <div className="mb-4 p-3 bg-red-50 text-red-800 rounded border border-red-200 text-sm text-center">
+        <div className="mb-4 p-3 bg-red-50 dark:bg-red-900/30 text-red-800 dark:text-red-300 rounded border border-red-200 dark:border-red-800/50 text-sm text-center">
           {error}
         </div>
       )}
 
       <form onSubmit={handleSubmit} className="space-y-4">
         <div>
-          <label htmlFor="email" className="block text-sm font-medium mb-1">
+          <label htmlFor="email" className="block text-sm font-medium mb-1 text-text-primary">
             Email đã đặt hàng
           </label>
           <input
@@ -71,7 +71,7 @@ export function MyOrdersForm() {
             required
             value={email}
             onChange={(e) => setEmail(e.target.value)}
-            className="w-full px-3 py-2 border rounded-md focus:ring-2 focus:ring-black outline-none"
+            className="w-full px-3 py-2 border border-border bg-transparent text-text-primary rounded-md focus:ring-2 focus:ring-primary-500 outline-none placeholder:text-text-muted"
             placeholder="ví dụ: nguyenvan@example.com"
             disabled={loading}
           />
@@ -79,16 +79,16 @@ export function MyOrdersForm() {
         <button
           type="submit"
           disabled={loading || !email}
-          className="w-full bg-black text-white font-medium py-2 px-4 rounded-md hover:bg-neutral-800 disabled:opacity-50 transition-colors"
+          className="w-full bg-primary-600 text-white font-medium py-2 px-4 rounded-md hover:bg-primary-700 disabled:opacity-50 disabled:bg-primary-800 transition-colors"
         >
           {loading ? "Đang gửi..." : "Gửi liên kết xác minh"}
         </button>
       </form>
 
       <div className="mt-6 text-center text-sm">
-        <span className="text-neutral-500">Hoặc</span>
+        <span className="text-text-muted">Hoặc</span>
         <br />
-        <Link href="/order/lookup" className="text-primary-600 hover:underline font-medium inline-block mt-2">
+        <Link href="/order/lookup" className="text-primary-600 dark:text-primary-400 hover:underline font-medium inline-block mt-2">
           Tra cứu bằng mã đơn hàng
         </Link>
       </div>
@@ -151,13 +151,13 @@ export function MyOrdersList({ email, orders }: OrderListProps) {
 
   return (
     <div className="max-w-4xl mx-auto space-y-6">
-      <div className="flex flex-col sm:flex-row items-center justify-between bg-neutral-50 p-4 rounded-xl border border-neutral-200">
+      <div className="flex flex-col sm:flex-row items-center justify-between bg-surface-alt p-4 rounded-xl border border-border">
         <div>
-          <h1 className="text-xl font-bold">Đơn hàng của tôi</h1>
-          <p className="text-sm text-neutral-600">Đang xem đơn hàng của: <span className="font-medium text-black">{email.replace(/(.{2})(.*)(@.*)/, "$1***$3")}</span></p>
+          <h1 className="text-xl font-bold text-text-primary">Đơn hàng của tôi</h1>
+          <p className="text-sm text-text-secondary">Đang xem đơn hàng của: <span className="font-medium text-text-primary">{email.replace(/(.{2})(.*)(@.*)/, "$1***$3")}</span></p>
         </div>
         <div className="mt-4 sm:mt-0 flex gap-3 items-center">
-          <Link href="/order/lookup" className="text-sm font-medium text-primary-600 hover:underline py-2 px-3">
+          <Link href="/order/lookup" className="text-sm font-medium text-primary-600 dark:text-primary-400 hover:underline py-2 px-3">
             Tra cứu mã đơn
           </Link>
           <button
@@ -170,7 +170,7 @@ export function MyOrdersList({ email, orders }: OrderListProps) {
       </div>
 
       {orders.length === 0 ? (
-        <div className="text-center py-16 bg-white rounded-xl border border-neutral-200">
+        <div className="text-center py-16 bg-surface rounded-xl border border-border">
           <p className="text-text-primary mb-4 font-medium">Chưa có đơn hàng nào với email này.</p>
           <Link href="/products" className="inline-block bg-primary-600 text-white font-medium py-2 px-6 rounded-md hover:bg-primary-700 transition-colors">
             Xem tài liệu
@@ -179,28 +179,28 @@ export function MyOrdersList({ email, orders }: OrderListProps) {
       ) : (
         <div className="grid gap-4">
           {orders.map((order) => (
-            <div key={order.orderCode} className="bg-white p-5 rounded-xl border border-neutral-200 shadow-sm flex flex-col md:flex-row md:items-center justify-between gap-4">
+            <div key={order.orderCode} className="bg-surface p-5 rounded-xl border border-border shadow-sm flex flex-col md:flex-row md:items-center justify-between gap-4">
               <div className="space-y-2 flex-1">
                 <div className="flex items-center gap-3">
-                  <span className="font-mono font-bold text-lg">{order.orderCode}</span>
+                  <span className="font-mono font-bold text-lg text-text-primary">{order.orderCode}</span>
                   <span
                     className={`text-xs px-2 py-1 rounded-full font-medium ${
                       order.status === ORDER_STATUS.PAID
-                        ? "bg-green-100 text-green-800"
+                        ? "bg-green-100 dark:bg-green-900/30 text-green-800 dark:text-green-300"
                         : order.status === ORDER_STATUS.PENDING
-                        ? "bg-yellow-100 text-yellow-800"
+                        ? "bg-yellow-100 dark:bg-yellow-900/30 text-yellow-800 dark:text-yellow-300"
                         : order.status === ORDER_STATUS.CANCELLED
-                        ? "bg-neutral-100 text-neutral-600"
-                        : "bg-red-100 text-red-800"
+                        ? "bg-surface-alt text-text-secondary"
+                        : "bg-red-100 dark:bg-red-900/30 text-red-800 dark:text-red-300"
                     }`}
                   >
                     {STATUS_LABELS[order.status]}
                   </span>
                 </div>
-                <p className="text-sm text-neutral-500">
+                <p className="text-sm text-text-muted">
                   {formatDateTime(order.createdAt)}
                 </p>
-                <div className="text-sm text-neutral-700">
+                <div className="text-sm text-text-secondary">
                   {order.items.map((item, idx) => (
                     <div key={idx} className="truncate max-w-md">• {item.productName}</div>
                   ))}
@@ -208,13 +208,13 @@ export function MyOrdersList({ email, orders }: OrderListProps) {
               </div>
 
               <div className="flex flex-col md:items-end justify-between gap-3 shrink-0">
-                <div className="font-bold text-lg">
+                <div className="font-bold text-lg text-text-primary">
                   {formatCurrency(order.totalAmount)}
                 </div>
                 <button
                   onClick={() => handleOpenOrder(order.orderCode)}
                   disabled={loadingCode === order.orderCode}
-                  className="bg-primary-600 text-white font-medium py-2.5 px-6 rounded-md hover:bg-primary-700 disabled:opacity-50 transition-colors whitespace-nowrap min-w-[200px]"
+                  className="bg-primary-600 text-white font-medium py-2.5 px-6 rounded-md hover:bg-primary-700 disabled:opacity-50 disabled:bg-primary-800 transition-colors whitespace-nowrap min-w-[200px]"
                 >
                   {loadingCode === order.orderCode
                     ? "Đang tải..."
