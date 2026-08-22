@@ -272,6 +272,7 @@ export async function syncProductFileCount(
  * Synchronize product relations (PREVIEW_OF and RELATED).
  */
 async function syncProductRelations(
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   supabase: any,
   sourceId: string,
   previewOfIds?: string[] | null,

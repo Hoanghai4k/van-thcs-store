@@ -189,7 +189,7 @@ export function ProductForm({
     [
       name, slug, shortDesc, description, price, originalPrice, categoryId,
       thumbnailPath, previewImages, pageCount, fileFormat, featuresText,
-      suitableForText, mode, savedProductId, router,
+      suitableForText, mode, savedProductId, router, productType, previewOfIds, relatedIds,
     ],
   );
 
@@ -623,7 +623,7 @@ export function ProductForm({
                 )}
               </div>
               <p className="text-xs text-slate-500 mt-2">
-                Sản phẩm sẽ hiển thị ở mục "Tài liệu liên quan" cuối trang.
+                Sản phẩm sẽ hiển thị ở mục &quot;Tài liệu liên quan&quot; cuối trang.
               </p>
             </div>
           </div>

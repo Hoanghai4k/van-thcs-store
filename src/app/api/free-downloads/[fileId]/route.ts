@@ -24,6 +24,7 @@ export async function GET(
       return new NextResponse("File not found", { status: 404 });
     }
 
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const product = fileRecord.product as any; // Bypass TS strict typing on nested joins temporarily
 
     // 2. Validate product rules for free downloads
@@ -36,11 +37,12 @@ export async function GET(
     }
 
     // 3. Generate short-lived signed URL for the actual file in private storage
-    // Assuming product files are stored in a private bucket named "product_files"
     const { data: signedUrlData, error: signedUrlError } = await supabase
       .storage
-      .from("product_files")
-      .createSignedUrl(fileRecord.storage_path, 60); // 60 seconds
+      .from("product-files") // Must match STORAGE_BUCKETS.PRODUCT_FILES
+      .createSignedUrl(fileRecord.storage_path, 60, {
+        download: fileRecord.file_name,
+      }); // 60 seconds
 
     if (signedUrlError || !signedUrlData) {
       console.error("[FreeDownload] Error generating signed URL:", signedUrlError);

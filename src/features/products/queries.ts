@@ -282,7 +282,7 @@ export async function getProductRelations(productId: string): Promise<ProductRel
   // Fetch relations where this product is the source
   const { data: outData, error: outError } = await supabase
     .from("product_relations")
-    .select("relation_type, target_product:products!target_product_id(*, category:categories(*))")
+    .select("relation_type, target_product:products!product_relations_target_product_id_fkey(*, category:categories(*))")
     .eq("source_product_id", productId)
     .order("sort_order", { ascending: true });
 
@@ -290,8 +290,9 @@ export async function getProductRelations(productId: string): Promise<ProductRel
     console.error("[Products] Error fetching outbound relations:", outError.message);
   } else {
     for (const rel of outData || []) {
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       const p = rel.target_product as any;
-      if (!p) continue;
+      if (!p || !p.is_active) continue;
       const parsed = {
         ...p,
         product_type: parseProductType(p.product_type),
@@ -309,7 +310,7 @@ export async function getProductRelations(productId: string): Promise<ProductRel
   // Fetch relations where this product is the target (reverse lookup)
   const { data: inData, error: inError } = await supabase
     .from("product_relations")
-    .select("relation_type, source_product:products!source_product_id(*, category:categories(*))")
+    .select("relation_type, source_product:products!product_relations_source_product_id_fkey(*, category:categories(*))")
     .eq("target_product_id", productId)
     .order("sort_order", { ascending: true });
 
@@ -317,8 +318,9 @@ export async function getProductRelations(productId: string): Promise<ProductRel
     console.error("[Products] Error fetching inbound relations:", inError.message);
   } else {
     for (const rel of inData || []) {
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       const p = rel.source_product as any;
-      if (!p) continue;
+      if (!p || !p.is_active) continue;
       const parsed = {
         ...p,
         product_type: parseProductType(p.product_type),
