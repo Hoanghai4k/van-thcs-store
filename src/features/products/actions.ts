@@ -46,6 +46,7 @@ export async function createProduct(
       is_active: false, // Always start as draft
       page_count: d.pageCount ?? null,
       file_format: d.fileFormat ?? "docx",
+      product_type: d.productType ?? "PAID",
       features: d.features ?? null,
       suitable_for: d.suitableFor ?? null,
       file_count: 0,
@@ -74,6 +75,9 @@ export async function createProduct(
     });
     return { success: false, error: "Không thể tạo sản phẩm. Vui lòng thử lại." };
   }
+
+  // Process relations
+  await syncProductRelations(supabase, data.id, d.previewOfIds, d.relatedIds);
 
   revalidatePath("/admin/products");
   return { success: true, data };
@@ -112,6 +116,7 @@ export async function updateProduct(
     preview_images?: string[] | null;
     page_count?: number | null;
     file_format?: string;
+    product_type?: "PAID" | "FREE";
     features?: string[] | null;
     suitable_for?: string[] | null;
   } = {};
@@ -127,6 +132,7 @@ export async function updateProduct(
   if (d.previewImages !== undefined) updateData.preview_images = d.previewImages;
   if (d.pageCount !== undefined) updateData.page_count = d.pageCount;
   if (d.fileFormat !== undefined) updateData.file_format = d.fileFormat;
+  if (d.productType !== undefined) updateData.product_type = d.productType;
   if (d.features !== undefined) updateData.features = d.features;
   if (d.suitableFor !== undefined) updateData.suitable_for = d.suitableFor;
 
@@ -159,6 +165,9 @@ export async function updateProduct(
     });
     return { success: false, error: "Không thể cập nhật sản phẩm." };
   }
+
+  // Process relations
+  await syncProductRelations(supabase, id, d.previewOfIds, d.relatedIds);
 
   revalidatePath("/admin/products");
   revalidatePath(`/admin/products/${id}`);
@@ -257,6 +266,62 @@ export async function syncProductFileCount(
     .from("products")
     .update({ file_count: count ?? 0, file_format: fileFormat })
     .eq("id", productId);
+}
+
+/**
+ * Synchronize product relations (PREVIEW_OF and RELATED).
+ */
+async function syncProductRelations(
+  supabase: any,
+  sourceId: string,
+  previewOfIds?: string[] | null,
+  relatedIds?: string[] | null
+) {
+  // We only sync if these arrays are provided. If undefined, do nothing.
+  if (previewOfIds === undefined && relatedIds === undefined) return;
+
+  const relationsToInsert: { source_product_id: string; target_product_id: string; relation_type: string }[] = [];
+
+  if (previewOfIds !== undefined) {
+    // Delete existing PREVIEW_OF relations where source = this product
+    await supabase.from("product_relations").delete().eq("source_product_id", sourceId).eq("relation_type", "PREVIEW_OF");
+    
+    if (previewOfIds && previewOfIds.length > 0) {
+      previewOfIds.forEach((id) => {
+        if (id !== sourceId) {
+          relationsToInsert.push({
+            source_product_id: sourceId,
+            target_product_id: id,
+            relation_type: "PREVIEW_OF"
+          });
+        }
+      });
+    }
+  }
+
+  if (relatedIds !== undefined) {
+    // Delete existing RELATED relations where source = this product
+    await supabase.from("product_relations").delete().eq("source_product_id", sourceId).eq("relation_type", "RELATED");
+    
+    if (relatedIds && relatedIds.length > 0) {
+      relatedIds.forEach((id) => {
+        if (id !== sourceId) {
+          relationsToInsert.push({
+            source_product_id: sourceId,
+            target_product_id: id,
+            relation_type: "RELATED"
+          });
+        }
+      });
+    }
+  }
+
+  if (relationsToInsert.length > 0) {
+    const { error } = await supabase.from("product_relations").insert(relationsToInsert);
+    if (error) {
+      console.error("[Products] Relation sync error:", error.message);
+    }
+  }
 }
 
 // Import deriveFileFormat from storage module (pure utility).

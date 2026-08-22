@@ -42,6 +42,9 @@ interface ProductFormProps {
   product?: ProductWithCategory | null;
   productFiles?: DbProductFile[];
   categories: DbCategory[];
+  allProducts?: { id: string; name: string; product_type: string; is_active: boolean }[];
+  initialPreviewOfIds?: string[];
+  initialRelatedIds?: string[];
   mode: "create" | "edit";
 }
 
@@ -49,6 +52,9 @@ export function ProductForm({
   product,
   productFiles = [],
   categories,
+  allProducts = [],
+  initialPreviewOfIds = [],
+  initialRelatedIds = [],
   mode,
 }: ProductFormProps) {
   const router = useRouter();
@@ -58,6 +64,9 @@ export function ProductForm({
   // Form state
   const [name, setName] = useState(product?.name ?? "");
   const [slug, setSlug] = useState(product?.slug ?? "");
+  const [productType, setProductType] = useState<"PAID" | "FREE">(
+    product?.product_type ?? "PAID"
+  );
   const [shortDesc, setShortDesc] = useState(product?.short_description ?? "");
   const [description, setDescription] = useState(product?.description ?? "");
   const [price, setPrice] = useState(product?.price?.toString() ?? "");
@@ -70,11 +79,13 @@ export function ProductForm({
   );
   const [fileFormat] = useState(product?.file_format ?? "docx");
   const [featuresText, setFeaturesText] = useState(
-    product?.features?.join("\n") ?? "",
+    product?.features?.join("\n") ?? "Có đáp án chi tiết\nTải xuống ngay lập tức"
   );
   const [suitableForText, setSuitableForText] = useState(
-    product?.suitable_for?.join("\n") ?? "",
+    product?.suitable_for?.join("\n") ?? "Học sinh lớp 9\nGiáo viên Ngữ văn"
   );
+  const [previewOfIds, setPreviewOfIds] = useState<string[]>(initialPreviewOfIds);
+  const [relatedIds, setRelatedIds] = useState<string[]>(initialRelatedIds);
 
   // Image state
   const [thumbnailPath, setThumbnailPath] = useState(
@@ -127,7 +138,8 @@ export function ProductForm({
         slug: slug.trim(),
         shortDescription: shortDesc.trim() || null,
         description: description.trim() || null,
-        price: parseInt(price, 10) || 0,
+        productType,
+        price: productType === "FREE" ? 0 : parseInt(price, 10) || 0,
         originalPrice: originalPrice ? parseInt(originalPrice, 10) : null,
         categoryId: categoryId || null,
         thumbnailPath,
@@ -136,6 +148,8 @@ export function ProductForm({
         fileFormat,
         features: features.length > 0 ? features : null,
         suitableFor: suitableFor.length > 0 ? suitableFor : null,
+        previewOfIds,
+        relatedIds,
       };
 
       startTransition(async () => {
@@ -434,24 +448,41 @@ export function ProductForm({
           </div>
         </section>
 
-        {/* ─── Pricing ─── */}
+        {/* ─── Product Type & Pricing ─── */}
         <section className="bg-white rounded-xl border border-slate-200 p-5 space-y-4">
-          <h2 className="font-semibold text-slate-900">Giá</h2>
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-            <div>
+          <div className="flex items-center justify-between">
+            <h2 className="font-semibold text-slate-900">Phân loại & Giá</h2>
+          </div>
+          <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+            <div className="md:col-span-1">
               <label className="block text-sm font-medium text-slate-700 mb-1">
-                Giá bán (VND) <span className="text-red-500">*</span>
+                Loại sản phẩm <span className="text-red-500">*</span>
+              </label>
+              <select
+                value={productType}
+                onChange={(e) => setProductType(e.target.value as "PAID" | "FREE")}
+                className="w-full border border-slate-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary-500 bg-white"
+              >
+                <option value="PAID">Sản phẩm trả phí</option>
+                <option value="FREE">Tài liệu miễn phí</option>
+              </select>
+            </div>
+            
+            <div className="md:col-span-1">
+              <label className="block text-sm font-medium text-slate-700 mb-1">
+                Giá bán (VND) {productType !== "FREE" && <span className="text-red-500">*</span>}
               </label>
               <input
                 type="number"
-                value={price}
+                value={productType === "FREE" ? 0 : price}
                 onChange={(e) => setPrice(e.target.value)}
                 min={0}
-                className="w-full border border-slate-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary-500"
-                required
+                className="w-full border border-slate-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary-500 disabled:bg-slate-100 disabled:text-slate-500"
+                required={productType === "PAID"}
+                disabled={productType === "FREE"}
               />
             </div>
-            <div>
+            <div className="md:col-span-1">
               <label className="block text-sm font-medium text-slate-700 mb-1">
                 Giá gốc (VND)
               </label>
@@ -461,10 +492,11 @@ export function ProductForm({
                 onChange={(e) => setOriginalPrice(e.target.value)}
                 min={0}
                 placeholder="Để trống nếu không giảm giá"
-                className="w-full border border-slate-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary-500"
+                className="w-full border border-slate-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary-500 disabled:bg-slate-100 disabled:text-slate-500"
+                disabled={productType === "FREE"}
               />
             </div>
-            <div>
+            <div className="md:col-span-1">
               <label className="block text-sm font-medium text-slate-700 mb-1">
                 Số trang
               </label>
@@ -477,12 +509,17 @@ export function ProductForm({
               />
             </div>
           </div>
-          {price && (
+          {price && productType !== "FREE" && (
             <p className="text-sm text-slate-500">
               Hiển thị: {formatCurrency(parseInt(price, 10) || 0)}
               {originalPrice &&
                 parseInt(originalPrice, 10) > parseInt(price, 10) &&
                 ` (gốc: ${formatCurrency(parseInt(originalPrice, 10))})`}
+            </p>
+          )}
+          {productType === "FREE" && (
+            <p className="text-sm text-green-600 font-medium bg-green-50 px-3 py-2 rounded-lg border border-green-100">
+              Sản phẩm này sẽ được hiển thị miễn phí và khách hàng có thể tải xuống trực tiếp mà không cần qua thanh toán.
             </p>
           )}
         </section>
@@ -515,6 +552,80 @@ export function ProductForm({
               placeholder={"Học sinh lớp 9\nGiáo viên Ngữ văn THCS"}
               className="w-full border border-slate-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary-500"
             />
+          </div>
+        </section>
+
+        {/* ─── Relations ─── */}
+        <section className="bg-white rounded-xl border border-slate-200 p-5 space-y-4">
+          <h2 className="font-semibold text-slate-900">Sản phẩm liên kết</h2>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            {productType === "FREE" && (
+              <div>
+                <label className="block text-sm font-medium text-slate-700 mb-2">
+                  Bản đầy đủ (PREVIEW_OF)
+                </label>
+                <div className="space-y-2 max-h-48 overflow-y-auto border border-slate-200 rounded-lg p-3 bg-slate-50">
+                  {allProducts
+                    .filter((p) => p.product_type === "PAID" && p.is_active && p.id !== savedProductId)
+                    .map((p) => (
+                      <label key={p.id} className="flex items-center gap-2 text-sm text-slate-700 cursor-pointer">
+                        <input
+                          type="checkbox"
+                          checked={previewOfIds.includes(p.id)}
+                          onChange={(e) => {
+                            if (e.target.checked) {
+                              setPreviewOfIds([...previewOfIds, p.id]);
+                            } else {
+                              setPreviewOfIds(previewOfIds.filter((id) => id !== p.id));
+                            }
+                          }}
+                          className="rounded border-slate-300 text-primary-600 focus:ring-primary-500"
+                        />
+                        {p.name}
+                      </label>
+                    ))}
+                  {allProducts.filter((p) => p.product_type === "PAID" && p.is_active && p.id !== savedProductId).length === 0 && (
+                    <span className="text-xs text-slate-500">Không có sản phẩm PAID nào.</span>
+                  )}
+                </div>
+                <p className="text-xs text-slate-500 mt-2">
+                  Sản phẩm trả phí tương ứng với tài liệu xem trước này.
+                </p>
+              </div>
+            )}
+            
+            <div className={productType !== "FREE" ? "md:col-span-2" : ""}>
+              <label className="block text-sm font-medium text-slate-700 mb-2">
+                Tài liệu liên quan (RELATED)
+              </label>
+              <div className="space-y-2 max-h-48 overflow-y-auto border border-slate-200 rounded-lg p-3 bg-slate-50">
+                {allProducts
+                  .filter((p) => p.is_active && p.id !== savedProductId)
+                  .map((p) => (
+                    <label key={p.id} className="flex items-center gap-2 text-sm text-slate-700 cursor-pointer">
+                      <input
+                        type="checkbox"
+                        checked={relatedIds.includes(p.id)}
+                        onChange={(e) => {
+                          if (e.target.checked) {
+                            setRelatedIds([...relatedIds, p.id]);
+                          } else {
+                            setRelatedIds(relatedIds.filter((id) => id !== p.id));
+                          }
+                        }}
+                        className="rounded border-slate-300 text-primary-600 focus:ring-primary-500"
+                      />
+                      {p.name} <span className="text-xs text-slate-400">({p.product_type})</span>
+                    </label>
+                  ))}
+                {allProducts.filter((p) => p.is_active && p.id !== savedProductId).length === 0 && (
+                  <span className="text-xs text-slate-500">Không có sản phẩm nào.</span>
+                )}
+              </div>
+              <p className="text-xs text-slate-500 mt-2">
+                Sản phẩm sẽ hiển thị ở mục "Tài liệu liên quan" cuối trang.
+              </p>
+            </div>
           </div>
         </section>
 

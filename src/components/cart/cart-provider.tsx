@@ -111,6 +111,12 @@ export function CartProvider({ children }: { children: ReactNode }) {
   const items = useSyncExternalStore(subscribe, getSnapshot, getServerSnapshot);
 
   const addItem = useCallback((item: CartItem) => {
+    // SECURITY GUARD: Never add FREE items to cart
+    if (item.productType === "FREE") {
+      console.warn("[Cart] Attempted to add a FREE item to cart. Blocked.");
+      return;
+    }
+    
     // Don't add duplicates
     if (cartItems.some((i) => i.productId === item.productId)) {
       return;

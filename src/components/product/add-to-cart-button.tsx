@@ -21,6 +21,7 @@ export function AddToCartButton({ product }: AddToCartButtonProps) {
       price: product.price,
       originalPrice: product.original_price,
       thumbnailPath: product.thumbnail_path,
+      productType: product.product_type,
     });
   }
 

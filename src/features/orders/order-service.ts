@@ -67,7 +67,7 @@ export async function createCheckoutOrder(
   // 2. Fetch products from DB — only active ones
   const { data: products, error: productsError } = await supabase
     .from("products")
-    .select("id, name, price, is_active")
+    .select("id, name, price, is_active, product_type")
     .in("id", uniqueProductIds);
 
   if (productsError) {
@@ -84,13 +84,19 @@ export async function createCheckoutOrder(
   }
 
   // Check all products are active
-  const inactiveProducts = products.filter((p: Pick<DbProduct, "is_active">) => !p.is_active);
+  const inactiveProducts = products.filter((p) => !p.is_active);
   if (inactiveProducts.length > 0) {
     throw new CheckoutError("Một sản phẩm trong giỏ hiện không còn bán.");
   }
 
+  // SECURITY GUARD: Reject any FREE products from checkout
+  const freeProducts = products.filter((p) => p.product_type === "FREE");
+  if (freeProducts.length > 0) {
+    throw new CheckoutError("Không thể thanh toán sản phẩm miễn phí qua cổng này.");
+  }
+
   // 3. Calculate totals from DB prices (NEVER from client)
-  const subtotal = products.reduce((sum: number, p: Pick<DbProduct, "price">) => sum + p.price, 0);
+  const subtotal = products.reduce((sum: number, p) => sum + p.price, 0);
   const discount = 0; // No discount logic in this milestone
   const totalAmount = subtotal - discount;
 

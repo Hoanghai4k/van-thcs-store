@@ -3,9 +3,13 @@
  */
 
 import type { DbProduct, DbCategory } from "@/types/database";
+import type { ProductType } from "./schema";
 
-export type Product = DbProduct;
+export type Product = Omit<DbProduct, "product_type"> & {
+  product_type: ProductType;
+};
 export type Category = DbCategory;
+export type { ProductType };
 
 export interface ProductWithCategory extends Product {
   category: Category | null;

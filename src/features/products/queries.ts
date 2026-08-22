@@ -6,9 +6,19 @@
  */
 
 import { getSupabaseServerClient } from "@/lib/supabase/server";
-import type { ProductWithCategory, ProductListResult } from "./types";
+import type { ProductWithCategory, ProductListResult, ProductType } from "./types";
+import { productTypeSchema } from "./schema";
 import type { DbCategory } from "@/types/database";
 import { PAGINATION } from "@/lib/constants";
+
+function parseProductType(val: unknown): ProductType {
+  const result = productTypeSchema.safeParse(val);
+  if (!result.success) {
+    console.error(`[Products] Invalid product_type encountered: ${val}. Defaulting to PAID.`);
+    return "PAID";
+  }
+  return result.data;
+}
 
 // ─── Public Storefront Queries ─────────────────────────────────────
 
@@ -47,6 +57,7 @@ export async function getProducts(params?: {
   // category = null for non-matching joins. Filter those out.
   let products: ProductWithCategory[] = (data ?? []).map((row) => ({
     ...row,
+    product_type: parseProductType(row.product_type),
     category: row.category as DbCategory | null,
   }));
 
@@ -83,6 +94,7 @@ export async function getProductBySlug(
 
   return {
     ...data,
+    product_type: parseProductType(data.product_type),
     category: data.category as DbCategory | null,
   };
 }
@@ -104,6 +116,7 @@ export async function getProductById(
 
   return {
     ...data,
+    product_type: parseProductType(data.product_type),
     category: data.category as DbCategory | null,
   };
 }
@@ -128,6 +141,7 @@ export async function getProductsByIds(
 
   return data.map((row) => ({
     ...row,
+    product_type: parseProductType(row.product_type),
     category: row.category as DbCategory | null,
   }));
 }
@@ -151,6 +165,7 @@ export async function getFeaturedProducts(
 
   return data.map((row) => ({
     ...row,
+    product_type: parseProductType(row.product_type),
     category: row.category as DbCategory | null,
   }));
 }
@@ -213,6 +228,7 @@ export async function getAdminProducts(params?: {
 
   const products: ProductWithCategory[] = (data ?? []).map((row) => ({
     ...row,
+    product_type: parseProductType(row.product_type),
     category: row.category as DbCategory | null,
   }));
 
@@ -225,4 +241,97 @@ export async function getAdminProducts(params?: {
     pageSize,
     totalPages: Math.ceil(total / pageSize),
   };
+}
+
+/**
+ * Fetch a lightweight list of all products for relation management dropdowns.
+ */
+export async function getAllProductsLight(): Promise<Array<{id: string, name: string, product_type: ProductType, is_active: boolean}>> {
+  const supabase = await getSupabaseServerClient();
+  const { data, error } = await supabase
+    .from("products")
+    .select("id, name, product_type, is_active")
+    .order("name", { ascending: true });
+
+  if (error) {
+    console.error("[Products] Light list error:", error.message);
+    return [];
+  }
+
+  return (data ?? []).map((row) => ({
+    ...row,
+    product_type: parseProductType(row.product_type),
+  }));
+}
+
+export interface ProductRelationGroup {
+  fullVersions: ProductWithCategory[];
+  freePreviews: ProductWithCategory[];
+  related: ProductWithCategory[];
+}
+
+export async function getProductRelations(productId: string): Promise<ProductRelationGroup> {
+  const supabase = await getSupabaseServerClient();
+  
+  const result: ProductRelationGroup = {
+    fullVersions: [],
+    freePreviews: [],
+    related: []
+  };
+
+  // Fetch relations where this product is the source
+  const { data: outData, error: outError } = await supabase
+    .from("product_relations")
+    .select("relation_type, target_product:products!target_product_id(*, category:categories(*))")
+    .eq("source_product_id", productId)
+    .order("sort_order", { ascending: true });
+
+  if (outError) {
+    console.error("[Products] Error fetching outbound relations:", outError.message);
+  } else {
+    for (const rel of outData || []) {
+      const p = rel.target_product as any;
+      if (!p) continue;
+      const parsed = {
+        ...p,
+        product_type: parseProductType(p.product_type),
+        category: p.category as DbCategory | null
+      } as ProductWithCategory;
+      
+      if (rel.relation_type === "PREVIEW_OF") {
+        result.fullVersions.push(parsed);
+      } else if (rel.relation_type === "RELATED") {
+        result.related.push(parsed);
+      }
+    }
+  }
+
+  // Fetch relations where this product is the target (reverse lookup)
+  const { data: inData, error: inError } = await supabase
+    .from("product_relations")
+    .select("relation_type, source_product:products!source_product_id(*, category:categories(*))")
+    .eq("target_product_id", productId)
+    .order("sort_order", { ascending: true });
+
+  if (inError) {
+    console.error("[Products] Error fetching inbound relations:", inError.message);
+  } else {
+    for (const rel of inData || []) {
+      const p = rel.source_product as any;
+      if (!p) continue;
+      const parsed = {
+        ...p,
+        product_type: parseProductType(p.product_type),
+        category: p.category as DbCategory | null
+      } as ProductWithCategory;
+      
+      if (rel.relation_type === "PREVIEW_OF") {
+        result.freePreviews.push(parsed);
+      } else if (rel.relation_type === "RELATED") {
+        // Typically related is not symmetrical on storefront, but could be added here if needed.
+      }
+    }
+  }
+
+  return result;
 }
