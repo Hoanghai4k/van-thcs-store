@@ -4,6 +4,9 @@
 
 import { z } from "zod";
 
+export const productTypeSchema = z.enum(["PAID", "FREE"]);
+export type ProductType = z.infer<typeof productTypeSchema>;
+
 export const createProductSchema = z.object({
   name: z.string().min(1, "Tên sản phẩm là bắt buộc").max(255, "Tên quá dài"),
   slug: z
@@ -21,6 +24,9 @@ export const createProductSchema = z.object({
   fileFormat: z.string().default("docx"),
   features: z.array(z.string()).nullable().optional(),
   suitableFor: z.array(z.string()).nullable().optional(),
+  productType: productTypeSchema.default("PAID"),
+  previewOfIds: z.array(z.string()).optional(),
+  relatedIds: z.array(z.string()).optional(),
 });
 
 export const updateProductSchema = createProductSchema.partial();

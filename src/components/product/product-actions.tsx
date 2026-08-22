@@ -23,6 +23,20 @@ export function ProductActions({ product }: ProductActionsProps) {
   const inCart = isInCart(product.id);
   const [justAdded, setJustAdded] = useState(false);
 
+  if (product.product_type === "FREE") {
+    return (
+      <div className="space-y-3">
+        <a
+          href={`#free-download-section`} // Anchor to the free files block
+          className="w-full flex items-center justify-center gap-2 py-3.5 px-6 rounded-xl text-base font-semibold bg-green-600 text-white hover:bg-green-700 shadow-sm hover:shadow-md transition-all active:scale-[0.98]"
+        >
+          Tải tài liệu miễn phí
+          <ArrowRight className="w-5 h-5" />
+        </a>
+      </div>
+    );
+  }
+
   function addToCartItem() {
     addItem({
       productId: product.id,
@@ -31,6 +45,7 @@ export function ProductActions({ product }: ProductActionsProps) {
       price: product.price,
       originalPrice: product.original_price,
       thumbnailPath: product.thumbnail_path,
+      productType: product.product_type,
     });
   }
 

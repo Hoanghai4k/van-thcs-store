@@ -54,7 +54,12 @@ export function ProductCard({ product }: ProductCardProps) {
             <FileText className="w-16 h-16 text-primary-300 group-hover:text-primary-400 transition-colors group-hover:scale-110 duration-300" />
           );
         })()}
-        {discount && (
+        {product.product_type === "FREE" && (
+          <span className="absolute top-3 right-3 bg-green-500 text-white text-xs font-bold px-2.5 py-1 rounded-full shadow-sm">
+            Miễn phí
+          </span>
+        )}
+        {discount && product.product_type !== "FREE" && (
           <span className="absolute top-3 right-3 bg-error text-white text-xs font-bold px-2.5 py-1 rounded-full shadow-sm">
             -{discount}%
           </span>
@@ -95,39 +100,57 @@ export function ProductCard({ product }: ProductCardProps) {
 
           {/* Price */}
           <div className="flex items-baseline gap-2 mb-3">
-            <span className="text-lg font-bold text-primary-600">
-              {formatCurrency(product.price)}
-            </span>
-            {product.original_price &&
-              product.original_price > product.price && (
-                <span className="text-sm text-text-muted line-through">
-                  {formatCurrency(product.original_price)}
-                </span>
-              )}
-          </div>
-
-          {/* Add to Cart */}
-          <button
-            onClick={handleAddToCart}
-            disabled={inCart}
-            className={`w-full flex items-center justify-center gap-2 py-2.5 px-4 rounded-xl text-sm font-medium transition-all duration-200 ${
-              inCart
-                ? "bg-green-50 text-green-600 border border-green-200 cursor-default"
-                : "bg-primary-600 text-white hover:bg-primary-700 shadow-sm hover:shadow-md active:scale-[0.98]"
-            }`}
-          >
-            {inCart ? (
-              <>
-                <Check className="w-4 h-4" />
-                Đã thêm vào giỏ
-              </>
+            {product.product_type === "FREE" ? (
+              <span className="text-lg font-bold text-green-600">
+                MIỄN PHÍ
+              </span>
             ) : (
               <>
-                <ShoppingCart className="w-4 h-4" />
-                Thêm vào giỏ hàng
+                <span className="text-lg font-bold text-primary-600">
+                  {formatCurrency(product.price)}
+                </span>
+                {product.original_price &&
+                  product.original_price > product.price && (
+                    <span className="text-sm text-text-muted line-through">
+                      {formatCurrency(product.original_price)}
+                    </span>
+                  )}
               </>
             )}
-          </button>
+          </div>
+
+          {/* Action Button */}
+          {product.product_type === "FREE" ? (
+            <Link
+              href={`/products/${product.slug}`}
+              className="w-full flex items-center justify-center gap-2 py-2.5 px-4 rounded-xl text-sm font-medium bg-green-50 text-green-700 border border-green-200 hover:bg-green-100 transition-all active:scale-[0.98]"
+            >
+              <FileText className="w-4 h-4" />
+              Xem chi tiết
+            </Link>
+          ) : (
+            <button
+              onClick={handleAddToCart}
+              disabled={inCart}
+              className={`w-full flex items-center justify-center gap-2 py-2.5 px-4 rounded-xl text-sm font-medium transition-all duration-200 ${
+                inCart
+                  ? "bg-primary-50 text-primary-600 border border-primary-200 cursor-default"
+                  : "bg-primary-600 text-white hover:bg-primary-700 shadow-sm hover:shadow-md active:scale-[0.98]"
+              }`}
+            >
+              {inCart ? (
+                <>
+                  <Check className="w-4 h-4" />
+                  Đã thêm vào giỏ
+                </>
+              ) : (
+                <>
+                  <ShoppingCart className="w-4 h-4" />
+                  Thêm vào giỏ hàng
+                </>
+              )}
+            </button>
+          )}
         </div>
       </div>
     </div>
