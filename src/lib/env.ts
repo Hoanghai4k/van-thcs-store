@@ -14,6 +14,12 @@ const serverEnvSchema = z.object({
   PAYOS_CLIENT_ID: z.string().min(1).optional(),
   PAYOS_API_KEY: z.string().min(1).optional(),
   PAYOS_CHECKSUM_KEY: z.string().min(1).optional(),
+
+  CLOUDCONVERT_API_KEY: z.string().optional(),
+
+  // Features
+  NEXT_PUBLIC_ENABLE_ANALYTICS: z
+    .string().optional(),
   // Email
   EMAIL_API_KEY: z.string().optional(),
   EMAIL_FROM: z.string().email().optional(),

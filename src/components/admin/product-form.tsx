@@ -10,12 +10,14 @@ import {
   ImageIcon,
   File,
   AlertCircle,
+  Wand2,
+  RefreshCcw,
 } from "lucide-react";
 import Image from "next/image";
 import type { ProductWithCategory } from "@/features/products/types";
 import type { DbCategory, DbProductFile, DbProductPreview } from "@/types/database";
 import { createProduct, updateProduct, toggleProductActive } from "@/features/products/actions";
-import { addProductFileRecord, removeProductFileRecord, uploadProductPreview, deleteProductPreview } from "@/features/products/file-actions";
+import { addProductFileRecord, removeProductFileRecord, generatePreviewAction, deleteProductPreview } from "@/features/products/file-actions";
 import {
   uploadProductAsset,
   uploadProductFile,
@@ -259,26 +261,21 @@ export function ProductForm({
     router.refresh();
   }
 
-  // ─── PDF Preview Upload ─────────────────────────────────────────
-  async function handlePreviewPdfUpload(e: React.ChangeEvent<HTMLInputElement>) {
-    const file = e.target.files?.[0];
-    if (!file || !savedProductId) return;
+  // ─── PDF Preview Generation ─────────────────────────────────────────
+  async function handleGeneratePreviewPdf() {
+    if (!savedProductId) return;
 
     setUploading("previewPdf");
-    setFeedback(null);
+    setFeedback({ type: "success", message: "Đang tạo bản xem trước, vui lòng chờ..." });
 
-    const formData = new FormData();
-    formData.append("file", file);
-
-    const result = await uploadProductPreview(savedProductId, formData);
+    const result = await generatePreviewAction(savedProductId);
     if (result.success && result.data) {
       setCurrentPreviewRecord(result.data);
-      setFeedback({ type: "success", message: "Đã tải lên bản xem trước PDF." });
+      setFeedback({ type: "success", message: "Đã tạo bản xem trước PDF thành công." });
     } else {
-      setFeedback({ type: "error", message: result.error ?? "Lỗi tải PDF xem trước." });
+      setFeedback({ type: "error", message: result.error ?? "Lỗi tạo PDF xem trước." });
     }
     setUploading(null);
-    e.target.value = "";
   }
 
   async function handleRemovePreviewPdf() {
@@ -815,57 +812,68 @@ export function ProductForm({
             {/* Xem trước tài liệu (PDF) - only for PAID */}
             {productType === "PAID" && (
               <section className="bg-surface rounded-xl border border-border p-5 space-y-3 shadow-sm">
-                <h2 className="font-semibold text-text-primary">
-                  Xem trước tài liệu (PDF)
-                </h2>
-                <p className="text-sm text-text-muted mb-2">
-                  Tải lên tệp PDF (tối đa 10 trang) để khách hàng xem trước. 
-                  {currentPreviewRecord && (
-                    <span className="ml-1 text-green-600 font-medium">Đã tải lên: {currentPreviewRecord.original_filename} ({currentPreviewRecord.page_count} trang)</span>
-                  )}
-                </p>
+                <h2 className="font-semibold text-text-primary">Xem trước tài liệu</h2>
+                <p className="text-sm text-text-muted">Hệ thống tự tạo bản xem trước tối đa 10 trang từ tài liệu chính.</p>
+                
                 {currentPreviewRecord ? (
-                  <div className="flex items-center justify-between p-3 bg-surface-alt rounded-lg border border-border">
-                    <div className="flex items-center gap-3 min-w-0">
-                      <div className="w-10 h-10 rounded bg-surface border border-border flex items-center justify-center flex-shrink-0">
+                  <div className="flex flex-col gap-3 p-3 border border-border bg-surface-alt rounded-lg">
+                    <div className="flex items-center gap-3">
+                      <div className="w-10 h-10 rounded bg-red-50 border border-red-100 flex items-center justify-center flex-shrink-0">
                         <FileText className="w-5 h-5 text-red-500" />
                       </div>
                       <div className="min-w-0 flex-1">
                         <p className="text-sm font-medium text-text-primary truncate">
                           {currentPreviewRecord.original_filename}
                         </p>
-                        <p className="text-xs text-text-muted mt-0.5">
-                          {(currentPreviewRecord.file_size / 1024 / 1024).toFixed(2)} MB • {currentPreviewRecord.page_count} trang
+                        <p className="text-xs text-text-muted mt-0.5 flex items-center gap-2">
+                          <span>{currentPreviewRecord.page_count} trang</span>
+                          <span>•</span>
+                          <span>{(currentPreviewRecord.file_size / 1024 / 1024).toFixed(2)} MB</span>
                         </p>
                       </div>
                     </div>
-                    <button
-                      type="button"
-                      onClick={handleRemovePreviewPdf}
-                      disabled={isPending}
-                      className="p-2 text-slate-400 hover:text-red-500 rounded-lg hover:bg-red-50 transition-colors disabled:opacity-50"
-                      title="Xóa PDF xem trước"
-                    >
-                      <X className="w-4 h-4" />
-                    </button>
+                    
+                    <div className="flex items-center gap-2 mt-1">
+                      <button
+                        type="button"
+                        onClick={() => handleGeneratePreviewPdf()}
+                        disabled={!!uploading || isPending}
+                        className="px-3 py-1.5 text-xs border border-border bg-surface rounded-md hover:bg-surface-hover transition-colors disabled:opacity-50 flex items-center gap-1.5"
+                      >
+                        {uploading === "previewPdf" ? (
+                          <Loader2 className="w-3.5 h-3.5 animate-spin" />
+                        ) : (
+                          <RefreshCcw className="w-3.5 h-3.5" />
+                        )}
+                        Tạo lại preview
+                      </button>
+                      
+                      <button
+                        type="button"
+                        onClick={handleRemovePreviewPdf}
+                        disabled={isPending}
+                        className="px-3 py-1.5 text-xs text-red-600 border border-red-200 bg-red-50 rounded-md hover:bg-red-100 transition-colors disabled:opacity-50 flex items-center gap-1.5"
+                      >
+                        <X className="w-3.5 h-3.5" />
+                        Xóa
+                      </button>
+                    </div>
                   </div>
                 ) : (
                   <div>
-                    <label className="flex items-center gap-2 w-fit px-4 py-2 border border-border bg-surface-alt rounded-lg text-sm text-text-secondary hover:bg-surface-hover cursor-pointer transition-colors">
+                    <button
+                      type="button"
+                      onClick={handleGeneratePreviewPdf}
+                      disabled={!!uploading}
+                      className="flex items-center gap-2 w-fit px-4 py-2 border border-border bg-surface-alt rounded-lg text-sm text-text-secondary hover:bg-surface-hover transition-colors disabled:opacity-50"
+                    >
                       {uploading === "previewPdf" ? (
                         <Loader2 className="w-4 h-4 animate-spin" />
                       ) : (
-                        <FileText className="w-4 h-4" />
+                        <Wand2 className="w-4 h-4" />
                       )}
-                      Tải PDF xem trước
-                      <input
-                        type="file"
-                        accept="application/pdf"
-                        onChange={handlePreviewPdfUpload}
-                        disabled={!!uploading}
-                        className="hidden"
-                      />
-                    </label>
+                      Tạo bản xem trước
+                    </button>
                   </div>
                 )}
               </section>
