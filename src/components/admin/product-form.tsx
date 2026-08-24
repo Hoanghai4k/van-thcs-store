@@ -13,9 +13,9 @@ import {
 } from "lucide-react";
 import Image from "next/image";
 import type { ProductWithCategory } from "@/features/products/types";
-import type { DbCategory, DbProductFile } from "@/types/database";
+import type { DbCategory, DbProductFile, DbProductPreview } from "@/types/database";
 import { createProduct, updateProduct, toggleProductActive } from "@/features/products/actions";
-import { addProductFileRecord, removeProductFileRecord } from "@/features/products/file-actions";
+import { addProductFileRecord, removeProductFileRecord, uploadProductPreview, deleteProductPreview } from "@/features/products/file-actions";
 import {
   uploadProductAsset,
   uploadProductFile,
@@ -45,6 +45,8 @@ interface ProductFormProps {
   allProducts?: { id: string; name: string; product_type: string; is_active: boolean }[];
   initialPreviewOfIds?: string[];
   initialRelatedIds?: string[];
+  initialBonusIncludedIds?: string[];
+  previewRecord?: DbProductPreview | null;
   mode: "create" | "edit";
 }
 
@@ -55,6 +57,8 @@ export function ProductForm({
   allProducts = [],
   initialPreviewOfIds = [],
   initialRelatedIds = [],
+  initialBonusIncludedIds = [],
+  previewRecord = null,
   mode,
 }: ProductFormProps) {
   const router = useRouter();
@@ -64,8 +68,8 @@ export function ProductForm({
   // Form state
   const [name, setName] = useState(product?.name ?? "");
   const [slug, setSlug] = useState(product?.slug ?? "");
-  const [productType, setProductType] = useState<"PAID" | "FREE">(
-    product?.product_type ?? "PAID"
+  const [productType, setProductType] = useState<"PAID" | "FREE" | "BONUS">(
+    (product?.product_type as "PAID" | "FREE" | "BONUS") ?? "PAID"
   );
   const [shortDesc, setShortDesc] = useState(product?.short_description ?? "");
   const [description, setDescription] = useState(product?.description ?? "");
@@ -86,6 +90,8 @@ export function ProductForm({
   );
   const [previewOfIds, setPreviewOfIds] = useState<string[]>(initialPreviewOfIds);
   const [relatedIds, setRelatedIds] = useState<string[]>(initialRelatedIds);
+  const [bonusIncludedIds, setBonusIncludedIds] = useState<string[]>(initialBonusIncludedIds);
+  const [currentPreviewRecord, setCurrentPreviewRecord] = useState<DbProductPreview | null>(previewRecord);
 
   // Image state
   const [thumbnailPath, setThumbnailPath] = useState(
@@ -139,7 +145,7 @@ export function ProductForm({
         shortDescription: shortDesc.trim() || null,
         description: description.trim() || null,
         productType,
-        price: productType === "FREE" ? 0 : parseInt(price, 10) || 0,
+        price: productType === "FREE" || productType === "BONUS" ? 0 : parseInt(price, 10) || 0,
         originalPrice: originalPrice ? parseInt(originalPrice, 10) : null,
         categoryId: categoryId || null,
         thumbnailPath,
@@ -150,6 +156,7 @@ export function ProductForm({
         suitableFor: suitableFor.length > 0 ? suitableFor : null,
         previewOfIds,
         relatedIds,
+        bonusIncludedIds,
       };
 
       startTransition(async () => {
@@ -189,7 +196,7 @@ export function ProductForm({
     [
       name, slug, shortDesc, description, price, originalPrice, categoryId,
       thumbnailPath, previewImages, pageCount, fileFormat, featuresText,
-      suitableForText, mode, savedProductId, router, productType, previewOfIds, relatedIds,
+      suitableForText, mode, savedProductId, router, productType, previewOfIds, relatedIds, bonusIncludedIds,
     ],
   );
 
@@ -250,6 +257,42 @@ export function ProductForm({
     });
     await deleteProductAsset(path);
     router.refresh();
+  }
+
+  // ─── PDF Preview Upload ─────────────────────────────────────────
+  async function handlePreviewPdfUpload(e: React.ChangeEvent<HTMLInputElement>) {
+    const file = e.target.files?.[0];
+    if (!file || !savedProductId) return;
+
+    setUploading("previewPdf");
+    setFeedback(null);
+
+    const formData = new FormData();
+    formData.append("file", file);
+
+    const result = await uploadProductPreview(savedProductId, formData);
+    if (result.success && result.data) {
+      setCurrentPreviewRecord(result.data);
+      setFeedback({ type: "success", message: "Đã tải lên bản xem trước PDF." });
+    } else {
+      setFeedback({ type: "error", message: result.error ?? "Lỗi tải PDF xem trước." });
+    }
+    setUploading(null);
+    e.target.value = "";
+  }
+
+  async function handleRemovePreviewPdf() {
+    if (!savedProductId || !currentPreviewRecord) return;
+    setFeedback(null);
+    startTransition(async () => {
+      const result = await deleteProductPreview(savedProductId, currentPreviewRecord.storage_path);
+      if (result.success) {
+        setCurrentPreviewRecord(null);
+        setFeedback({ type: "success", message: "Đã xóa bản xem trước PDF." });
+      } else {
+        setFeedback({ type: "error", message: result.error ?? "Không thể xóa bản xem trước." });
+      }
+    });
   }
 
   // ─── Product File Upload ──────────────────────────────────────
@@ -460,11 +503,19 @@ export function ProductForm({
               </label>
               <select
                 value={productType}
-                onChange={(e) => setProductType(e.target.value as "PAID" | "FREE")}
+                onChange={(e) => {
+                  const type = e.target.value as "PAID" | "FREE" | "BONUS";
+                  setProductType(type);
+                  if (type === "BONUS") {
+                    setPrice("0");
+                    setOriginalPrice("");
+                  }
+                }}
                 className="w-full border border-border bg-transparent text-text-primary rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary-500"
               >
                 <option value="PAID">Sản phẩm trả phí</option>
                 <option value="FREE">Tài liệu miễn phí</option>
+                <option value="BONUS">Quà tặng (Bonus)</option>
               </select>
             </div>
             
@@ -474,12 +525,12 @@ export function ProductForm({
               </label>
               <input
                 type="number"
-                value={productType === "FREE" ? 0 : price}
+                value={productType === "FREE" || productType === "BONUS" ? 0 : price}
                 onChange={(e) => setPrice(e.target.value)}
                 min={0}
                 className="w-full border border-border bg-transparent text-text-primary rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary-500 disabled:bg-surface-alt disabled:text-text-muted disabled:border-border"
                 required={productType === "PAID"}
-                disabled={productType === "FREE"}
+                disabled={productType === "FREE" || productType === "BONUS"}
               />
             </div>
             <div className="md:col-span-1">
@@ -493,7 +544,7 @@ export function ProductForm({
                 min={0}
                 placeholder="Để trống nếu không giảm giá"
                 className="w-full border border-border bg-transparent text-text-primary rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary-500 disabled:bg-surface-alt disabled:text-text-muted placeholder:text-text-muted disabled:border-border"
-                disabled={productType === "FREE"}
+                disabled={productType === "FREE" || productType === "BONUS"}
               />
             </div>
             <div className="md:col-span-1">
@@ -509,7 +560,7 @@ export function ProductForm({
               />
             </div>
           </div>
-          {price && productType !== "FREE" && (
+          {price && productType === "PAID" && (
             <p className="text-sm text-text-secondary">
               Hiển thị: {formatCurrency(parseInt(price, 10) || 0)}
               {originalPrice &&
@@ -520,6 +571,11 @@ export function ProductForm({
           {productType === "FREE" && (
             <p className="text-sm text-green-700 dark:text-green-300 font-medium bg-green-50 dark:bg-green-900/30 px-3 py-2 rounded-lg border border-green-100 dark:border-green-800/50">
               Sản phẩm này sẽ được hiển thị miễn phí và khách hàng có thể tải xuống trực tiếp mà không cần qua thanh toán.
+            </p>
+          )}
+          {productType === "BONUS" && (
+            <p className="text-sm text-purple-700 dark:text-purple-300 font-medium bg-purple-50 dark:bg-purple-900/30 px-3 py-2 rounded-lg border border-purple-100 dark:border-purple-800/50">
+              Sản phẩm này là quà tặng kèm. Sẽ không được bán lẻ, không hiển thị trên danh sách sản phẩm. Chỉ có thể tải xuống nếu mua sản phẩm trả phí có đính kèm nó.
             </p>
           )}
         </section>
@@ -559,6 +615,41 @@ export function ProductForm({
         <section className="bg-surface rounded-xl border border-border p-5 space-y-4 shadow-sm">
           <h2 className="font-semibold text-text-primary">Sản phẩm liên kết</h2>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            {productType === "PAID" && (
+              <div>
+                <label className="block text-sm font-medium text-text-primary mb-2">
+                  Quà tặng kèm (BONUS_INCLUDED)
+                </label>
+                <div className="space-y-2 max-h-48 overflow-y-auto border border-border rounded-lg p-3 bg-surface-alt">
+                  {allProducts
+                    .filter((p) => p.product_type === "BONUS" && p.is_active && p.id !== savedProductId)
+                    .map((p) => (
+                      <label key={p.id} className="flex items-center gap-2 text-sm text-text-primary cursor-pointer">
+                        <input
+                          type="checkbox"
+                          checked={bonusIncludedIds.includes(p.id)}
+                          onChange={(e) => {
+                            if (e.target.checked) {
+                              setBonusIncludedIds([...bonusIncludedIds, p.id]);
+                            } else {
+                              setBonusIncludedIds(bonusIncludedIds.filter((id) => id !== p.id));
+                            }
+                          }}
+                          className="rounded border-border text-primary-600 focus:ring-primary-500 bg-transparent"
+                        />
+                        {p.name}
+                      </label>
+                    ))}
+                  {allProducts.filter((p) => p.product_type === "BONUS" && p.is_active && p.id !== savedProductId).length === 0 && (
+                    <span className="text-xs text-text-muted">Không có sản phẩm QUÀ TẶNG nào đang hoạt động.</span>
+                  )}
+                </div>
+                <p className="text-xs text-text-muted mt-2">
+                  Khách hàng sẽ được nhận thêm các tài liệu này miễn phí khi mua sản phẩm trả phí này.
+                </p>
+              </div>
+            )}
+
             {productType === "FREE" && (
               <div>
                 <label className="block text-sm font-medium text-text-primary mb-2">
@@ -594,7 +685,7 @@ export function ProductForm({
               </div>
             )}
             
-            <div className={productType !== "FREE" ? "md:col-span-2" : ""}>
+            <div className={productType === "BONUS" ? "md:col-span-2" : ""}>
               <label className="block text-sm font-medium text-text-primary mb-2">
                 Tài liệu liên quan (RELATED)
               </label>
@@ -720,6 +811,65 @@ export function ProductForm({
                 </label>
               </div>
             </section>
+
+            {/* Xem trước tài liệu (PDF) - only for PAID */}
+            {productType === "PAID" && (
+              <section className="bg-surface rounded-xl border border-border p-5 space-y-3 shadow-sm">
+                <h2 className="font-semibold text-text-primary">
+                  Xem trước tài liệu (PDF)
+                </h2>
+                <p className="text-sm text-text-muted mb-2">
+                  Tải lên tệp PDF (tối đa 10 trang) để khách hàng xem trước. 
+                  {currentPreviewRecord && (
+                    <span className="ml-1 text-green-600 font-medium">Đã tải lên: {currentPreviewRecord.original_filename} ({currentPreviewRecord.page_count} trang)</span>
+                  )}
+                </p>
+                {currentPreviewRecord ? (
+                  <div className="flex items-center justify-between p-3 bg-surface-alt rounded-lg border border-border">
+                    <div className="flex items-center gap-3 min-w-0">
+                      <div className="w-10 h-10 rounded bg-surface border border-border flex items-center justify-center flex-shrink-0">
+                        <FileText className="w-5 h-5 text-red-500" />
+                      </div>
+                      <div className="min-w-0 flex-1">
+                        <p className="text-sm font-medium text-text-primary truncate">
+                          {currentPreviewRecord.original_filename}
+                        </p>
+                        <p className="text-xs text-text-muted mt-0.5">
+                          {(currentPreviewRecord.file_size / 1024 / 1024).toFixed(2)} MB • {currentPreviewRecord.page_count} trang
+                        </p>
+                      </div>
+                    </div>
+                    <button
+                      type="button"
+                      onClick={handleRemovePreviewPdf}
+                      disabled={isPending}
+                      className="p-2 text-slate-400 hover:text-red-500 rounded-lg hover:bg-red-50 transition-colors disabled:opacity-50"
+                      title="Xóa PDF xem trước"
+                    >
+                      <X className="w-4 h-4" />
+                    </button>
+                  </div>
+                ) : (
+                  <div>
+                    <label className="flex items-center gap-2 w-fit px-4 py-2 border border-border bg-surface-alt rounded-lg text-sm text-text-secondary hover:bg-surface-hover cursor-pointer transition-colors">
+                      {uploading === "previewPdf" ? (
+                        <Loader2 className="w-4 h-4 animate-spin" />
+                      ) : (
+                        <FileText className="w-4 h-4" />
+                      )}
+                      Tải PDF xem trước
+                      <input
+                        type="file"
+                        accept="application/pdf"
+                        onChange={handlePreviewPdfUpload}
+                        disabled={!!uploading}
+                        className="hidden"
+                      />
+                    </label>
+                  </div>
+                )}
+              </section>
+            )}
 
             {/* Tệp tài liệu */}
             <section className="bg-surface rounded-xl border border-border p-5 space-y-3 shadow-sm">

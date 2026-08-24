@@ -11,7 +11,9 @@ import { getSupabaseServerClient } from "@/lib/supabase/server";
 import { requireAdmin } from "@/lib/auth/admin-auth";
 import { syncProductFileCount } from "./actions";
 import type { ApiResponse } from "@/types/common";
-import type { DbProductFile } from "@/types/database";
+import type { DbProductFile, DbProductPreview } from "@/types/database";
+import { PDFDocument } from "pdf-lib";
+import { STORAGE_BUCKETS } from "@/lib/constants";
 
 /**
  * Register a product file in the database after successful storage upload.
@@ -126,4 +128,118 @@ export async function getProductFiles(
   }
 
   return data;
+}
+
+/**
+ * Handle server-side upload of a PDF preview.
+ * This is a server action to securely read the PDF page count and upload it.
+ */
+export async function uploadProductPreview(
+  productId: string,
+  formData: FormData
+): Promise<ApiResponse<DbProductPreview>> {
+  await requireAdmin();
+
+  const file = formData.get("file") as File | null;
+  if (!file) {
+    return { success: false, error: "Không tìm thấy file." };
+  }
+
+  if (file.type !== "application/pdf") {
+    return { success: false, error: "Chỉ chấp nhận định dạng PDF." };
+  }
+
+  if (file.size > 20 * 1024 * 1024) {
+    return { success: false, error: "Dung lượng file vượt quá 20MB." };
+  }
+
+  const supabase = await getSupabaseServerClient();
+
+  // Validate PDF and get page count
+  let pageCount = 0;
+  try {
+    const arrayBuffer = await file.arrayBuffer();
+    const pdfDoc = await PDFDocument.load(arrayBuffer, { ignoreEncryption: true });
+    pageCount = pdfDoc.getPageCount();
+  } catch (err) {
+    console.error("[ProductPreview] PDF parse error:", err);
+    return { success: false, error: "Không thể đọc nội dung file PDF. File có thể bị hỏng hoặc mã hóa." };
+  }
+
+  if (pageCount < 1 || pageCount > 10) {
+    return { success: false, error: `Số trang không hợp lệ (${pageCount} trang). Chỉ cho phép từ 1 đến 10 trang.` };
+  }
+
+  // Ensure product is PAID
+  const { data: product } = await supabase.from("products").select("product_type").eq("id", productId).single();
+  if (product?.product_type !== "PAID") {
+    return { success: false, error: "Xem trước chỉ áp dụng cho sản phẩm trả phí (PAID)." };
+  }
+
+  // Upload to Storage
+  const uniqueName = `${crypto.randomUUID()}.pdf`;
+  const storagePath = `${productId}/${uniqueName}`;
+  
+  const { error: uploadError } = await supabase.storage
+    .from(STORAGE_BUCKETS.PRODUCT_PREVIEWS)
+    .upload(storagePath, file, {
+      cacheControl: "3600",
+      upsert: false,
+    });
+
+  if (uploadError) {
+    console.error("[ProductPreview] Upload error:", uploadError.message);
+    return { success: false, error: "Không thể tải lên Storage." };
+  }
+
+  // Delete existing preview if any (from DB and Storage)
+  const { data: existingPreview } = await supabase.from("product_previews").select("id, storage_path").eq("product_id", productId).maybeSingle();
+  
+  if (existingPreview) {
+    await supabase.storage.from(STORAGE_BUCKETS.PRODUCT_PREVIEWS).remove([existingPreview.storage_path]);
+    await supabase.from("product_previews").delete().eq("id", existingPreview.id);
+  }
+
+  // Insert to DB
+  const { data: previewRecord, error: insertError } = await supabase
+    .from("product_previews")
+    .insert({
+      product_id: productId,
+      storage_path: storagePath,
+      original_filename: file.name,
+      mime_type: "application/pdf",
+      file_size: file.size,
+      page_count: pageCount,
+    })
+    .select()
+    .single();
+
+  if (insertError) {
+    console.error("[ProductPreview] DB insert error:", insertError.message);
+    // Cleanup storage
+    await supabase.storage.from(STORAGE_BUCKETS.PRODUCT_PREVIEWS).remove([storagePath]);
+    return { success: false, error: "Không thể lưu thông tin xem trước vào database." };
+  }
+
+  revalidatePath(`/admin/products/${productId}`);
+  return { success: true, data: previewRecord };
+}
+
+export async function deleteProductPreview(productId: string, storagePath: string): Promise<ApiResponse<null>> {
+  await requireAdmin();
+  const supabase = await getSupabaseServerClient();
+
+  const { error: storageError } = await supabase.storage.from(STORAGE_BUCKETS.PRODUCT_PREVIEWS).remove([storagePath]);
+  if (storageError) {
+    console.error("[ProductPreview] Storage delete error:", storageError.message);
+  }
+
+  const { error: dbError } = await supabase.from("product_previews").delete().eq("product_id", productId);
+  if (dbError) {
+    console.error("[ProductPreview] DB delete error:", dbError.message);
+    return { success: false, error: "Không thể xóa bản ghi xem trước." };
+  }
+
+  revalidatePath(`/admin/products/${productId}`);
+  return { success: true };
 }

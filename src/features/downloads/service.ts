@@ -191,11 +191,20 @@ export async function getPurchasedFiles(
     .select("product_id, product_name")
     .eq("order_id", orderId);
 
-  if (!items || items.length === 0) return [];
+  // Get bonus items
+  const { data: bonusItems } = await supabaseAdmin
+    .from("order_bonus_items")
+    .select("bonus_product_id, bonus_name_snapshot")
+    .eq("order_id", orderId);
 
-  const productIds = items.map((i) => i.product_id);
+  if ((!items || items.length === 0) && (!bonusItems || bonusItems.length === 0)) return [];
 
-  // Get product files for all purchased products
+  const productIds = [
+    ...(items || []).map((i) => i.product_id),
+    ...(bonusItems || []).map((b) => b.bonus_product_id)
+  ];
+
+  // Get product files for all purchased and bonus products
   const { data: files } = await supabaseAdmin
     .from("product_files")
     .select("id, product_id, file_name, file_size")
@@ -204,7 +213,10 @@ export async function getPurchasedFiles(
   if (!files) return [];
 
   // Map files with product names
-  const productNameMap = new Map(items.map((i) => [i.product_id, i.product_name]));
+  const productNameMap = new Map([
+    ...(items || []).map((i) => [i.product_id, i.product_name] as [string, string]),
+    ...(bonusItems || []).map((b) => [b.bonus_product_id, `[QUÀ TẶNG] ${b.bonus_name_snapshot}`] as [string, string])
+  ]);
 
   return files.map((f) => ({
     fileId: f.id,
@@ -276,10 +288,19 @@ export async function processDownload(
     .select("id")
     .eq("order_id", orderId)
     .eq("product_id", file.product_id)
-    .single();
+    .maybeSingle();
 
   if (!orderItem) {
-    return { success: false, error: "Tài liệu hiện không khả dụng. Vui lòng liên hệ hỗ trợ." };
+    const { data: bonusItem } = await supabaseAdmin
+      .from("order_bonus_items")
+      .select("id")
+      .eq("order_id", orderId)
+      .eq("bonus_product_id", file.product_id)
+      .maybeSingle();
+
+    if (!bonusItem) {
+      return { success: false, error: "Tài liệu hiện không khả dụng. Vui lòng liên hệ hỗ trợ." };
+    }
   }
 
   // 4. Atomically consume download count

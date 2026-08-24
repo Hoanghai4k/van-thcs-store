@@ -37,14 +37,67 @@ describe("My Orders Crypto", () => {
       const token = generateMagicLinkToken(EMAIL);
       const parts = token.split(".");
       
-      // Corrupt ciphertext
-      parts[1] = "A" + parts[1].substring(1);
+      // Corrupt ciphertext by flipping a bit in the actual bytes
+      const ciphertextBuf = Buffer.from(_testing.fromBase64UrlToBuffer(parts[1]));
+      ciphertextBuf[0] ^= 0x01;
+      parts[1] = _testing.toBase64Url(ciphertextBuf);
+      
       const tampered = parts.join(".");
       
       const result = verifyMagicLinkToken(tampered);
       expect(result.valid).toBe(false);
       if (!result.valid) {
         expect(result.reason).toBe("decryption_failed");
+      }
+    });
+
+    it("should reject tampered auth tag", () => {
+      const token = generateMagicLinkToken(EMAIL);
+      const parts = token.split(".");
+      
+      // Corrupt auth tag by flipping a bit in the actual bytes
+      const authTagBuf = Buffer.from(_testing.fromBase64UrlToBuffer(parts[2]));
+      authTagBuf[0] ^= 0x01;
+      parts[2] = _testing.toBase64Url(authTagBuf);
+      
+      const tampered = parts.join(".");
+      
+      const result = verifyMagicLinkToken(tampered);
+      expect(result.valid).toBe(false);
+      if (!result.valid) {
+        expect(result.reason).toBe("decryption_failed");
+      }
+    });
+
+    it("should reject tampered IV", () => {
+      const token = generateMagicLinkToken(EMAIL);
+      const parts = token.split(".");
+      
+      // Corrupt IV by flipping a bit in the actual bytes
+      const ivBuf = Buffer.from(_testing.fromBase64UrlToBuffer(parts[0]));
+      ivBuf[0] ^= 0x01;
+      parts[0] = _testing.toBase64Url(ivBuf);
+      
+      const tampered = parts.join(".");
+      
+      const result = verifyMagicLinkToken(tampered);
+      expect(result.valid).toBe(false);
+      if (!result.valid) {
+        expect(result.reason).toBe("decryption_failed");
+      }
+    });
+
+    it("should reject malformed token", () => {
+      const token = generateMagicLinkToken(EMAIL);
+      const parts = token.split(".");
+      
+      // Remove one part to make it malformed
+      const malformed = parts.slice(0, 2).join(".");
+      
+      const result = verifyMagicLinkToken(malformed);
+      expect(result.valid).toBe(false);
+      if (!result.valid) {
+        expect(result.reason).toBe("malformed_token");
       }
     });
 
@@ -82,8 +135,11 @@ describe("My Orders Crypto", () => {
       const token = signMyOrdersAccess(EMAIL);
       const parts = token.split(".");
       
-      // Tamper signature
-      parts[1] = "A" + parts[1].substring(1);
+      // Tamper signature by flipping a bit in the actual bytes
+      const sigBuf = Buffer.from(_testing.fromBase64UrlToBuffer(parts[1]));
+      sigBuf[0] ^= 0x01;
+      parts[1] = _testing.toBase64Url(sigBuf);
+      
       const tampered = parts.join(".");
       
       const result = verifyMyOrdersAccess(tampered);

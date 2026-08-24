@@ -4,7 +4,7 @@
 
 import { z } from "zod";
 
-export const productTypeSchema = z.enum(["PAID", "FREE"]);
+export const productTypeSchema = z.enum(["PAID", "FREE", "BONUS"]);
 export type ProductType = z.infer<typeof productTypeSchema>;
 
 export const createProductSchema = z.object({
@@ -27,6 +27,7 @@ export const createProductSchema = z.object({
   productType: productTypeSchema.default("PAID"),
   previewOfIds: z.array(z.string()).optional(),
   relatedIds: z.array(z.string()).optional(),
+  bonusIncludedIds: z.array(z.string()).optional(),
 });
 
 export const updateProductSchema = createProductSchema.partial();

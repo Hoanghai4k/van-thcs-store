@@ -77,7 +77,7 @@ export async function createProduct(
   }
 
   // Process relations
-  await syncProductRelations(supabase, data.id, d.previewOfIds, d.relatedIds);
+  await syncProductRelations(supabase, data.id, d.previewOfIds, d.relatedIds, d.bonusIncludedIds);
 
   revalidatePath("/admin/products");
   return { success: true, data };
@@ -116,7 +116,7 @@ export async function updateProduct(
     preview_images?: string[] | null;
     page_count?: number | null;
     file_format?: string;
-    product_type?: "PAID" | "FREE";
+    product_type?: "PAID" | "FREE" | "BONUS";
     features?: string[] | null;
     suitable_for?: string[] | null;
   } = {};
@@ -167,7 +167,7 @@ export async function updateProduct(
   }
 
   // Process relations
-  await syncProductRelations(supabase, id, d.previewOfIds, d.relatedIds);
+  await syncProductRelations(supabase, id, d.previewOfIds, d.relatedIds, d.bonusIncludedIds);
 
   revalidatePath("/admin/products");
   revalidatePath(`/admin/products/${id}`);
@@ -276,10 +276,11 @@ async function syncProductRelations(
   supabase: any,
   sourceId: string,
   previewOfIds?: string[] | null,
-  relatedIds?: string[] | null
+  relatedIds?: string[] | null,
+  bonusIncludedIds?: string[] | null
 ) {
   // We only sync if these arrays are provided. If undefined, do nothing.
-  if (previewOfIds === undefined && relatedIds === undefined) return;
+  if (previewOfIds === undefined && relatedIds === undefined && bonusIncludedIds === undefined) return;
 
   const relationsToInsert: { source_product_id: string; target_product_id: string; relation_type: string }[] = [];
 
@@ -311,6 +312,22 @@ async function syncProductRelations(
             source_product_id: sourceId,
             target_product_id: id,
             relation_type: "RELATED"
+          });
+        }
+      });
+    }
+  }
+
+  if (bonusIncludedIds !== undefined) {
+    await supabase.from("product_relations").delete().eq("source_product_id", sourceId).eq("relation_type", "BONUS_INCLUDED");
+    
+    if (bonusIncludedIds && bonusIncludedIds.length > 0) {
+      bonusIncludedIds.forEach((id) => {
+        if (id !== sourceId) {
+          relationsToInsert.push({
+            source_product_id: sourceId,
+            target_product_id: id,
+            relation_type: "BONUS_INCLUDED"
           });
         }
       });

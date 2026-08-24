@@ -144,15 +144,66 @@ export async function createCheckoutOrder(
     unit_price: p.price,
   }));
 
-  const { error: itemsError } = await supabase
+  const { data: insertedOrderItems, error: itemsError } = await supabase
     .from("order_items")
-    .insert(orderItems);
+    .insert(orderItems)
+    .select("id, product_id");
 
   if (itemsError) {
     console.error("[OrderService] Order items insert error:", itemsError.message);
     // Rollback: delete the orphan order
     await supabase.from("orders").delete().eq("id", order.id);
     throw new CheckoutError("Không thể tạo đơn hàng. Vui lòng thử lại.");
+  }
+
+  // 8. Snapshot bonuses
+  if (insertedOrderItems && insertedOrderItems.length > 0) {
+    const { data: bonusRelations, error: bonusError } = await supabase
+      .from("product_relations")
+      .select("source_product_id, target_product:products!product_relations_target_product_id_fkey(id, name, is_active, product_type)")
+      .in("source_product_id", uniqueProductIds)
+      .eq("relation_type", "BONUS_INCLUDED");
+
+    if (!bonusError && bonusRelations && bonusRelations.length > 0) {
+      const bonusItemsToInsert: Array<{
+        order_id: string;
+        source_order_item_id: string;
+        source_product_id: string;
+        bonus_product_id: string;
+        bonus_name_snapshot: string;
+      }> = [];
+
+      for (const rel of bonusRelations) {
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        const target = rel.target_product as any;
+        if (target && target.is_active && target.product_type === "BONUS") {
+          const sourceItem = insertedOrderItems.find((item) => item.product_id === rel.source_product_id);
+          if (sourceItem) {
+            // Ensure unique constraint: (order_id, bonus_product_id)
+            if (!bonusItemsToInsert.some(b => b.bonus_product_id === target.id)) {
+              bonusItemsToInsert.push({
+                order_id: order.id,
+                source_order_item_id: sourceItem.id,
+                source_product_id: sourceItem.product_id,
+                bonus_product_id: target.id,
+                bonus_name_snapshot: target.name,
+              });
+            }
+          }
+        }
+      }
+
+      if (bonusItemsToInsert.length > 0) {
+        const { error: insertBonusError } = await supabase
+          .from("order_bonus_items")
+          .insert(bonusItemsToInsert);
+        
+        if (insertBonusError) {
+          console.error("[OrderService] Order bonus items insert error:", insertBonusError.message);
+          // Non-fatal, just log it. The main order is created successfully.
+        }
+      }
+    }
   }
 
   console.log(

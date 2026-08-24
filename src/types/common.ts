@@ -48,7 +48,8 @@ export interface CartItem {
   price: number;
   originalPrice: number | null;
   thumbnailPath: string | null;
-  productType?: "PAID" | "FREE"; // Added for FREE product filtering
+  categoryId?: string;
+  productType?: "PAID" | "FREE" | "BONUS";
 }
 
 /** Checkout form data */

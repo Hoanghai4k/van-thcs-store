@@ -12,12 +12,14 @@ import {
 } from "lucide-react";
 import Link from "next/link";
 import { siteConfig } from "@/config/site";
-import { getProductBySlug, getProductRelations } from "@/features/products/queries";
+import { getProductBySlug, getProductRelations, getProductPreview } from "@/features/products/queries";
 import { getProductFiles } from "@/features/products/file-actions";
+import { getSupabaseServerClient } from "@/lib/supabase/server";
 import { formatCurrency } from "@/lib/utils";
 import { ProductGallery } from "@/components/product/product-gallery";
 import { ProductActions } from "@/components/product/product-actions";
 import { ProductFAQ } from "@/components/product/product-faq";
+import { ProductPdfPreview } from "@/components/product/product-pdf-preview";
 
 interface ProductPageProps {
   params: Promise<{ slug: string }>;
@@ -45,6 +47,16 @@ export default async function ProductDetailPage({ params }: ProductPageProps) {
   }
   
   const relations = await getProductRelations(product.id);
+  const previewRecord = await getProductPreview(product.id);
+  let previewUrl: string | null = null;
+  
+  if (previewRecord) {
+    const supabase = await getSupabaseServerClient();
+    const { data } = await supabase.storage.from("product-previews").createSignedUrl(previewRecord.storage_path, 3600);
+    if (data?.signedUrl) {
+      previewUrl = data.signedUrl;
+    }
+  }
   
   // If product is FREE, we need to show its files directly
   const freeFiles = product.product_type === "FREE" 
@@ -220,6 +232,21 @@ export default async function ProductDetailPage({ params }: ProductPageProps) {
               </div>
             )}
 
+            {/* Bonus products included */}
+            {product.product_type === "PAID" && relations.bonusIncluded && relations.bonusIncluded.length > 0 && (
+              <div className="bg-purple-50 dark:bg-purple-900/20 rounded-2xl border border-purple-100 dark:border-purple-800/50 p-5">
+                <h3 className="font-bold text-purple-800 dark:text-purple-300 mb-3 text-sm uppercase tracking-wide">🎁 Quà tặng kèm</h3>
+                <div className="space-y-3">
+                  {relations.bonusIncluded.map((bonus) => (
+                    <div key={bonus.id} className="block bg-surface p-3 rounded-xl border border-purple-200 dark:border-purple-800/50">
+                      <p className="font-semibold text-text-primary text-sm mb-1">{bonus.name}</p>
+                      <p className="text-purple-600 dark:text-purple-400 font-bold text-sm">MIỄN PHÍ khi mua sản phẩm này</p>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
+
             {/* Trust Section */}
             <div className="bg-surface rounded-2xl border border-border p-5">
               <div className="space-y-2.5 text-sm text-text-secondary">
@@ -257,6 +284,17 @@ export default async function ProductDetailPage({ params }: ProductPageProps) {
               <div className="prose prose-sm text-text-secondary max-w-none">
                 <p className="leading-relaxed">{product.description}</p>
               </div>
+            </section>
+          )}
+
+          {/* PDF Preview */}
+          {product.product_type === "PAID" && previewUrl && (
+            <section className="scroll-mt-24 pt-6 border-t border-border">
+              <h2 className="text-xl font-bold text-text-primary mb-5 flex items-center gap-2">
+                <FileText className="w-6 h-6 text-primary-600" />
+                Xem trước tài liệu
+              </h2>
+              <ProductPdfPreview url={previewUrl} />
             </section>
           )}
 

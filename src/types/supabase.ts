@@ -1,4 +1,4 @@
-﻿export type Json =
+export type Json =
   | string
   | number
   | boolean
@@ -157,6 +157,65 @@ export type Database = {
             columns: ["order_id"]
             isOneToOne: false
             referencedRelation: "orders"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      order_bonus_items: {
+        Row: {
+          bonus_name_snapshot: string
+          bonus_product_id: string
+          created_at: string
+          id: string
+          order_id: string
+          source_order_item_id: string | null
+          source_product_id: string
+        }
+        Insert: {
+          bonus_name_snapshot: string
+          bonus_product_id: string
+          created_at?: string
+          id?: string
+          order_id: string
+          source_order_item_id?: string | null
+          source_product_id: string
+        }
+        Update: {
+          bonus_name_snapshot?: string
+          bonus_product_id?: string
+          created_at?: string
+          id?: string
+          order_id?: string
+          source_order_item_id?: string | null
+          source_product_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "order_bonus_items_bonus_product_id_fkey"
+            columns: ["bonus_product_id"]
+            isOneToOne: false
+            referencedRelation: "products"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "order_bonus_items_order_id_fkey"
+            columns: ["order_id"]
+            isOneToOne: false
+            referencedRelation: "orders"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "order_bonus_items_source_order_item_id_fkey"
+            columns: ["source_order_item_id"]
+            isOneToOne: false
+            referencedRelation: "order_items"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "order_bonus_items_source_product_id_fkey"
+            columns: ["source_product_id"]
+            isOneToOne: false
+            referencedRelation: "products"
             referencedColumns: ["id"]
           },
         ]
@@ -348,6 +407,50 @@ export type Database = {
             foreignKeyName: "product_files_product_id_fkey"
             columns: ["product_id"]
             isOneToOne: false
+            referencedRelation: "products"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      product_previews: {
+        Row: {
+          created_at: string
+          file_size: number
+          id: string
+          mime_type: string
+          original_filename: string
+          page_count: number
+          product_id: string
+          storage_path: string
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          file_size: number
+          id?: string
+          mime_type: string
+          original_filename: string
+          page_count: number
+          product_id: string
+          storage_path: string
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          file_size?: number
+          id?: string
+          mime_type?: string
+          original_filename?: string
+          page_count?: number
+          product_id?: string
+          storage_path?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "product_previews_product_id_fkey"
+            columns: ["product_id"]
+            isOneToOne: true
             referencedRelation: "products"
             referencedColumns: ["id"]
           },

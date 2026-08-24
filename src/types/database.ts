@@ -26,7 +26,8 @@ export type DbOrder = Tables<"orders">;
 export type DbOrderItem = Tables<"order_items">;
 export type DbDownloadToken = Tables<"download_tokens">;
 export type DbPaymentAttempt = Tables<"payment_attempts">;
-
+export type DbProductPreview = Tables<"product_previews">;
+export type DbOrderBonusItem = Tables<"order_bonus_items">;
 // Insert types
 export type DbCategoryInsert = TablesInsert<"categories">;
 export type DbProductInsert = TablesInsert<"products">;

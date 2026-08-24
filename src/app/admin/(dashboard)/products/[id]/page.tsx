@@ -1,5 +1,5 @@
 import { notFound } from "next/navigation";
-import { getProductById, getAllProductsLight, getProductRelations } from "@/features/products/queries";
+import { getProductById, getAllProductsLight, getProductRelations, getProductPreview } from "@/features/products/queries";
 import { getProductFiles } from "@/features/products/file-actions";
 import { listAllCategories } from "@/features/categories/queries";
 import { ProductForm } from "@/components/admin/product-form";
@@ -13,12 +13,13 @@ export default async function AdminEditProductPage({
 }: EditProductPageProps) {
   const { id } = await params;
 
-  const [product, productFiles, categories, allProducts, relations] = await Promise.all([
+  const [product, productFiles, categories, allProducts, relations, previewRecord] = await Promise.all([
     getProductById(id),
     getProductFiles(id),
     listAllCategories(),
     getAllProductsLight(),
     getProductRelations(id),
+    getProductPreview(id)
   ]);
 
   if (!product) {
@@ -38,6 +39,8 @@ export default async function AdminEditProductPage({
         allProducts={allProducts}
         initialPreviewOfIds={relations.fullVersions.map(p => p.id)}
         initialRelatedIds={relations.related.map(p => p.id)}
+        initialBonusIncludedIds={relations.bonusIncluded.map(p => p.id)}
+        previewRecord={previewRecord}
         mode="edit"
       />
     </div>

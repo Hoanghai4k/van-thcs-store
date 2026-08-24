@@ -8,7 +8,7 @@
 import { getSupabaseServerClient } from "@/lib/supabase/server";
 import type { ProductWithCategory, ProductListResult, ProductType } from "./types";
 import { productTypeSchema } from "./schema";
-import type { DbCategory } from "@/types/database";
+import type { DbCategory, DbProductPreview } from "@/types/database";
 import { PAGINATION } from "@/lib/constants";
 
 function parseProductType(val: unknown): ProductType {
@@ -38,6 +38,7 @@ export async function getProducts(params?: {
     .from("products")
     .select("*, category:categories(*)", { count: "exact" })
     .eq("is_active", true)
+    .neq("product_type", "BONUS")
     .order("created_at", { ascending: false });
 
   if (params?.categorySlug) {
@@ -86,6 +87,7 @@ export async function getProductBySlug(
     .select("*, category:categories(*)")
     .eq("slug", slug)
     .eq("is_active", true)
+    .neq("product_type", "BONUS")
     .single();
 
   if (error || !data) {
@@ -132,7 +134,8 @@ export async function getProductsByIds(
     .from("products")
     .select("*, category:categories(*)")
     .in("id", ids)
-    .eq("is_active", true);
+    .eq("is_active", true)
+    .neq("product_type", "BONUS");
 
   if (error || !data) {
     console.error("[Products] Error fetching by IDs:", error?.message);
@@ -155,6 +158,7 @@ export async function getFeaturedProducts(
     .from("products")
     .select("*, category:categories(*)")
     .eq("is_active", true)
+    .neq("product_type", "BONUS")
     .order("created_at", { ascending: false })
     .limit(limit);
 
@@ -268,6 +272,7 @@ export interface ProductRelationGroup {
   fullVersions: ProductWithCategory[];
   freePreviews: ProductWithCategory[];
   related: ProductWithCategory[];
+  bonusIncluded: ProductWithCategory[];
 }
 
 export async function getProductRelations(productId: string): Promise<ProductRelationGroup> {
@@ -276,7 +281,8 @@ export async function getProductRelations(productId: string): Promise<ProductRel
   const result: ProductRelationGroup = {
     fullVersions: [],
     freePreviews: [],
-    related: []
+    related: [],
+    bonusIncluded: []
   };
 
   // Fetch relations where this product is the source
@@ -303,6 +309,8 @@ export async function getProductRelations(productId: string): Promise<ProductRel
         result.fullVersions.push(parsed);
       } else if (rel.relation_type === "RELATED") {
         result.related.push(parsed);
+      } else if (rel.relation_type === "BONUS_INCLUDED") {
+        result.bonusIncluded.push(parsed);
       }
     }
   }
@@ -336,4 +344,10 @@ export async function getProductRelations(productId: string): Promise<ProductRel
   }
 
   return result;
+}
+
+export async function getProductPreview(productId: string): Promise<DbProductPreview | null> {
+  const supabase = await getSupabaseServerClient();
+  const { data } = await supabase.from("product_previews").select("*").eq("product_id", productId).maybeSingle();
+  return data;
 }

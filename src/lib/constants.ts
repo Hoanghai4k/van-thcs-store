@@ -72,6 +72,7 @@ export const MAX_PRODUCT_FILE_SIZE = 50 * 1024 * 1024;
 export const STORAGE_BUCKETS = {
   PRODUCT_FILES: "product-files",
   PRODUCT_ASSETS: "product-assets",
+  PRODUCT_PREVIEWS: "product-previews",
 } as const;
 
 /** Default pagination */
