@@ -89,10 +89,10 @@ export async function createCheckoutOrder(
     throw new CheckoutError("Một sản phẩm trong giỏ hiện không còn bán.");
   }
 
-  // SECURITY GUARD: Reject any FREE products from checkout
-  const freeProducts = products.filter((p) => p.product_type === "FREE");
-  if (freeProducts.length > 0) {
-    throw new CheckoutError("Không thể thanh toán sản phẩm miễn phí qua cổng này.");
+  // SECURITY GUARD: Reject any FREE or BONUS products from checkout
+  const invalidProducts = products.filter((p) => p.product_type === "FREE" || p.product_type === "BONUS");
+  if (invalidProducts.length > 0) {
+    throw new CheckoutError("Chỉ có thể thanh toán sản phẩm thương mại.");
   }
 
   // 3. Calculate totals from DB prices (NEVER from client)

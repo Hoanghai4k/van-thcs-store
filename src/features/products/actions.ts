@@ -77,7 +77,7 @@ export async function createProduct(
   }
 
   // Process relations
-  await syncProductRelations(supabase, data.id, d.previewOfIds, d.relatedIds, d.bonusIncludedIds);
+  await syncProductRelations(supabase, data.id, d.relatedIds, d.bonusIncludedIds);
 
   revalidatePath("/admin/products");
   return { success: true, data };
@@ -167,7 +167,7 @@ export async function updateProduct(
   }
 
   // Process relations
-  await syncProductRelations(supabase, id, d.previewOfIds, d.relatedIds, d.bonusIncludedIds);
+  await syncProductRelations(supabase, id, d.relatedIds, d.bonusIncludedIds);
 
   revalidatePath("/admin/products");
   revalidatePath(`/admin/products/${id}`);
@@ -275,31 +275,15 @@ async function syncProductRelations(
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   supabase: any,
   sourceId: string,
-  previewOfIds?: string[] | null,
   relatedIds?: string[] | null,
   bonusIncludedIds?: string[] | null
 ) {
   // We only sync if these arrays are provided. If undefined, do nothing.
-  if (previewOfIds === undefined && relatedIds === undefined && bonusIncludedIds === undefined) return;
+  if (relatedIds === undefined && bonusIncludedIds === undefined) return;
 
   const relationsToInsert: { source_product_id: string; target_product_id: string; relation_type: string }[] = [];
 
-  if (previewOfIds !== undefined) {
-    // Delete existing PREVIEW_OF relations where source = this product
-    await supabase.from("product_relations").delete().eq("source_product_id", sourceId).eq("relation_type", "PREVIEW_OF");
-    
-    if (previewOfIds && previewOfIds.length > 0) {
-      previewOfIds.forEach((id) => {
-        if (id !== sourceId) {
-          relationsToInsert.push({
-            source_product_id: sourceId,
-            target_product_id: id,
-            relation_type: "PREVIEW_OF"
-          });
-        }
-      });
-    }
-  }
+
 
   if (relatedIds !== undefined) {
     // Delete existing RELATED relations where source = this product

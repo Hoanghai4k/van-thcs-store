@@ -54,12 +54,8 @@ export function ProductCard({ product }: ProductCardProps) {
             <FileText className="w-16 h-16 text-primary-300 group-hover:text-primary-400 transition-colors group-hover:scale-110 duration-300" />
           );
         })()}
-        {product.product_type === "FREE" && (
-          <span className="absolute top-3 right-3 bg-green-500 text-white text-xs font-bold px-2.5 py-1 rounded-full shadow-sm">
-            Miễn phí
-          </span>
-        )}
-        {discount && product.product_type !== "FREE" && (
+
+        {discount && (
           <span className="absolute top-3 right-3 bg-error text-white text-xs font-bold px-2.5 py-1 rounded-full shadow-sm">
             -{discount}%
           </span>
@@ -100,11 +96,6 @@ export function ProductCard({ product }: ProductCardProps) {
 
           {/* Price */}
           <div className="flex items-baseline gap-2 mb-3">
-            {product.product_type === "FREE" ? (
-              <span className="text-lg font-bold text-green-600">
-                MIỄN PHÍ
-              </span>
-            ) : (
               <>
                 <span className="text-lg font-bold text-primary-600">
                   {formatCurrency(product.price)}
@@ -116,19 +107,9 @@ export function ProductCard({ product }: ProductCardProps) {
                     </span>
                   )}
               </>
-            )}
           </div>
 
           {/* Action Button */}
-          {product.product_type === "FREE" ? (
-            <Link
-              href={`/products/${product.slug}`}
-              className="w-full flex items-center justify-center gap-2 py-2.5 px-4 rounded-xl text-sm font-medium bg-green-50 text-green-700 border border-green-200 hover:bg-green-100 transition-all active:scale-[0.98]"
-            >
-              <FileText className="w-4 h-4" />
-              Xem chi tiết
-            </Link>
-          ) : (
             <button
               onClick={handleAddToCart}
               disabled={inCart}
@@ -150,7 +131,6 @@ export function ProductCard({ product }: ProductCardProps) {
                 </>
               )}
             </button>
-          )}
         </div>
       </div>
     </div>

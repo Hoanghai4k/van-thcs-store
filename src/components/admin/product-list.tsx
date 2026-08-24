@@ -253,8 +253,8 @@ export function AdminProductList({
                         </span>
                       </td>
                       <td className="px-4 py-3 text-right font-medium text-text-primary whitespace-nowrap">
-                        {product.product_type === "FREE" ? (
-                          <span className="text-green-600 dark:text-green-400 font-bold text-xs uppercase tracking-wider">Miễn phí</span>
+                        {product.product_type === "BONUS" ? (
+                          <span className="text-purple-600 dark:text-purple-400 font-bold text-xs uppercase tracking-wider">Quà tặng</span>
                         ) : (
                           formatCurrency(product.price)
                         )}

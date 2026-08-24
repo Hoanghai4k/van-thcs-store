@@ -38,7 +38,7 @@ export async function getProducts(params?: {
     .from("products")
     .select("*, category:categories(*)", { count: "exact" })
     .eq("is_active", true)
-    .neq("product_type", "BONUS")
+    .eq("product_type", "PAID")
     .order("created_at", { ascending: false });
 
   if (params?.categorySlug) {
@@ -87,7 +87,7 @@ export async function getProductBySlug(
     .select("*, category:categories(*)")
     .eq("slug", slug)
     .eq("is_active", true)
-    .neq("product_type", "BONUS")
+    .eq("product_type", "PAID")
     .single();
 
   if (error || !data) {
@@ -135,7 +135,7 @@ export async function getProductsByIds(
     .select("*, category:categories(*)")
     .in("id", ids)
     .eq("is_active", true)
-    .neq("product_type", "BONUS");
+    .eq("product_type", "PAID");
 
   if (error || !data) {
     console.error("[Products] Error fetching by IDs:", error?.message);
@@ -158,7 +158,7 @@ export async function getFeaturedProducts(
     .from("products")
     .select("*, category:categories(*)")
     .eq("is_active", true)
-    .neq("product_type", "BONUS")
+    .eq("product_type", "PAID")
     .order("created_at", { ascending: false })
     .limit(limit);
 
@@ -269,8 +269,6 @@ export async function getAllProductsLight(): Promise<Array<{id: string, name: st
 }
 
 export interface ProductRelationGroup {
-  fullVersions: ProductWithCategory[];
-  freePreviews: ProductWithCategory[];
   related: ProductWithCategory[];
   bonusIncluded: ProductWithCategory[];
 }
@@ -279,8 +277,6 @@ export async function getProductRelations(productId: string): Promise<ProductRel
   const supabase = await getSupabaseServerClient();
   
   const result: ProductRelationGroup = {
-    fullVersions: [],
-    freePreviews: [],
     related: [],
     bonusIncluded: []
   };
@@ -305,40 +301,10 @@ export async function getProductRelations(productId: string): Promise<ProductRel
         category: p.category as DbCategory | null
       } as ProductWithCategory;
       
-      if (rel.relation_type === "PREVIEW_OF") {
-        result.fullVersions.push(parsed);
-      } else if (rel.relation_type === "RELATED") {
+      if (rel.relation_type === "RELATED" && parsed.product_type === "PAID") {
         result.related.push(parsed);
-      } else if (rel.relation_type === "BONUS_INCLUDED") {
+      } else if (rel.relation_type === "BONUS_INCLUDED" && parsed.product_type === "BONUS") {
         result.bonusIncluded.push(parsed);
-      }
-    }
-  }
-
-  // Fetch relations where this product is the target (reverse lookup)
-  const { data: inData, error: inError } = await supabase
-    .from("product_relations")
-    .select("relation_type, source_product:products!product_relations_source_product_id_fkey(*, category:categories(*))")
-    .eq("target_product_id", productId)
-    .order("sort_order", { ascending: true });
-
-  if (inError) {
-    console.error("[Products] Error fetching inbound relations:", inError.message);
-  } else {
-    for (const rel of inData || []) {
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      const p = rel.source_product as any;
-      if (!p || !p.is_active) continue;
-      const parsed = {
-        ...p,
-        product_type: parseProductType(p.product_type),
-        category: p.category as DbCategory | null
-      } as ProductWithCategory;
-      
-      if (rel.relation_type === "PREVIEW_OF") {
-        result.freePreviews.push(parsed);
-      } else if (rel.relation_type === "RELATED") {
-        // Typically related is not symmetrical on storefront, but could be added here if needed.
       }
     }
   }

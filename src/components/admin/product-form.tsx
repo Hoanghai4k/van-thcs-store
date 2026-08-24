@@ -45,7 +45,6 @@ interface ProductFormProps {
   productFiles?: DbProductFile[];
   categories: DbCategory[];
   allProducts?: { id: string; name: string; product_type: string; is_active: boolean }[];
-  initialPreviewOfIds?: string[];
   initialRelatedIds?: string[];
   initialBonusIncludedIds?: string[];
   previewRecord?: DbProductPreview | null;
@@ -57,7 +56,6 @@ export function ProductForm({
   productFiles = [],
   categories,
   allProducts = [],
-  initialPreviewOfIds = [],
   initialRelatedIds = [],
   initialBonusIncludedIds = [],
   previewRecord = null,
@@ -70,8 +68,8 @@ export function ProductForm({
   // Form state
   const [name, setName] = useState(product?.name ?? "");
   const [slug, setSlug] = useState(product?.slug ?? "");
-  const [productType, setProductType] = useState<"PAID" | "FREE" | "BONUS">(
-    (product?.product_type as "PAID" | "FREE" | "BONUS") ?? "PAID"
+  const [productType, setProductType] = useState<"PAID" | "BONUS">(
+    (product?.product_type as "PAID" | "BONUS") ?? "PAID"
   );
   const [shortDesc, setShortDesc] = useState(product?.short_description ?? "");
   const [description, setDescription] = useState(product?.description ?? "");
@@ -90,7 +88,6 @@ export function ProductForm({
   const [suitableForText, setSuitableForText] = useState(
     product?.suitable_for?.join("\n") ?? "Học sinh lớp 9\nGiáo viên Ngữ văn"
   );
-  const [previewOfIds, setPreviewOfIds] = useState<string[]>(initialPreviewOfIds);
   const [relatedIds, setRelatedIds] = useState<string[]>(initialRelatedIds);
   const [bonusIncludedIds, setBonusIncludedIds] = useState<string[]>(initialBonusIncludedIds);
   const [currentPreviewRecord, setCurrentPreviewRecord] = useState<DbProductPreview | null>(previewRecord);
@@ -147,7 +144,7 @@ export function ProductForm({
         shortDescription: shortDesc.trim() || null,
         description: description.trim() || null,
         productType,
-        price: productType === "FREE" || productType === "BONUS" ? 0 : parseInt(price, 10) || 0,
+        price: productType === "BONUS" ? 0 : parseInt(price, 10) || 0,
         originalPrice: originalPrice ? parseInt(originalPrice, 10) : null,
         categoryId: categoryId || null,
         thumbnailPath,
@@ -156,7 +153,6 @@ export function ProductForm({
         fileFormat,
         features: features.length > 0 ? features : null,
         suitableFor: suitableFor.length > 0 ? suitableFor : null,
-        previewOfIds,
         relatedIds,
         bonusIncludedIds,
       };
@@ -198,7 +194,8 @@ export function ProductForm({
     [
       name, slug, shortDesc, description, price, originalPrice, categoryId,
       thumbnailPath, previewImages, pageCount, fileFormat, featuresText,
-      suitableForText, mode, savedProductId, router, productType, previewOfIds, relatedIds, bonusIncludedIds,
+      suitableForText, relatedIds, bonusIncludedIds, productType, mode,
+      savedProductId, router,
     ],
   );
 
@@ -501,7 +498,7 @@ export function ProductForm({
               <select
                 value={productType}
                 onChange={(e) => {
-                  const type = e.target.value as "PAID" | "FREE" | "BONUS";
+                  const type = e.target.value as "PAID" | "BONUS";
                   setProductType(type);
                   if (type === "BONUS") {
                     setPrice("0");
@@ -510,24 +507,23 @@ export function ProductForm({
                 }}
                 className="w-full border border-border bg-transparent text-text-primary rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary-500"
               >
-                <option value="PAID">Sản phẩm trả phí</option>
-                <option value="FREE">Tài liệu miễn phí</option>
-                <option value="BONUS">Quà tặng (Bonus)</option>
+                  <option value="PAID">Sản phẩm trả phí</option>
+                  <option value="BONUS">Quà tặng (Miễn phí đi kèm)</option>
               </select>
             </div>
             
             <div className="md:col-span-1">
               <label className="block text-sm font-medium text-text-primary mb-1">
-                Giá bán (VND) {productType !== "FREE" && <span className="text-red-500">*</span>}
+                Giá bán (VND) <span className="text-red-500">*</span>
               </label>
               <input
                 type="number"
-                value={productType === "FREE" || productType === "BONUS" ? 0 : price}
+                value={productType === "BONUS" ? 0 : price}
                 onChange={(e) => setPrice(e.target.value)}
                 min={0}
                 className="w-full border border-border bg-transparent text-text-primary rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary-500 disabled:bg-surface-alt disabled:text-text-muted disabled:border-border"
                 required={productType === "PAID"}
-                disabled={productType === "FREE" || productType === "BONUS"}
+                disabled={productType === "BONUS"}
               />
             </div>
             <div className="md:col-span-1">
@@ -541,7 +537,7 @@ export function ProductForm({
                 min={0}
                 placeholder="Để trống nếu không giảm giá"
                 className="w-full border border-border bg-transparent text-text-primary rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary-500 disabled:bg-surface-alt disabled:text-text-muted placeholder:text-text-muted disabled:border-border"
-                disabled={productType === "FREE" || productType === "BONUS"}
+                disabled={productType === "BONUS"}
               />
             </div>
             <div className="md:col-span-1">
@@ -565,11 +561,7 @@ export function ProductForm({
                 ` (gốc: ${formatCurrency(parseInt(originalPrice, 10))})`}
             </p>
           )}
-          {productType === "FREE" && (
-            <p className="text-sm text-green-700 dark:text-green-300 font-medium bg-green-50 dark:bg-green-900/30 px-3 py-2 rounded-lg border border-green-100 dark:border-green-800/50">
-              Sản phẩm này sẽ được hiển thị miễn phí và khách hàng có thể tải xuống trực tiếp mà không cần qua thanh toán.
-            </p>
-          )}
+
           {productType === "BONUS" && (
             <p className="text-sm text-purple-700 dark:text-purple-300 font-medium bg-purple-50 dark:bg-purple-900/30 px-3 py-2 rounded-lg border border-purple-100 dark:border-purple-800/50">
               Sản phẩm này là quà tặng kèm. Sẽ không được bán lẻ, không hiển thị trên danh sách sản phẩm. Chỉ có thể tải xuống nếu mua sản phẩm trả phí có đính kèm nó.
@@ -647,40 +639,6 @@ export function ProductForm({
               </div>
             )}
 
-            {productType === "FREE" && (
-              <div>
-                <label className="block text-sm font-medium text-text-primary mb-2">
-                  Bản đầy đủ (PREVIEW_OF)
-                </label>
-                <div className="space-y-2 max-h-48 overflow-y-auto border border-border rounded-lg p-3 bg-surface-alt">
-                  {allProducts
-                    .filter((p) => p.product_type === "PAID" && p.is_active && p.id !== savedProductId)
-                    .map((p) => (
-                      <label key={p.id} className="flex items-center gap-2 text-sm text-text-primary cursor-pointer">
-                        <input
-                          type="checkbox"
-                          checked={previewOfIds.includes(p.id)}
-                          onChange={(e) => {
-                            if (e.target.checked) {
-                              setPreviewOfIds([...previewOfIds, p.id]);
-                            } else {
-                              setPreviewOfIds(previewOfIds.filter((id) => id !== p.id));
-                            }
-                          }}
-                          className="rounded border-border text-primary-600 focus:ring-primary-500 bg-transparent"
-                        />
-                        {p.name}
-                      </label>
-                    ))}
-                  {allProducts.filter((p) => p.product_type === "PAID" && p.is_active && p.id !== savedProductId).length === 0 && (
-                    <span className="text-xs text-text-muted">Không có sản phẩm PAID nào.</span>
-                  )}
-                </div>
-                <p className="text-xs text-text-muted mt-2">
-                  Sản phẩm trả phí tương ứng với tài liệu xem trước này.
-                </p>
-              </div>
-            )}
             
             <div className={productType === "BONUS" ? "md:col-span-2" : ""}>
               <label className="block text-sm font-medium text-text-primary mb-2">

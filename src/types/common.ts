@@ -49,7 +49,7 @@ export interface CartItem {
   originalPrice: number | null;
   thumbnailPath: string | null;
   categoryId?: string;
-  productType?: "PAID" | "FREE" | "BONUS";
+  productType?: "PAID" | "BONUS";
 }
 
 /** Checkout form data */

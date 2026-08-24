@@ -13,7 +13,7 @@ import {
 import Link from "next/link";
 import { siteConfig } from "@/config/site";
 import { getProductBySlug, getProductRelations, getProductPreview } from "@/features/products/queries";
-import { getProductFiles } from "@/features/products/file-actions";
+
 import { getSupabaseServerClient } from "@/lib/supabase/server";
 import { formatCurrency } from "@/lib/utils";
 import { ProductGallery } from "@/components/product/product-gallery";
@@ -42,7 +42,7 @@ export default async function ProductDetailPage({ params }: ProductPageProps) {
   const { slug } = await params;
   const product = await getProductBySlug(slug);
 
-  if (!product) {
+  if (!product || product.product_type === "BONUS") {
     notFound();
   }
   
@@ -58,10 +58,7 @@ export default async function ProductDetailPage({ params }: ProductPageProps) {
     }
   }
   
-  // If product is FREE, we need to show its files directly
-  const freeFiles = product.product_type === "FREE" 
-    ? await getProductFiles(product.id) 
-    : [];
+
 
   const discount =
     product.original_price && product.original_price > product.price
@@ -131,11 +128,7 @@ export default async function ProductDetailPage({ params }: ProductPageProps) {
 
               {/* Price */}
               <div className="flex items-baseline gap-3 mb-5">
-                {product.product_type === "FREE" ? (
-                  <span className="text-3xl font-bold text-green-600">
-                    MIỄN PHÍ
-                  </span>
-                ) : (
+
                   <>
                     <span className="text-3xl font-bold text-primary-600">
                       {formatCurrency(product.price)}
@@ -152,7 +145,7 @@ export default async function ProductDetailPage({ params }: ProductPageProps) {
                       </span>
                     )}
                   </>
-                )}
+
               </div>
 
               {/* Product Metadata */}
@@ -203,34 +196,6 @@ export default async function ProductDetailPage({ params }: ProductPageProps) {
               <ProductActions product={product} />
             </div>
 
-            {/* Relations Section (Full version for FREE, Free preview for PAID) */}
-            {product.product_type === "FREE" && relations.fullVersions.length > 0 && (
-              <div className="bg-primary-50 dark:bg-primary-900/20 rounded-2xl border border-primary-100 dark:border-primary-800 p-5">
-                <h3 className="font-bold text-primary-800 dark:text-primary-300 mb-3 text-sm uppercase tracking-wide">Bản đầy đủ</h3>
-                <div className="space-y-3">
-                  {relations.fullVersions.map((fullProduct) => (
-                    <Link key={fullProduct.id} href={`/products/${fullProduct.slug}`} className="block group/related bg-surface p-3 rounded-xl border border-primary-200 dark:border-primary-800 hover:border-primary-400 hover:shadow-md transition-all">
-                      <p className="font-semibold text-text-primary group-hover/related:text-primary-700 dark:group-hover/related:text-primary-400 text-sm mb-1">{fullProduct.name}</p>
-                      <p className="text-primary-600 dark:text-primary-400 font-bold text-sm">{formatCurrency(fullProduct.price)}</p>
-                    </Link>
-                  ))}
-                </div>
-              </div>
-            )}
-
-            {product.product_type === "PAID" && relations.freePreviews.length > 0 && (
-              <div className="bg-green-50 dark:bg-green-900/20 rounded-2xl border border-green-100 dark:border-green-800/50 p-5">
-                <h3 className="font-bold text-green-800 dark:text-green-300 mb-3 text-sm uppercase tracking-wide">Xem bản mẫu miễn phí</h3>
-                <div className="space-y-3">
-                  {relations.freePreviews.map((freeProduct) => (
-                    <Link key={freeProduct.id} href={`/products/${freeProduct.slug}`} className="block group/related bg-surface p-3 rounded-xl border border-green-200 dark:border-green-800/50 hover:border-green-400 hover:shadow-md transition-all">
-                      <p className="font-semibold text-text-primary group-hover/related:text-green-700 dark:group-hover/related:text-green-400 text-sm mb-1">{freeProduct.name}</p>
-                      <p className="text-green-600 dark:text-green-400 font-bold text-sm">MIỄN PHÍ</p>
-                    </Link>
-                  ))}
-                </div>
-              </div>
-            )}
 
             {/* Bonus products included */}
             {product.product_type === "PAID" && relations.bonusIncluded && relations.bonusIncluded.length > 0 && (
@@ -342,45 +307,7 @@ export default async function ProductDetailPage({ params }: ProductPageProps) {
 
           <ProductFAQ />
 
-          {/* Download block for FREE products */}
-          {product.product_type === "FREE" && (
-            <section id="free-download-section" className="scroll-mt-24 pt-6 border-t border-border">
-              <h2 className="text-xl font-bold text-text-primary mb-5 flex items-center gap-2">
-                <Download className="w-6 h-6 text-green-600" />
-                Tải tài liệu miễn phí
-              </h2>
-              {freeFiles.length > 0 ? (
-                <div className="space-y-3">
-                  {freeFiles.map((file) => (
-                    <div key={file.id} className="flex flex-col sm:flex-row items-center justify-between p-4 bg-surface rounded-xl border border-border shadow-sm hover:border-green-300 transition-colors gap-4">
-                      <div className="flex items-center gap-3 w-full sm:w-auto">
-                        <div className="w-10 h-10 bg-green-100 dark:bg-green-900/30 text-green-600 dark:text-green-400 rounded-lg flex items-center justify-center flex-shrink-0">
-                          <FileText className="w-5 h-5" />
-                        </div>
-                        <div className="truncate">
-                          <p className="font-medium text-text-primary text-sm truncate max-w-[200px] sm:max-w-xs">{file.file_name}</p>
-                          <p className="text-xs text-text-muted mt-0.5">{(file.file_size / (1024 * 1024)).toFixed(2)} MB</p>
-                        </div>
-                      </div>
-                      <a
-                        href={`/api/free-downloads/${file.id}`}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="w-full sm:w-auto flex items-center justify-center gap-2 px-5 py-2.5 bg-green-600 text-white rounded-lg text-sm font-semibold hover:bg-green-700 active:scale-95 transition-all"
-                      >
-                        <Download className="w-4 h-4" />
-                        Tải xuống
-                      </a>
-                    </div>
-                  ))}
-                </div>
-              ) : (
-                <div className="p-8 text-center bg-surface-alt rounded-2xl border border-border border-dashed">
-                  <p className="text-text-muted">Chưa có tệp tài liệu nào được tải lên cho sản phẩm này.</p>
-                </div>
-              )}
-            </section>
-          )}
+
         </div>
       </div>
     </div>

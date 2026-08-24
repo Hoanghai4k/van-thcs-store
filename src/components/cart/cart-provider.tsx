@@ -22,7 +22,7 @@ const CartContext = createContext<CartContextType | undefined>(undefined);
 
 const CART_STORAGE_KEY = "van-thcs-cart";
 const CART_VERSION_KEY = "van-thcs-cart-v";
-const CURRENT_CART_VERSION = 2;
+const CURRENT_CART_VERSION = 3;
 
 // UUID v4 regex for validating product IDs
 const UUID_RE =
@@ -111,9 +111,9 @@ export function CartProvider({ children }: { children: ReactNode }) {
   const items = useSyncExternalStore(subscribe, getSnapshot, getServerSnapshot);
 
   const addItem = useCallback((item: CartItem) => {
-    // SECURITY GUARD: Never add FREE items to cart
-    if (item.productType === "FREE") {
-      console.warn("[Cart] Attempted to add a FREE item to cart. Blocked.");
+    // SECURITY GUARD: Never add BONUS items to cart
+    if (item.productType === "BONUS") {
+      console.warn("[Cart] Attempted to add a BONUS item to cart. Blocked.");
       return;
     }
     

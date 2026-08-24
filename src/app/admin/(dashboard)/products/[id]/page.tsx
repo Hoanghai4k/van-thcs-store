@@ -37,7 +37,7 @@ export default async function AdminEditProductPage({
         productFiles={productFiles}
         categories={categories}
         allProducts={allProducts}
-        initialPreviewOfIds={relations.fullVersions.map(p => p.id)}
+
         initialRelatedIds={relations.related.map(p => p.id)}
         initialBonusIncludedIds={relations.bonusIncluded.map(p => p.id)}
         previewRecord={previewRecord}

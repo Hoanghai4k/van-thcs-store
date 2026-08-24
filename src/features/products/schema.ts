@@ -4,10 +4,10 @@
 
 import { z } from "zod";
 
-export const productTypeSchema = z.enum(["PAID", "FREE", "BONUS"]);
+export const productTypeSchema = z.enum(["PAID", "BONUS"]);
 export type ProductType = z.infer<typeof productTypeSchema>;
 
-export const createProductSchema = z.object({
+export const baseProductSchema = z.object({
   name: z.string().min(1, "Tên sản phẩm là bắt buộc").max(255, "Tên quá dài"),
   slug: z
     .string()
@@ -25,12 +25,33 @@ export const createProductSchema = z.object({
   features: z.array(z.string()).nullable().optional(),
   suitableFor: z.array(z.string()).nullable().optional(),
   productType: productTypeSchema.default("PAID"),
-  previewOfIds: z.array(z.string()).optional(),
   relatedIds: z.array(z.string()).optional(),
   bonusIncludedIds: z.array(z.string()).optional(),
 });
 
-export const updateProductSchema = createProductSchema.partial();
+export const createProductSchema = baseProductSchema.refine(
+  (data) => {
+    if (data.productType === "BONUS" && data.price !== 0) return false;
+    if (data.productType === "PAID" && data.price <= 0) return false;
+    return true;
+  },
+  {
+    message: "Sản phẩm trả phí phải có giá lớn hơn 0, quà tặng phải có giá bằng 0",
+    path: ["price"],
+  }
+);
+
+export const updateProductSchema = baseProductSchema.partial().refine(
+  (data) => {
+    if (data.productType === "BONUS" && data.price !== undefined && data.price !== 0) return false;
+    if (data.productType === "PAID" && data.price !== undefined && data.price <= 0) return false;
+    return true;
+  },
+  {
+    message: "Sản phẩm trả phí phải có giá lớn hơn 0, quà tặng phải có giá bằng 0",
+    path: ["price"],
+  }
+);
 
 export type CreateProductInput = z.infer<typeof createProductSchema>;
 export type UpdateProductInput = z.infer<typeof updateProductSchema>;

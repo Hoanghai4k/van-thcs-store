@@ -102,10 +102,11 @@ describe("createProductSchema", () => {
     expect(result.success).toBe(false);
   });
 
-  it("requires price >= 0", () => {
+  it("requires price > 0 for PAID", () => {
     const negativeResult = createProductSchema.safeParse({
       name: "Test",
       slug: "test",
+      productType: "PAID",
       price: -100,
     });
     expect(negativeResult.success).toBe(false);
@@ -113,9 +114,36 @@ describe("createProductSchema", () => {
     const zeroResult = createProductSchema.safeParse({
       name: "Test",
       slug: "test",
+      productType: "PAID",
       price: 0,
     });
-    expect(zeroResult.success).toBe(true);
+    expect(zeroResult.success).toBe(false);
+
+    const validResult = createProductSchema.safeParse({
+      name: "Test",
+      slug: "test",
+      productType: "PAID",
+      price: 100,
+    });
+    expect(validResult.success).toBe(true);
+  });
+
+  it("requires price === 0 for BONUS", () => {
+    const validResult = createProductSchema.safeParse({
+      name: "Test",
+      slug: "test",
+      productType: "BONUS",
+      price: 0,
+    });
+    expect(validResult.success).toBe(true);
+
+    const invalidResult = createProductSchema.safeParse({
+      name: "Test",
+      slug: "test",
+      productType: "BONUS",
+      price: 100,
+    });
+    expect(invalidResult.success).toBe(false);
   });
 
   it("requires integer price", () => {
