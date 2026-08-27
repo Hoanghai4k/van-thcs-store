@@ -67,25 +67,31 @@ describe("validateProductFile — size boundaries", () => {
     expect(validateProductFile("doc.docx", DOCX_MIME, 1024)).toBeNull();
   });
 
+  it("accepts file at 49 MB", () => {
+    expect(validateProductFile("archive.zip", ZIP_MIME, 49 * ONE_MB)).toBeNull();
+  });
+
+  it("accepts file at 50 MB", () => {
+    expect(validateProductFile("archive.zip", ZIP_MIME, 50 * ONE_MB)).toBeNull();
+  });
+
+  it("accepts file at 421 MB", () => {
+    expect(validateProductFile("archive.zip", ZIP_MIME, 421 * ONE_MB)).toBeNull();
+  });
+
   it("accepts file at exactly 500 MB (no rejection)", () => {
     expect(validateProductFile("archive.zip", ZIP_MIME, FIVE_HUNDRED_MB)).toBeNull();
   });
 
-  it("accepts file at 501 MB (above warning but below limit)", () => {
-    const justAboveWarning = FIVE_HUNDRED_MB + ONE_MB;
-    expect(validateProductFile("archive.zip", ZIP_MIME, justAboveWarning)).toBeNull();
-  });
-
-  it("accepts file at 999 MB", () => {
-    const nearLimit = 999 * ONE_MB;
-    expect(validateProductFile("archive.zip", ZIP_MIME, nearLimit)).toBeNull();
+  it("accepts file at 700 MB (above warning but below limit)", () => {
+    expect(validateProductFile("archive.zip", ZIP_MIME, 700 * ONE_MB)).toBeNull();
   });
 
   it("accepts file at exactly 1 GB", () => {
     expect(validateProductFile("archive.zip", ZIP_MIME, ONE_GB)).toBeNull();
   });
 
-  it("rejects file at 1 GB + 1 byte", () => {
+  it("rejects file at >1 GB", () => {
     const err = validateProductFile("archive.zip", ZIP_MIME, ONE_GB + 1);
     expect(err).toBeTruthy();
     expect(err).toContain("1 GB");
@@ -122,8 +128,8 @@ describe("isLargeFile", () => {
     expect(isLargeFile(FIVE_HUNDRED_MB + 1)).toBe(true);
   });
 
-  it("returns true at 800 MB", () => {
-    expect(isLargeFile(800 * ONE_MB)).toBe(true);
+  it("returns true at 700 MB", () => {
+    expect(isLargeFile(700 * ONE_MB)).toBe(true);
   });
 
   it("returns true at 1 GB", () => {

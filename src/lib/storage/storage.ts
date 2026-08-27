@@ -19,7 +19,7 @@ import { STORAGE_BUCKETS, ALLOWED_PRODUCT_FILE_MIMES, ALLOWED_FILE_EXTENSIONS, D
 /** Maximum image file size: 10 MB */
 export const MAX_IMAGE_SIZE = 10 * 1024 * 1024;
 
-/** Maximum product file size: 50 MB */
+/** Maximum product file size: 1 GB */
 export { MAX_PRODUCT_FILE_SIZE };
 
 /** @deprecated Use MAX_PRODUCT_FILE_SIZE */
