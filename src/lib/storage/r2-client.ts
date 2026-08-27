@@ -15,6 +15,40 @@ import { S3Client } from "@aws-sdk/client-s3";
 
 let r2Client: S3Client | null = null;
 
+export function buildR2Endpoint(accountId: string, overrideEndpoint?: string): string {
+  if (overrideEndpoint) {
+    const trimmedOverride = overrideEndpoint.trim();
+    if (!trimmedOverride.startsWith("https://")) {
+      throw new Error("R2_ENDPOINT must start with https://");
+    }
+    let url: URL;
+    try {
+      url = new URL(trimmedOverride);
+    } catch {
+      throw new Error("R2_ENDPOINT is not a valid URL.");
+    }
+    
+    if (!url.hostname.endsWith(".r2.cloudflarestorage.com")) {
+      throw new Error("R2_ENDPOINT must be an r2.cloudflarestorage.com domain.");
+    }
+    if (url.port && url.port !== "443") {
+      throw new Error("R2_ENDPOINT must not specify an explicit non-HTTPS port.");
+    }
+    return url.origin;
+  }
+
+  const trimmedId = accountId.trim();
+  if (!trimmedId) {
+    throw new Error("R2_ACCOUNT_ID is empty.");
+  }
+
+  if (trimmedId.includes("://") || trimmedId.includes("r2.cloudflarestorage.com") || trimmedId.includes("/") || trimmedId.includes(" ") || trimmedId.includes("\"") || trimmedId.includes("'")) {
+    throw new Error("R2_ACCOUNT_ID must be a raw Cloudflare Account ID, not a URL.");
+  }
+
+  return `https://${trimmedId}.r2.cloudflarestorage.com`;
+}
+
 /**
  * Get the singleton R2 S3 client.
  * Throws if R2 env vars are missing.
@@ -25,6 +59,7 @@ export function getR2Client(): S3Client {
   const accountId = process.env.R2_ACCOUNT_ID;
   const accessKeyId = process.env.R2_ACCESS_KEY_ID;
   const secretAccessKey = process.env.R2_SECRET_ACCESS_KEY;
+  const endpointOverride = process.env.R2_ENDPOINT;
 
   if (!accountId || !accessKeyId || !secretAccessKey) {
     throw new Error(
@@ -33,9 +68,11 @@ export function getR2Client(): S3Client {
     );
   }
 
+  const endpoint = buildR2Endpoint(accountId, endpointOverride);
+
   r2Client = new S3Client({
     region: "auto",
-    endpoint: `https://${accountId}.r2.cloudflarestorage.com`,
+    endpoint,
     credentials: {
       accessKeyId,
       secretAccessKey,

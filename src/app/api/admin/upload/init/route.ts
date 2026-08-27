@@ -111,10 +111,38 @@ export async function POST(request: NextRequest) {
       partCount: totalParts,
       partSize: R2_PART_SIZE_BYTES,
     });
-  } catch (err) {
-    console.error("[Upload/Init] R2 CreateMultipartUpload error:", err);
+  } catch (error: unknown) {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const err = error as any;
+    // 1. CAPTURE THE FULL EPROTO ERROR
+    console.error("[Upload/Init] R2 CreateMultipartUpload error:", {
+      name: err?.name,
+      code: err?.code,
+      errno: err?.errno,
+      syscall: err?.syscall,
+      message: err?.message,
+      causeMessage: err?.cause?.message,
+      httpStatusCode: err?.$metadata?.httpStatusCode,
+      requestId: err?.$metadata?.requestId,
+      // SAFE configuration logging
+      config: {
+        provider: "R2",
+        region: "auto",
+        endpointHost: process.env.R2_ENDPOINT 
+          ? new URL(process.env.R2_ENDPOINT).hostname 
+          : `${process.env.R2_ACCOUNT_ID?.trim()}.r2.cloudflarestorage.com`,
+        endpointProtocol: "https:",
+        envPresence: {
+          accountId: !!process.env.R2_ACCOUNT_ID,
+          accessKey: !!process.env.R2_ACCESS_KEY_ID,
+          secretKey: !!process.env.R2_SECRET_ACCESS_KEY,
+          bucket: !!process.env.R2_BUCKET_NAME,
+        }
+      }
+    });
+
     return NextResponse.json(
-      { error: "Không thể khởi tạo phiên tải lên." },
+      { error: "Không thể kết nối tới kho lưu trữ tài liệu.", code: "R2_CONNECTION_ERROR" },
       { status: 500 },
     );
   }
