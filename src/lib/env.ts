@@ -32,6 +32,14 @@ const serverEnvSchema = z.object({
   MY_ORDERS_ACCESS_SECRET: z.string().min(32).optional(),
   // Resend email provider
   RESEND_API_KEY: z.string().min(1).optional(),
+
+  // ─── Cloudflare R2 Product File Storage (server-only) ──────────
+  R2_ACCOUNT_ID: z.string().min(1).optional(),
+  R2_ACCESS_KEY_ID: z.string().min(1).optional(),
+  R2_SECRET_ACCESS_KEY: z.string().min(1).optional(),
+  R2_BUCKET_NAME: z.string().min(1).optional(),
+  // Storage provider for new product files: SUPABASE or R2
+  PRODUCT_FILE_STORAGE_PROVIDER: z.enum(["SUPABASE", "R2"]).default("SUPABASE"),
 });
 
 const clientEnvSchema = z.object({
@@ -104,4 +112,30 @@ export function isPayOSConfigured(): boolean {
     process.env.PAYOS_API_KEY &&
     process.env.PAYOS_CHECKSUM_KEY
   );
+}
+
+/**
+ * Check if Cloudflare R2 is configured for product file storage.
+ * All four R2 env vars must be present.
+ */
+export function isR2Configured(): boolean {
+  return !!(
+    process.env.R2_ACCOUNT_ID &&
+    process.env.R2_ACCESS_KEY_ID &&
+    process.env.R2_SECRET_ACCESS_KEY &&
+    process.env.R2_BUCKET_NAME
+  );
+}
+
+/**
+ * Get the active storage provider for new product file uploads.
+ * Returns 'SUPABASE' if R2 is not configured even when env says R2.
+ */
+export function getActiveStorageProvider(): "SUPABASE" | "R2" {
+  const configured = process.env.PRODUCT_FILE_STORAGE_PROVIDER ?? "SUPABASE";
+  if (configured === "R2" && !isR2Configured()) {
+    console.error("[Env] PRODUCT_FILE_STORAGE_PROVIDER=R2 but R2 credentials are missing.");
+    throw new Error("R2 storage provider is configured but R2 credentials are missing.");
+  }
+  return configured as "SUPABASE" | "R2";
 }

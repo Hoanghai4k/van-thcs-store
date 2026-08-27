@@ -63,12 +63,41 @@ export const DANGEROUS_EXTENSIONS = [
 ] as const;
 
 /**
- * Maximum product file size: 50 MB.
- * Matches Supabase Free tier upload limit.
+ * Maximum product file size: 1 GB.
+ * Must match R2 bucket / Supabase bucket limits.
  */
-export const MAX_PRODUCT_FILE_SIZE = 50 * 1024 * 1024;
+export const MAX_PRODUCT_FILE_SIZE = 1024 * 1024 * 1024;
 
-/** Storage bucket names */
+/**
+ * Large file warning threshold: 500 MB.
+ * Files above this trigger an Admin-only warning.
+ */
+export const LARGE_FILE_WARNING_BYTES = 500 * 1024 * 1024;
+
+/**
+ * R2 multipart upload part size: 16 MiB.
+ * R2 requires parts >= 5 MiB (except last). 16 MiB balances
+ * throughput vs. memory for files up to 1 GB (~64 parts max).
+ */
+export const R2_PART_SIZE_BYTES = 16 * 1024 * 1024;
+
+/**
+ * R2 multipart upload concurrency: 3 parts in flight simultaneously.
+ * Balances upload speed vs. browser memory/network pressure.
+ */
+export const R2_UPLOAD_CONCURRENCY = 3;
+
+/**
+ * Storage provider discriminator.
+ * Matches product_files.storage_provider CHECK constraint.
+ */
+export const StorageProvider = {
+  SUPABASE: "SUPABASE",
+  R2: "R2",
+} as const;
+export type StorageProviderType = (typeof StorageProvider)[keyof typeof StorageProvider];
+
+/** Storage bucket names (Supabase) */
 export const STORAGE_BUCKETS = {
   PRODUCT_FILES: "product-files",
   PRODUCT_ASSETS: "product-assets",

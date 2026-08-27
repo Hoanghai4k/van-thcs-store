@@ -23,7 +23,8 @@ import type { Database } from "@/types/database";
 import type { DeliveryGrant, EnsureDeliveryGrantResult, DeliveryTokenValidation, DownloadResult, PurchasedFile } from "./types";
 import { generateDeliveryToken, hashToken, getTokenExpiry, getMaxDownloads, isTokenExpired } from "./token";
 import { siteConfig } from "@/config/site";
-import { STORAGE_BUCKETS, ORDER_STATUS } from "@/lib/constants";
+import { ORDER_STATUS } from "@/lib/constants";
+import { getProductFileProvider } from "@/lib/storage/provider";
 
 // ─── Grant Management ──────────────────────────────────────────────
 
@@ -231,7 +232,11 @@ export async function getPurchasedFiles(
  * Process a file download request.
  *
  * Validates all conditions, atomically consumes a download count,
- * and generates a short-lived signed URL.
+ * and generates a short-lived signed URL from the correct provider.
+ *
+ * Provider-aware: inspects storage_provider on the file row
+ * and dispatches to Supabase or R2 accordingly.
+ * Entitlement logic is NOT duplicated per provider.
  */
 export async function processDownload(
   deliveryGrantId: string,
@@ -274,7 +279,7 @@ export async function processDownload(
   // 3. Verify file ownership: productFileId → product_id → order_items
   const { data: file } = await supabaseAdmin
     .from("product_files")
-    .select("id, product_id, file_name, storage_path")
+    .select("id, product_id, file_name, storage_path, storage_provider")
     .eq("id", productFileId)
     .single();
 
@@ -311,23 +316,24 @@ export async function processDownload(
     return { success: false, error: "Bạn đã đạt giới hạn tải xuống. Vui lòng liên hệ hỗ trợ." };
   }
 
-  // 5. Generate signed URL (storage_path from DB, NEVER from client)
-  const { data: signedUrlData, error: signedUrlError } = await supabaseAdmin.storage
-    .from(STORAGE_BUCKETS.PRODUCT_FILES)
-    .createSignedUrl(file.storage_path, siteConfig.store.signedUrlTtlSeconds, {
-      download: file.file_name,
-    });
+  // 5. Generate signed URL — provider-aware (storage_path from DB, NEVER from client)
+  try {
+    const provider = getProductFileProvider(file.storage_provider, supabaseAdmin);
+    const signedUrl = await provider.createDownloadUrl(
+      file.storage_path,
+      siteConfig.store.signedUrlTtlSeconds,
+      file.file_name,
+    );
 
-  if (signedUrlError || !signedUrlData?.signedUrl) {
-    console.error("[Download] Signed URL error:", signedUrlError?.message);
+    return {
+      success: true,
+      signedUrl,
+      fileName: file.file_name,
+    };
+  } catch (urlError) {
+    console.error("[Download] Signed URL error:", urlError);
     return { success: false, error: "Tài liệu hiện không khả dụng. Vui lòng liên hệ hỗ trợ." };
   }
-
-  return {
-    success: true,
-    signedUrl: signedUrlData.signedUrl,
-    fileName: file.file_name,
-  };
 }
 
 /**

@@ -4,19 +4,18 @@
  *
  * product-assets = PUBLIC bucket (thumbnails, previews)
  * product-files  = PRIVATE bucket (DOCX, ZIP product files)
+ *                  Legacy files remain in Supabase; new files go to R2.
  *
- * All operations use the authenticated admin session + Storage RLS.
- * No service_role key is used or needed.
+ * All asset operations use the authenticated admin session + Storage RLS.
+ * Product file uploads now use R2 multipart (see r2-multipart-upload.ts).
+ * Product file deletion dispatches to the correct provider via server action.
  */
 
 import { getSupabaseBrowserClient } from "@/lib/supabase/client";
 import { STORAGE_BUCKETS } from "@/lib/constants";
 import {
   getProductAssetPath,
-  getProductFilePath,
   isAllowedImageType,
-  validateProductFile,
-  getSafeExtension,
 } from "@/lib/storage/storage";
 
 // ─── Constants ─────────────────────────────────────────────────────
@@ -88,65 +87,10 @@ export async function deleteProductAsset(
   return { success: true };
 }
 
-// ─── File Upload (Private — DOCX, ZIP product files) ───────────────
-
-/**
- * Upload a product file (DOCX or ZIP).
- * Validates extension, MIME, and size client-side before uploading.
- * Storage key uses UUID + safe extension (never original filename).
- */
-export async function uploadProductFile(
-  productId: string,
-  file: File,
-): Promise<UploadResult> {
-  // Validate extension + MIME + size
-  const validationError = validateProductFile(file.name, file.type, file.size);
-  if (validationError) {
-    return { success: false, error: validationError };
-  }
-
-  // Get safe extension (already validated by validateProductFile)
-  const safeExt = getSafeExtension(file.name, file.type);
-  if (!safeExt) {
-    return { success: false, error: "Định dạng file không hợp lệ." };
-  }
-
-  const uniqueName = `${crypto.randomUUID()}.${safeExt}`;
-  const storagePath = getProductFilePath(productId, uniqueName);
-
-  const supabase = getSupabaseBrowserClient();
-
-  const { error } = await supabase.storage
-    .from(STORAGE_BUCKETS.PRODUCT_FILES)
-    .upload(storagePath, file, {
-      cacheControl: "3600",
-      upsert: false,
-    });
-
-  if (error) {
-    console.error("[Storage] File upload error:", error.message);
-    return { success: false, error: "Không thể tải tệp lên. Vui lòng thử lại." };
-  }
-
-  return { success: true, path: storagePath };
-}
-
-/**
- * Delete a product file from storage.
- */
-export async function deleteProductFileFromStorage(
-  storagePath: string,
-): Promise<{ success: boolean; error?: string }> {
-  const supabase = getSupabaseBrowserClient();
-
-  const { error } = await supabase.storage
-    .from(STORAGE_BUCKETS.PRODUCT_FILES)
-    .remove([storagePath]);
-
-  if (error) {
-    console.error("[Storage] File delete error:", error.message);
-    return { success: false, error: "Không thể xóa file." };
-  }
-
-  return { success: true };
-}
+// ─── File Upload (Private — DOCX, ZIP) ────────────────────────────
+//
+// Product file uploads now use R2 multipart via r2-multipart-upload.ts.
+// The old uploadProductFile() using Supabase Storage is removed.
+//
+// File deletion is now provider-aware and handled server-side
+// in file-actions.ts → deleteProductFileByProvider().

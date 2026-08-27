@@ -1,5 +1,6 @@
 import CloudConvert from "cloudconvert";
 import { getSupabaseAdmin } from "@/lib/supabase/admin";
+import { getProductFileProvider } from "@/lib/storage/provider";
 import { PDFDocument } from "pdf-lib";
 
 export interface PreviewGenerationResult {
@@ -36,12 +37,13 @@ export async function generateProductPreview(productId: string): Promise<Preview
     return { success: false, message: "Chưa có tệp phù hợp để tạo bản xem trước. Cần tệp DOCX hoặc PDF." };
   }
 
-  // 3. Generate signed URL for 1 hour
-  const { data: signedUrlData, error: signError } = await supabaseAdmin.storage
-    .from("product-files")
-    .createSignedUrl(sourceFile.storage_path, 3600);
-
-  if (signError || !signedUrlData) {
+  // 3. Generate signed URL — provider-aware (supports both Supabase and R2 source files)
+  let signedUrl: string;
+  try {
+    const provider = getProductFileProvider(sourceFile.storage_provider, supabaseAdmin);
+    signedUrl = await provider.getSourceUrl(sourceFile.storage_path, 3600);
+  } catch (err) {
+    console.error("[Preview Generator] Source URL error:", err);
     return { success: false, message: "Lỗi bảo mật khi truy cập tệp nguồn." };
   }
 
@@ -53,7 +55,7 @@ export async function generateProductPreview(productId: string): Promise<Preview
       tasks: {
         "import-my-file": {
           operation: "import/url",
-          url: signedUrlData.signedUrl,
+          url: signedUrl,
         },
         "convert-to-pdf": {
           operation: "convert",

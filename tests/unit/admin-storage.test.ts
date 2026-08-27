@@ -373,7 +373,7 @@ describe("validateProductFile", () => {
 
   it("rejects file over max size", () => {
     const err = validateProductFile("big.zip", ZIP_MIME, OVER_SIZE);
-    expect(err).toContain("50 MB");
+    expect(err).toContain("1 GB");
   });
 
   it("rejects .exe", () => {
@@ -422,7 +422,7 @@ describe("Constants integrity", () => {
     expect(DANGEROUS_EXTENSIONS).toContain(".7z");
   });
 
-  it("MAX_PRODUCT_FILE_SIZE is 50 MB", () => {
-    expect(CONST_MAX_SIZE).toBe(50 * 1024 * 1024);
+  it("MAX_PRODUCT_FILE_SIZE is 1 GB", () => {
+    expect(CONST_MAX_SIZE).toBe(1024 * 1024 * 1024);
   });
 });

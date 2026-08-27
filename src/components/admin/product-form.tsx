@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useTransition, useCallback } from "react";
+import { useState, useTransition, useCallback, useEffect, useRef } from "react";
 import { useRouter } from "next/navigation";
 import {
   Loader2,
@@ -12,20 +12,20 @@ import {
   AlertCircle,
   Wand2,
   RefreshCcw,
+  AlertTriangle,
 } from "lucide-react";
 import Image from "next/image";
 import type { ProductWithCategory } from "@/features/products/types";
 import type { DbCategory, DbProductFile, DbProductPreview } from "@/types/database";
 import { createProduct, updateProduct, toggleProductActive } from "@/features/products/actions";
-import { addProductFileRecord, removeProductFileRecord, generatePreviewAction, deleteProductPreview } from "@/features/products/file-actions";
+import { removeProductFileRecord, generatePreviewAction, deleteProductPreview } from "@/features/products/file-actions";
 import {
   uploadProductAsset,
-  uploadProductFile,
   deleteProductAsset,
-  deleteProductFileFromStorage,
 } from "@/features/products/storage";
+import { prepareR2Upload } from "@/features/products/r2-multipart-upload";
 import { getProductAssetUrl } from "@/lib/storage/storage";
-import { formatCurrency } from "@/lib/utils";
+import { formatCurrency, formatFileSize } from "@/lib/utils";
 
 function generateSlug(name: string): string {
   return name
@@ -103,8 +103,22 @@ export function ProductForm({
   // File state
   const [files, setFiles] = useState<DbProductFile[]>(productFiles);
 
-  // Upload state
+  // Upload state — simple string for images/preview, structured for product files
   const [uploading, setUploading] = useState<string | null>(null);
+
+  // R2 multipart file upload state
+  const [fileUpload, setFileUpload] = useState<{
+    status: 'idle' | 'uploading' | 'success' | 'error';
+    fileName: string;
+    bytesUploaded: number;
+    bytesTotal: number;
+    percentage: number;
+    isLargeFile: boolean;
+    error?: string;
+  }>({ status: 'idle', fileName: '', bytesUploaded: 0, bytesTotal: 0, percentage: 0, isLargeFile: false });
+
+  // Keep a ref to the R2 abort function so we can cancel on unmount or user action
+  const r2AbortRef = useRef<(() => Promise<void>) | null>(null);
 
   // Feedback
   const [feedback, setFeedback] = useState<{
@@ -116,6 +130,17 @@ export function ProductForm({
   const [savedProductId, setSavedProductId] = useState<string | null>(
     product?.id ?? null,
   );
+
+  // Cleanup: abort any active R2 upload on unmount
+  useEffect(() => {
+    return () => {
+      if (r2AbortRef.current) {
+        r2AbortRef.current();
+      }
+    };
+  }, []);
+
+  const isFileUploading = fileUpload.status === 'uploading';
 
   function handleNameChange(value: string) {
     setName(value);
@@ -289,44 +314,69 @@ export function ProductForm({
     });
   }
 
-  // ─── Product File Upload ──────────────────────────────────────
+  // ─── Product File Upload (R2 Multipart) ───────────────────────
   async function handleFileUpload(e: React.ChangeEvent<HTMLInputElement>) {
     const file = e.target.files?.[0];
     if (!file || !savedProductId) return;
-
-    setUploading("file");
-    setFeedback(null);
-
-    const result = await uploadProductFile(savedProductId, file);
-    if (result.success && result.path) {
-      // Register in DB
-      const dbResult = await addProductFileRecord(
-        savedProductId,
-        file.name,
-        result.path,
-        file.size,
-        file.type,
-      );
-      if (dbResult.success && dbResult.data) {
-        setFiles((prev) => [...prev, dbResult.data!]);
-        setFeedback({ type: "success", message: `Đã tải file "${file.name}".` });
-        router.refresh();
-      } else {
-        // Cleanup orphan storage file
-        await deleteProductFileFromStorage(result.path);
-        setFeedback({
-          type: "error",
-          message: dbResult.error ?? "Không thể lưu thông tin file.",
-        });
-      }
-    } else {
-      setFeedback({
-        type: "error",
-        message: result.error ?? "Lỗi tải file.",
-      });
-    }
-    setUploading(null);
     e.target.value = "";
+
+    setFeedback(null);
+    setFileUpload({
+      status: 'uploading',
+      fileName: file.name,
+      bytesUploaded: 0,
+      bytesTotal: file.size,
+      percentage: 0,
+      isLargeFile: false,
+    });
+
+    const currentProductId = savedProductId;
+
+    const result = await prepareR2Upload(currentProductId, file, {
+      onProgress: (bytesUploaded, bytesTotal) => {
+        const percentage = bytesTotal > 0 ? Math.round((bytesUploaded / bytesTotal) * 100) : 0;
+        setFileUpload(prev => ({
+          ...prev,
+          bytesUploaded,
+          bytesTotal,
+          percentage,
+        }));
+      },
+      onSuccess: (fileRecord) => {
+        setFiles((prev) => [...prev, fileRecord as unknown as DbProductFile]);
+        setFileUpload(prev => ({ ...prev, status: 'success' }));
+        setFeedback({ type: "success", message: `Đã tải file "${file.name}".` });
+        r2AbortRef.current = null;
+        router.refresh();
+      },
+      onError: (error) => {
+        setFileUpload(prev => ({ ...prev, status: 'error', error: error.message }));
+        setFeedback({ type: "error", message: error.message });
+        r2AbortRef.current = null;
+      },
+    });
+
+    if (!result.success) {
+      setFileUpload({ status: 'error', fileName: file.name, bytesUploaded: 0, bytesTotal: file.size, percentage: 0, isLargeFile: false, error: result.error });
+      setFeedback({ type: "error", message: result.error ?? "Lỗi tải file." });
+      return;
+    }
+
+    // Store abort ref and update large-file state
+    r2AbortRef.current = result.handle!.abort;
+    setFileUpload(prev => ({ ...prev, isLargeFile: result.isLargeFile ?? false }));
+
+    // Start the R2 multipart upload
+    result.handle!.start();
+  }
+
+  async function handleCancelFileUpload() {
+    if (r2AbortRef.current) {
+      await r2AbortRef.current();
+      r2AbortRef.current = null;
+    }
+    setFileUpload({ status: 'idle', fileName: '', bytesUploaded: 0, bytesTotal: 0, percentage: 0, isLargeFile: false });
+    setFeedback(null);
   }
 
   async function handleRemoveFile(fileRecord: DbProductFile) {
@@ -335,8 +385,7 @@ export function ProductForm({
 
     startTransition(async () => {
       const result = await removeProductFileRecord(fileRecord.id, savedProductId!);
-      if (result.success && result.data) {
-        await deleteProductFileFromStorage(result.data.storagePath);
+      if (result.success) {
         setFiles((prev) => prev.filter((f) => f.id !== fileRecord.id));
         setFeedback({ type: "success", message: "Đã xóa file." });
         router.refresh();
@@ -864,14 +913,17 @@ export function ProductForm({
                             <span className="inline-flex items-center px-1.5 py-0.5 rounded bg-surface text-text-secondary border border-border font-medium text-[10px] uppercase">
                               {f.file_name.split(".").pop()}
                             </span>
-                            {(f.file_size / 1024 / 1024).toFixed(2)} MB
+                            {formatFileSize(f.file_size)}
+                            {f.storage_provider === 'R2' && (
+                              <span className="inline-flex items-center px-1 py-0.5 rounded bg-blue-50 text-blue-600 border border-blue-200 font-medium text-[10px]">R2</span>
+                            )}
                           </p>
                         </div>
                       </div>
                       <button
                         type="button"
                         onClick={() => handleRemoveFile(f)}
-                        disabled={isPending}
+                        disabled={isPending || isFileUploading}
                         className="p-2 text-slate-400 hover:text-red-500 rounded-lg hover:bg-red-50 transition-colors disabled:opacity-50"
                         title="Xóa file"
                         aria-label="Xóa file"
@@ -882,8 +934,59 @@ export function ProductForm({
                   ))}
                 </div>
               )}
-              <label className="flex items-center gap-2 w-fit px-4 py-2 border border-border bg-surface-alt rounded-lg text-sm text-text-secondary hover:bg-surface-hover cursor-pointer transition-colors">
-                {uploading === "file" ? (
+
+              {/* R2 Multipart Upload Progress */}
+              {fileUpload.status === 'uploading' && (
+                <div className="p-4 bg-primary-50 dark:bg-primary-900/20 border border-primary-200 dark:border-primary-800/50 rounded-lg space-y-3">
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center gap-2 min-w-0">
+                      <Loader2 className="w-4 h-4 animate-spin text-primary-600 dark:text-primary-400 flex-shrink-0" />
+                      <span className="text-sm font-medium text-primary-700 dark:text-primary-300 truncate">
+                        Đang tải lên...
+                      </span>
+                    </div>
+                    <button
+                      type="button"
+                      onClick={handleCancelFileUpload}
+                      className="text-xs text-red-600 dark:text-red-400 hover:text-red-700 dark:hover:text-red-300 px-2 py-1 rounded hover:bg-red-50 dark:hover:bg-red-900/30 transition-colors flex-shrink-0"
+                    >
+                      Hủy tải lên
+                    </button>
+                  </div>
+                  <div className="text-xs text-primary-600 dark:text-primary-400">
+                    <span className="truncate inline-block max-w-[200px] align-bottom">{fileUpload.fileName}</span>
+                    <span className="mx-1">—</span>
+                    {formatFileSize(fileUpload.bytesUploaded)} / {formatFileSize(fileUpload.bytesTotal)}
+                    <span className="mx-1">—</span>
+                    <span className="font-semibold">{fileUpload.percentage}%</span>
+                  </div>
+                  {/* Progress bar */}
+                  <div className="w-full h-2 bg-primary-100 dark:bg-primary-900/40 rounded-full overflow-hidden">
+                    <div
+                      className="h-full bg-primary-500 dark:bg-primary-400 rounded-full transition-all duration-300 ease-out"
+                      style={{ width: `${fileUpload.percentage}%` }}
+                    />
+                  </div>
+                  {/* Large file warning */}
+                  {fileUpload.isLargeFile && (
+                    <div className="flex items-start gap-2 text-xs text-amber-700 dark:text-amber-400 bg-amber-50 dark:bg-amber-900/20 border border-amber-200 dark:border-amber-800/50 rounded px-3 py-2">
+                      <AlertTriangle className="w-3.5 h-3.5 flex-shrink-0 mt-0.5" />
+                      <span>Tệp này lớn hơn 500 MB. Quá trình tải lên có thể mất nhiều thời gian hơn tùy tốc độ mạng.</span>
+                    </div>
+                  )}
+                </div>
+              )}
+
+              {/* Upload error state */}
+              {fileUpload.status === 'error' && fileUpload.error && (
+                <div className="flex items-start gap-2 p-3 bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800/50 rounded-lg text-sm text-red-700 dark:text-red-400">
+                  <AlertCircle className="w-4 h-4 flex-shrink-0 mt-0.5" />
+                  <span>{fileUpload.error}</span>
+                </div>
+              )}
+
+              <label className={`flex items-center gap-2 w-fit px-4 py-2 border border-border bg-surface-alt rounded-lg text-sm text-text-secondary hover:bg-surface-hover transition-colors ${(!!uploading || isFileUploading) ? 'opacity-50 cursor-not-allowed' : 'cursor-pointer'}`}>
+                {isFileUploading ? (
                   <Loader2 className="w-4 h-4 animate-spin" />
                 ) : (
                   <FileText className="w-4 h-4" />
@@ -893,12 +996,12 @@ export function ProductForm({
                   type="file"
                   accept=".docx,.zip,application/vnd.openxmlformats-officedocument.wordprocessingml.document,application/zip,application/x-zip-compressed"
                   onChange={handleFileUpload}
-                  disabled={!!uploading}
+                  disabled={!!uploading || isFileUploading}
                   className="hidden"
                 />
               </label>
               <p className="text-xs text-text-muted">
-                Hỗ trợ DOCX và ZIP — tối đa 50 MB
+                Hỗ trợ DOCX và ZIP — tối đa 1 GB. Tải lên có hỗ trợ tiếp tục nếu mất kết nối.
               </p>
             </section>
           </div>
@@ -939,7 +1042,7 @@ export function ProductForm({
 
             <button
               type="submit"
-              disabled={isPending}
+              disabled={isPending || isFileUploading}
               className="flex items-center gap-2 bg-primary-600 text-white px-6 py-2.5 rounded-lg text-sm font-medium hover:bg-primary-700 disabled:opacity-50 transition-colors"
             >
               {isPending && <Loader2 className="w-4 h-4 animate-spin" />}

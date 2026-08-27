@@ -12,7 +12,7 @@
  *   Files:   products/{product_id}/files/{uuid}.{safe_extension}
  */
 
-import { STORAGE_BUCKETS, ALLOWED_PRODUCT_FILE_MIMES, ALLOWED_FILE_EXTENSIONS, DANGEROUS_EXTENSIONS, MAX_PRODUCT_FILE_SIZE } from "@/lib/constants";
+import { STORAGE_BUCKETS, ALLOWED_PRODUCT_FILE_MIMES, ALLOWED_FILE_EXTENSIONS, DANGEROUS_EXTENSIONS, MAX_PRODUCT_FILE_SIZE, LARGE_FILE_WARNING_BYTES } from "@/lib/constants";
 
 // ─── Size Limits ───────────────────────────────────────────────────
 
@@ -204,10 +204,18 @@ export function validateProductFile(
   }
 
   if (fileSize > MAX_PRODUCT_FILE_SIZE) {
-    return "Dung lượng file vượt quá 50 MB.";
+    return "Tệp vượt quá giới hạn 1 GB.";
   }
 
   return null;
+}
+
+/**
+ * Check if a file exceeds the large-file warning threshold (500 MB).
+ * Used to trigger Admin UI warnings — upload still proceeds.
+ */
+export function isLargeFile(fileSize: number): boolean {
+  return fileSize > LARGE_FILE_WARNING_BYTES;
 }
 
 // ─── Format Derivation ─────────────────────────────────────────────

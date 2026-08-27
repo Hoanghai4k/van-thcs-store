@@ -2,20 +2,27 @@
  * Product file management server actions.
  * Handles DB metadata for uploaded product files (DOCX, ZIP).
  * All mutations require admin authentication.
+ *
+ * Provider-aware: dispatches storage operations to the correct
+ * backend (Supabase or R2) based on product_files.storage_provider.
  */
 
 "use server";
 
 import { revalidatePath } from "next/cache";
 import { getSupabaseServerClient } from "@/lib/supabase/server";
+import { getSupabaseAdmin } from "@/lib/supabase/admin";
 import { requireAdmin } from "@/lib/auth/admin-auth";
 import { syncProductFileCount } from "./actions";
+import { getProductFileProvider } from "@/lib/storage/provider";
 import type { ApiResponse } from "@/types/common";
 import type { DbProductFile, DbProductPreview } from "@/types/database";
-import { STORAGE_BUCKETS } from "@/lib/constants";
+import { STORAGE_BUCKETS, StorageProvider } from "@/lib/constants";
 
 /**
  * Register a product file in the database after successful storage upload.
+ * For R2 files, this is called by the /api/admin/upload/complete route.
+ * For legacy Supabase uploads, this can still be called directly.
  */
 export async function addProductFileRecord(
   productId: string,
@@ -23,6 +30,7 @@ export async function addProductFileRecord(
   storagePath: string,
   fileSize: number,
   mimeType: string,
+  storageProvider: string = StorageProvider.SUPABASE,
 ): Promise<ApiResponse<DbProductFile>> {
   await requireAdmin();
 
@@ -36,6 +44,7 @@ export async function addProductFileRecord(
       storage_path: storagePath,
       file_size: fileSize,
       mime_type: mimeType,
+      storage_provider: storageProvider,
     })
     .select()
     .single();
@@ -60,13 +69,13 @@ export async function addProductFileRecord(
 }
 
 /**
- * Remove a product file record and sync file_count.
- * Storage deletion should be done separately (client-side via authenticated upload).
+ * Remove a product file record and delete from the correct storage provider.
+ * Provider-aware: reads storage_provider from the DB row and dispatches accordingly.
  */
 export async function removeProductFileRecord(
   fileId: string,
   productId: string,
-): Promise<ApiResponse<{ storagePath: string }>> {
+): Promise<ApiResponse<null>> {
   await requireAdmin();
 
   const supabase = await getSupabaseServerClient();
@@ -85,10 +94,10 @@ export async function removeProductFileRecord(
     };
   }
 
-  // Get the storage path before deleting the record
+  // Get the storage path and provider before deleting the record
   const { data: fileRecord } = await supabase
     .from("product_files")
-    .select("storage_path")
+    .select("storage_path, storage_provider")
     .eq("id", fileId)
     .eq("product_id", productId)
     .single();
@@ -97,6 +106,7 @@ export async function removeProductFileRecord(
     return { success: false, error: "File không tồn tại." };
   }
 
+  // Delete from DB first
   const { error } = await supabase
     .from("product_files")
     .delete()
@@ -106,6 +116,16 @@ export async function removeProductFileRecord(
   if (error) {
     console.error("[ProductFiles] Delete error:", error.message);
     return { success: false, error: "Không thể xóa file." };
+  }
+
+  // Delete from storage provider
+  try {
+    const supabaseAdmin = getSupabaseAdmin();
+    const provider = getProductFileProvider(fileRecord.storage_provider, supabaseAdmin);
+    await provider.deleteObject(fileRecord.storage_path);
+  } catch (storageErr) {
+    // Log but don't fail — DB record is already deleted
+    console.error("[ProductFiles] Storage delete error:", storageErr);
   }
 
   await syncProductFileCount(productId);
@@ -118,7 +138,7 @@ export async function removeProductFileRecord(
   }
 
   revalidatePath(`/admin/products/${productId}`);
-  return { success: true, data: { storagePath: fileRecord.storage_path } };
+  return { success: true };
 }
 
 /**
