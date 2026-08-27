@@ -38,7 +38,7 @@ export function ProductGallery({
             src={imageUrls[activeIndex] || imageUrls[0]}
             alt={`${productName} - ảnh ${activeIndex + 1}`}
             fill
-            className="object-cover"
+            className="object-contain"
             sizes="(max-width: 1024px) 100vw, 60vw"
             unoptimized
           />

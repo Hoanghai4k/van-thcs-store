@@ -47,7 +47,7 @@ export function ProductCard({ product }: ProductCardProps) {
               src={thumbUrl}
               alt={product.name}
               fill
-              className="object-cover"
+              className="object-contain p-2"
               sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 25vw"
             />
           ) : (
