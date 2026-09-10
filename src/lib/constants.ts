@@ -104,6 +104,19 @@ export const STORAGE_BUCKETS = {
   PRODUCT_PREVIEWS: "product-previews",
 } as const;
 
+/**
+ * Maximum pages in a derived preview PDF artifact.
+ *
+ * This is a business/security invariant:
+ * - The stored preview PDF must contain at most this many pages.
+ * - The full source document must NEVER reach the customer browser.
+ * - Do NOT make this an environment variable.
+ *
+ * Database constraint: product_previews.page_count CHECK (1..25)
+ * Migration: 014_expand_product_preview_to_25_pages.sql
+ */
+export const MAX_PREVIEW_PAGES = 25;
+
 /** Default pagination */
 export const PAGINATION = {
   DEFAULT_PAGE_SIZE: 12,

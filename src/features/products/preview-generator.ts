@@ -2,6 +2,7 @@ import CloudConvert from "cloudconvert";
 import { getSupabaseAdmin } from "@/lib/supabase/admin";
 import { getProductFileProvider } from "@/lib/storage/provider";
 import { PDFDocument } from "pdf-lib";
+import { MAX_PREVIEW_PAGES } from "@/lib/constants";
 
 export interface PreviewGenerationResult {
   success: boolean;
@@ -68,7 +69,7 @@ export async function generateProductPreview(productId: string): Promise<Preview
           input: "convert-to-pdf",
           input_format: "pdf",
           output_format: "pdf",
-          page_range: "1-10",
+          page_range: `1-${MAX_PREVIEW_PAGES}`,
         },
         "export-my-file": {
           operation: "export/url",
@@ -109,20 +110,20 @@ export async function generateProductPreview(productId: string): Promise<Preview
     const arrayBuffer = await response.arrayBuffer();
     const pdfBytes = new Uint8Array(arrayBuffer);
 
-    // 7. Verify page count safely (strictly <= 10)
+    // 7. Verify page count safely (strictly <= MAX_PREVIEW_PAGES)
     const pdfDoc = await PDFDocument.load(pdfBytes, { ignoreEncryption: true });
     let pageCount = pdfDoc.getPageCount();
 
     // Extra safety: If CloudConvert failed to slice, we slice it manually using pdf-lib.
-    if (pageCount > 10) {
-      console.warn(`[Preview Generator] Truncating PDF locally. CloudConvert returned ${pageCount} pages.`);
+    if (pageCount > MAX_PREVIEW_PAGES) {
+      console.warn(`[Preview Generator] Truncating PDF locally. CloudConvert returned ${pageCount} pages, limit is ${MAX_PREVIEW_PAGES}.`);
       const newPdf = await PDFDocument.create();
-      const pages = await newPdf.copyPages(pdfDoc, Array.from({ length: 10 }, (_, i) => i));
+      const pages = await newPdf.copyPages(pdfDoc, Array.from({ length: MAX_PREVIEW_PAGES }, (_, i) => i));
       pages.forEach((page) => newPdf.addPage(page));
       const truncatedBytes = await newPdf.save();
       
       // Update our buffer reference
-      pageCount = 10;
+      pageCount = MAX_PREVIEW_PAGES;
       // Copy bytes over
       const newBuffer = Buffer.from(truncatedBytes);
       
@@ -153,7 +154,7 @@ export async function generateProductPreview(productId: string): Promise<Preview
 
       return { success: true, pageCount };
     } else {
-      // It's <= 10 pages natively
+      // It's <= MAX_PREVIEW_PAGES natively
       const storagePath = `${productId}/${Date.now()}-preview.pdf`;
       const originalFilename = `preview_${sourceFile.file_name.replace(/\.[^/.]+$/, "")}.pdf`;
       

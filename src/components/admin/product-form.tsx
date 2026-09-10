@@ -820,7 +820,7 @@ export function ProductForm({
             {productType === "PAID" && (
               <section className="bg-surface rounded-xl border border-border p-5 space-y-3 shadow-sm">
                 <h2 className="font-semibold text-text-primary">Xem trước tài liệu</h2>
-                <p className="text-sm text-text-muted">Hệ thống tự tạo bản xem trước tối đa 10 trang từ tài liệu chính.</p>
+                <p className="text-sm text-text-muted">Hệ thống tự tạo bản xem trước tối đa 25 trang từ tài liệu chính.</p>
                 
                 {currentPreviewRecord ? (
                   <div className="flex flex-col gap-3 p-3 border border-border bg-surface-alt rounded-lg">
