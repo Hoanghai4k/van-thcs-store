@@ -144,25 +144,7 @@ export function setDeliveryAccessCookie(
   });
 }
 
-/**
- * Set the delivery access cookie via Next.js cookies() API (Server Actions).
- */
-export async function setDeliveryAccessCookieServerAction(
-  downloadTokenId: string,
-  orderId: string,
-): Promise<void> {
-  const token = signDeliveryAccess(downloadTokenId, orderId);
-  const isProduction = process.env.NODE_ENV === "production";
-  const cookieStore = await cookies();
 
-  cookieStore.set(COOKIE_NAME, token, {
-    httpOnly: true,
-    secure: isProduction,
-    sameSite: "lax",
-    path: COOKIE_PATH,
-    maxAge: COOKIE_TTL_SECONDS,
-  });
-}
 
 /**
  * Read and verify the delivery access cookie.

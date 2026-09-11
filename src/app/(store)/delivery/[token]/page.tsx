@@ -18,38 +18,37 @@
  */
 
 import { redirect } from "next/navigation";
-import { getSupabaseAdmin } from "@/lib/supabase/admin";
-import { validateDeliveryToken } from "@/features/downloads/service";
-import { setDeliveryAccessCookieServerAction } from "@/lib/auth/delivery-access";
 import { ShieldX } from "lucide-react";
 import Link from "next/link";
 
 interface Props {
   params: Promise<{ token: string }>;
+  searchParams: Promise<{ [key: string]: string | string[] | undefined }>;
 }
 
-export default async function DeliveryEntryPage({ params }: Props) {
+export default async function DeliveryEntryPage({ params, searchParams }: Props) {
   const { token: rawToken } = await params;
+  const resolvedSearchParams = await searchParams;
+  const error = typeof resolvedSearchParams.error === "string" ? resolvedSearchParams.error : undefined;
 
-  if (!rawToken) {
+  if (error) {
+    let message = "Liên kết nhận tài liệu không hợp lệ hoặc đã hết hạn.";
+    if (error === "invalid_token") {
+      message = "Liên kết nhận tài liệu không hợp lệ.";
+    } else if (error === "not_eligible") {
+      message = "Đơn hàng chưa đủ điều kiện tải tài liệu.";
+    } else if (error === "system") {
+      message = "Hệ thống đang gặp sự cố. Vui lòng thử lại sau hoặc liên hệ hỗ trợ.";
+    }
+    return <DeliveryError message={message} />;
+  }
+
+  if (!rawToken || rawToken === "invalid") {
     return <DeliveryError message="Liên kết nhận tài liệu không hợp lệ." />;
   }
 
-  const supabaseAdmin = getSupabaseAdmin();
-  const result = await validateDeliveryToken(rawToken, supabaseAdmin);
-
-  if (!result.valid || !result.grant || !result.orderCode) {
-    return <DeliveryError message={result.error ?? "Liên kết nhận tài liệu không hợp lệ hoặc đã hết hạn."} />;
-  }
-
-  // Set delivery access cookie
-  await setDeliveryAccessCookieServerAction(
-    result.grant.id,
-    result.grant.orderId,
-  );
-
-  // Redirect to clean URL — raw token no longer in browser URL
-  redirect(`/order/${result.orderCode}/downloads`);
+  // Redirect to activation Route Handler to validate and securely set cookies
+  redirect(`/api/delivery/${rawToken}`);
 }
 
 function DeliveryError({ message }: { message: string }) {
