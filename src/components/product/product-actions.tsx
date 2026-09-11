@@ -2,13 +2,15 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
-import { ShoppingCart, Check, Zap, ArrowRight } from "lucide-react";
+import { ShoppingCart, Check, Zap, ArrowRight, ExternalLink } from "lucide-react";
 import Link from "next/link";
 import { useCart } from "@/components/cart/cart-provider";
 import type { ProductWithCategory } from "@/features/products/types";
 
 interface ProductActionsProps {
   product: ProductWithCategory;
+  /** Whether a derived preview PDF exists for this product */
+  hasPreview?: boolean;
 }
 
 /**
@@ -16,14 +18,19 @@ interface ProductActionsProps {
  * - Buy Now: adds to cart → redirects to /checkout
  * - Add to Cart: adds to cart → shows inline feedback
  * - Already in cart: shows "Đã trong giỏ" + link to cart
+ *
+ * For PAID products with a preview, a mobile-only "Xem thử tài liệu"
+ * link is rendered below the purchase buttons. It opens the stable
+ * preview endpoint in a new tab (no react-pdf, no previewUrl dependency).
  */
-export function ProductActions({ product }: ProductActionsProps) {
+export function ProductActions({ product, hasPreview }: ProductActionsProps) {
   const { addItem, isInCart } = useCart();
   const router = useRouter();
   const inCart = isInCart(product.id);
   const [justAdded, setJustAdded] = useState(false);
 
-
+  const showMobilePreview =
+    hasPreview === true && product.product_type === "PAID";
 
   function addToCartItem() {
     addItem({
@@ -50,6 +57,25 @@ export function ProductActions({ product }: ProductActionsProps) {
     setJustAdded(true);
   }
 
+  // Mobile preview CTA — rendered in the same card as "Mua ngay"
+  const mobilePreviewCta = showMobilePreview ? (
+    <div className="md:hidden pt-1 space-y-1.5">
+      <a
+        href={`/api/products/${product.id}/preview`}
+        target="_blank"
+        rel="noopener noreferrer"
+        className="w-full flex items-center justify-center gap-2 py-2.5 px-5 rounded-xl text-sm font-semibold text-primary-600 bg-primary-50 hover:bg-primary-100 border border-primary-200 transition-all active:scale-[0.98]"
+        data-testid="mobile-preview-cta"
+      >
+        <ExternalLink className="w-4 h-4" />
+        Xem thử tài liệu
+      </a>
+      <p className="text-xs text-text-muted text-center">
+        Xem trước tối đa 25 trang đầu.
+      </p>
+    </div>
+  ) : null;
+
   // Already in cart state
   if (inCart && !justAdded) {
     return (
@@ -73,6 +99,7 @@ export function ProductActions({ product }: ProductActionsProps) {
             <ArrowRight className="w-3.5 h-3.5" />
           </Link>
         </div>
+        {mobilePreviewCta}
       </div>
     );
   }
@@ -100,6 +127,7 @@ export function ProductActions({ product }: ProductActionsProps) {
             <ArrowRight className="w-3.5 h-3.5" />
           </Link>
         </div>
+        {mobilePreviewCta}
       </div>
     );
   }
@@ -121,6 +149,7 @@ export function ProductActions({ product }: ProductActionsProps) {
         <ShoppingCart className="w-5 h-5" />
         Thêm vào giỏ hàng
       </button>
+      {mobilePreviewCta}
     </div>
   );
 }

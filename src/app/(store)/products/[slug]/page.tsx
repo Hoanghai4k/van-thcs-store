@@ -20,7 +20,7 @@ import { ProductGallery } from "@/components/product/product-gallery";
 import { ProductActions } from "@/components/product/product-actions";
 import { ProductFAQ } from "@/components/product/product-faq";
 import { ProductPdfPreview } from "@/components/product/product-pdf-preview";
-import { MobilePreviewCard } from "@/components/product/mobile-preview-card";
+
 
 interface ProductPageProps {
   params: Promise<{ slug: string }>;
@@ -194,7 +194,7 @@ export default async function ProductDetailPage({ params }: ProductPageProps) {
               </div>
 
               {/* CTA Buttons */}
-              <ProductActions product={product} />
+              <ProductActions product={product} hasPreview={!!previewRecord} />
             </div>
 
 
@@ -241,23 +241,15 @@ export default async function ProductDetailPage({ params }: ProductPageProps) {
 
         {/* === 3. PDF Preview (Mobile: third / Desktop: left col, row 2) === */}
         {/* Outer section is server-rendered. Desktop: embedded react-pdf. Mobile: native PDF link. */}
+        {/* Desktop-only embedded PDF preview — mobile uses the purchase card CTA */}
         {product.product_type === "PAID" && previewUrl && (
-          <div className="lg:col-span-7" id="preview-section">
+          <div className="lg:col-span-7 hidden md:block" id="preview-section">
             <section className="scroll-mt-24 pt-4 lg:pt-6 border-t border-border">
               <h2 className="text-xl font-bold text-text-primary mb-5 flex items-center gap-2">
                 <FileText className="w-6 h-6 text-primary-600" />
                 Xem trước tài liệu
               </h2>
-
-              {/* Desktop: embedded react-pdf viewer */}
-              <div className="hidden md:block">
-                <ProductPdfPreview url={previewUrl} />
-              </div>
-
-              {/* Mobile: native browser PDF link */}
-              <div className="md:hidden">
-                <MobilePreviewCard url={previewUrl} />
-              </div>
+              <ProductPdfPreview url={previewUrl} />
             </section>
           </div>
         )}

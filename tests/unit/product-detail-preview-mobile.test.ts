@@ -4,12 +4,13 @@
  * Validates:
  * 1. Preview section heading is server-rendered (not inside a dynamic import)
  * 2. Desktop: embedded ProductPdfPreview viewer (hidden md:block)
- * 3. Mobile: MobilePreviewCard with "Mở bản xem thử" CTA (md:hidden)
+ * 3. Mobile: preview CTA lives in the purchase card (ProductActions), NOT in a separate section
  * 4. Preview appears BEFORE description in JSX source order
  * 5. No CSS order-* tricks — DOM source order = mobile render order
  * 6. Single conditional branch — no duplicate desktop/mobile data fetching
  * 7. BONUS products never get preview
  * 8. Preview URL is never the full source file
+ * 9. Mobile CTA uses stable API endpoint, not a signed URL
  */
 
 import { describe, it, expect } from "vitest";
@@ -19,8 +20,8 @@ import { resolve } from "path";
 const PAGE_PATH = resolve(__dirname, "../../src/app/(store)/products/[slug]/page.tsx");
 const PAGE_SOURCE = readFileSync(PAGE_PATH, "utf-8");
 
-const MOBILE_CARD_PATH = resolve(__dirname, "../../src/components/product/mobile-preview-card.tsx");
-const MOBILE_CARD_SOURCE = readFileSync(MOBILE_CARD_PATH, "utf-8");
+const ACTIONS_PATH = resolve(__dirname, "../../src/components/product/product-actions.tsx");
+const ACTIONS_SOURCE = readFileSync(ACTIONS_PATH, "utf-8");
 
 describe("Product Detail — Preview Section", () => {
 
@@ -57,37 +58,42 @@ describe("Product Detail — Preview Section", () => {
     );
   });
 
-  // ─── Mobile: native PDF link card ──────────────────────────────────
+  // ─── Mobile: CTA in purchase card (ProductActions) ─────────────────
 
-  it("mobile uses MobilePreviewCard (md:hidden)", () => {
-    expect(PAGE_SOURCE).toContain("<MobilePreviewCard");
-    expect(PAGE_SOURCE).toContain("md:hidden");
+  it("mobile preview CTA is inside ProductActions, not a separate section", () => {
+    // ProductActions should contain the "Xem thử tài liệu" CTA
+    expect(ACTIONS_SOURCE).toContain("Xem thử tài liệu");
+    // And the old MobilePreviewCard should NOT be imported in page.tsx
+    expect(PAGE_SOURCE).not.toContain("MobilePreviewCard");
+    expect(PAGE_SOURCE).not.toContain("mobile-preview-card");
   });
 
-  it("MobilePreviewCard import exists", () => {
-    expect(PAGE_SOURCE).toContain(
-      'import { MobilePreviewCard } from "@/components/product/mobile-preview-card"',
-    );
+  it("ProductActions receives hasPreview prop from page", () => {
+    expect(PAGE_SOURCE).toContain("hasPreview={!!previewRecord}");
+    expect(ACTIONS_SOURCE).toContain("hasPreview");
   });
 
-  it("MobilePreviewCard contains 'Xem thử tài liệu' CTA text", () => {
-    expect(MOBILE_CARD_SOURCE).toContain("Xem thử tài liệu");
+  it("mobile CTA uses the stable API endpoint, not a previewUrl prop", () => {
+    // ProductActions should link to the API endpoint using product.id
+    expect(ACTIONS_SOURCE).toContain("/api/products/");
+    expect(ACTIONS_SOURCE).toContain("/preview");
+    // And must NOT depend on a url/previewUrl prop
+    expect(ACTIONS_SOURCE).not.toMatch(/href=\{.*previewUrl/);
   });
 
-  it("MobilePreviewCard opens link in new tab safely", () => {
-    expect(MOBILE_CARD_SOURCE).toContain('target="_blank"');
-    expect(MOBILE_CARD_SOURCE).toContain('rel="noopener noreferrer"');
+  it("mobile CTA opens link in new tab safely", () => {
+    expect(ACTIONS_SOURCE).toContain('target="_blank"');
+    expect(ACTIONS_SOURCE).toContain('rel="noopener noreferrer"');
   });
 
-  it("MobilePreviewCard uses the url prop as href (signed preview URL)", () => {
-    expect(MOBILE_CARD_SOURCE).toContain("href={url}");
+  it("mobile CTA is hidden on desktop (md:hidden)", () => {
+    expect(ACTIONS_SOURCE).toContain("md:hidden");
   });
 
-  it("MobilePreviewCard does NOT import react-pdf", () => {
-    // Check actual import statements, not documentation mentions
-    expect(MOBILE_CARD_SOURCE).not.toMatch(/import\s.*from\s+["']react-pdf["']/);
-    expect(MOBILE_CARD_SOURCE).not.toMatch(/import\s.*from\s+["']pdfjs/);
-    expect(MOBILE_CARD_SOURCE).not.toContain("pdfjs.GlobalWorkerOptions");
+  it("mobile CTA does NOT import react-pdf", () => {
+    expect(ACTIONS_SOURCE).not.toMatch(/import\s.*from\s+["']react-pdf["']/);
+    expect(ACTIONS_SOURCE).not.toMatch(/import\s.*from\s+["']pdfjs/);
+    expect(ACTIONS_SOURCE).not.toContain("pdfjs.GlobalWorkerOptions");
   });
 
   // ─── Source order ──────────────────────────────────────────────────
@@ -114,12 +120,10 @@ describe("Product Detail — Preview Section", () => {
 
   // ─── Security ──────────────────────────────────────────────────────
 
-  it("mobile card never exposes full source paths", () => {
-    // MobilePreviewCard must not reference product_files, storage_path for full files,
-    // or any source document paths
-    expect(MOBILE_CARD_SOURCE).not.toContain("product_files");
-    expect(MOBILE_CARD_SOURCE).not.toContain("product-files");
-    expect(MOBILE_CARD_SOURCE).not.toContain("service_role");
+  it("mobile CTA never exposes full source paths", () => {
+    expect(ACTIONS_SOURCE).not.toContain("product_files");
+    expect(ACTIONS_SOURCE).not.toContain("product-files");
+    expect(ACTIONS_SOURCE).not.toContain("service_role");
   });
 
   // ─── Data condition ───────────────────────────────────────────────
