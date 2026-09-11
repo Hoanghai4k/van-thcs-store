@@ -95,8 +95,8 @@ export default async function ProductDetailPage({ params }: ProductPageProps) {
       </nav>
 
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-x-10 gap-y-8">
-        {/* Mobile 1 / Desktop Left Top: Gallery */}
-        <div className="lg:col-span-7 order-1">
+        {/* === 1. Gallery (Mobile: first / Desktop: left col, row 1) === */}
+        <div className="lg:col-span-7">
           <ProductGallery
             previewImages={product.preview_images ?? undefined}
             productName={product.name}
@@ -104,8 +104,8 @@ export default async function ProductDetailPage({ params }: ProductPageProps) {
           />
         </div>
 
-        {/* Mobile 2 / Desktop Right: Product Info + CTA */}
-        <div className="lg:col-span-5 order-2">
+        {/* === 2. Sidebar: Product Info + CTA + Trust (Mobile: second / Desktop: right col, row 1) === */}
+        <div className="lg:col-span-5">
           <div className="sticky top-20 space-y-4">
             {/* Main Info Card */}
             <div className="bg-surface rounded-2xl border border-border p-6 shadow-sm">
@@ -238,9 +238,10 @@ export default async function ProductDetailPage({ params }: ProductPageProps) {
           </div>
         </div>
 
-        {/* Mobile 3 / Desktop Left: PDF Preview (own grid item for mobile discoverability) */}
+        {/* === 3. PDF Preview (Mobile: third / Desktop: left col, row 2) === */}
+        {/* Source order = mobile order. No CSS order-* tricks. */}
         {product.product_type === "PAID" && previewUrl && (
-          <div className="lg:col-span-7 order-3" id="preview-section">
+          <div className="lg:col-span-7" id="preview-section">
             <section className="scroll-mt-24 pt-4 lg:pt-6 border-t border-border">
               <h2 className="text-xl font-bold text-text-primary mb-5 flex items-center gap-2">
                 <FileText className="w-6 h-6 text-primary-600" />
@@ -251,8 +252,8 @@ export default async function ProductDetailPage({ params }: ProductPageProps) {
           </div>
         )}
 
-        {/* Mobile 4 / Desktop Left Bottom: Details (Description, Features, FAQ) */}
-        <div className="lg:col-span-7 order-4 space-y-8 mt-2 lg:mt-0">
+        {/* === 4. Description + Features + FAQ (Mobile: fourth / Desktop: left col, row 3) === */}
+        <div className="lg:col-span-7 space-y-8">
           {/* Description */}
           {product.description && (
             <section>
@@ -308,7 +309,6 @@ export default async function ProductDetailPage({ params }: ProductPageProps) {
           )}
 
           <ProductFAQ />
-
 
         </div>
       </div>
