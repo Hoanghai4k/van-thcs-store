@@ -70,8 +70,8 @@ describe("Product Detail — Preview Section", () => {
     );
   });
 
-  it("MobilePreviewCard contains 'Mở bản xem thử' CTA text", () => {
-    expect(MOBILE_CARD_SOURCE).toContain("Mở bản xem thử");
+  it("MobilePreviewCard contains 'Xem thử tài liệu' CTA text", () => {
+    expect(MOBILE_CARD_SOURCE).toContain("Xem thử tài liệu");
   });
 
   it("MobilePreviewCard opens link in new tab safely", () => {
