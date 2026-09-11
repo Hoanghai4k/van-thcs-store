@@ -238,8 +238,21 @@ export default async function ProductDetailPage({ params }: ProductPageProps) {
           </div>
         </div>
 
-        {/* Mobile 3 / Desktop Left Bottom: Details (Description, Features, FAQ) */}
-        <div className="lg:col-span-7 order-3 space-y-8 mt-2 lg:mt-0">
+        {/* Mobile 3 / Desktop Left: PDF Preview (own grid item for mobile discoverability) */}
+        {product.product_type === "PAID" && previewUrl && (
+          <div className="lg:col-span-7 order-3" id="preview-section">
+            <section className="scroll-mt-24 pt-4 lg:pt-6 border-t border-border">
+              <h2 className="text-xl font-bold text-text-primary mb-5 flex items-center gap-2">
+                <FileText className="w-6 h-6 text-primary-600" />
+                Xem trước tài liệu
+              </h2>
+              <ProductPdfPreview url={previewUrl} />
+            </section>
+          </div>
+        )}
+
+        {/* Mobile 4 / Desktop Left Bottom: Details (Description, Features, FAQ) */}
+        <div className="lg:col-span-7 order-4 space-y-8 mt-2 lg:mt-0">
           {/* Description */}
           {product.description && (
             <section>
@@ -249,17 +262,6 @@ export default async function ProductDetailPage({ params }: ProductPageProps) {
               <div className="prose prose-sm text-text-secondary max-w-none">
                 <p className="leading-relaxed">{product.description}</p>
               </div>
-            </section>
-          )}
-
-          {/* PDF Preview */}
-          {product.product_type === "PAID" && previewUrl && (
-            <section className="scroll-mt-24 pt-6 border-t border-border">
-              <h2 className="text-xl font-bold text-text-primary mb-5 flex items-center gap-2">
-                <FileText className="w-6 h-6 text-primary-600" />
-                Xem trước tài liệu
-              </h2>
-              <ProductPdfPreview url={previewUrl} />
             </section>
           )}
 
