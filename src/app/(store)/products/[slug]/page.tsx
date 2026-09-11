@@ -194,7 +194,7 @@ export default async function ProductDetailPage({ params }: ProductPageProps) {
               </div>
 
               {/* CTA Buttons */}
-              <ProductActions product={product} hasPreview={!!previewRecord} />
+              <ProductActions product={product} />
             </div>
 
 

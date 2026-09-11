@@ -9,8 +9,6 @@ import type { ProductWithCategory } from "@/features/products/types";
 
 interface ProductActionsProps {
   product: ProductWithCategory;
-  /** Whether a derived preview PDF exists for this product */
-  hasPreview?: boolean;
 }
 
 /**
@@ -19,18 +17,18 @@ interface ProductActionsProps {
  * - Add to Cart: adds to cart → shows inline feedback
  * - Already in cart: shows "Đã trong giỏ" + link to cart
  *
- * For PAID products with a preview, a mobile-only "Xem thử tài liệu"
- * link is rendered below the purchase buttons. It opens the stable
- * preview endpoint in a new tab (no react-pdf, no previewUrl dependency).
+ * For PAID products, a mobile-only "Xem thử tài liệu" link is always
+ * rendered below the purchase buttons. It opens the stable preview
+ * endpoint in a new tab (no react-pdf, no previewUrl dependency).
+ * The endpoint itself handles whether a preview exists.
  */
-export function ProductActions({ product, hasPreview }: ProductActionsProps) {
+export function ProductActions({ product }: ProductActionsProps) {
   const { addItem, isInCart } = useCart();
   const router = useRouter();
   const inCart = isInCart(product.id);
   const [justAdded, setJustAdded] = useState(false);
 
-  const showMobilePreview =
-    hasPreview === true && product.product_type === "PAID";
+  const showMobilePreview = product.product_type === "PAID";
 
   function addToCartItem() {
     addItem({

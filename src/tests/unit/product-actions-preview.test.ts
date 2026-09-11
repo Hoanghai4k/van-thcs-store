@@ -2,13 +2,18 @@
  * Unit tests for the mobile preview CTA inside ProductActions.
  *
  * Validates that:
- * - PAID product + hasPreview=true renders "Xem thử tài liệu" with correct href
- * - PAID product + hasPreview=false does NOT render the preview button
+ * - PAID product ALWAYS renders "Xem thử tài liệu" — no hasPreview gating
  * - BONUS product never renders the preview button
- * - The href deterministically uses the product ID
+ * - The href deterministically uses the product ID via stable API endpoint
+ * - No dependency on previewUrl, signed URL, or hasPreview prop
  */
 
 import { describe, it, expect } from "vitest";
+import { readFileSync } from "fs";
+import { resolve } from "path";
+
+const ACTIONS_PATH = resolve(__dirname, "../../components/product/product-actions.tsx");
+const ACTIONS_SOURCE = readFileSync(ACTIONS_PATH, "utf-8");
 
 describe("ProductActions mobile preview CTA", () => {
   const PRODUCT_ID = "aaaaaaaa-bbbb-cccc-dddd-eeeeeeeeeeee";
@@ -27,40 +32,40 @@ describe("ProductActions mobile preview CTA", () => {
 
   it("preview href follows the stable API pattern", () => {
     const href = `/api/products/${PRODUCT_ID}/preview`;
-    // Must match the route pattern
     const pattern = /^\/api\/products\/[0-9a-f-]+\/preview$/;
     expect(href).toMatch(pattern);
   });
 
-  it("showMobilePreview logic: true when PAID and hasPreview", () => {
-    const hasPreview = true;
+  it("showMobilePreview depends ONLY on product_type, not hasPreview", () => {
+    // The source should NOT contain hasPreview gating
+    expect(ACTIONS_SOURCE).not.toContain("hasPreview");
+    // It should use product_type === "PAID" directly
+    expect(ACTIONS_SOURCE).toContain('product.product_type === "PAID"');
+  });
+
+  it("PAID product always shows mobile CTA (no hasPreview check)", () => {
     const productType = "PAID";
-    const showMobilePreview = hasPreview === true && productType === "PAID";
+    const showMobilePreview = productType === "PAID";
     expect(showMobilePreview).toBe(true);
   });
 
-  // Helper to prevent TypeScript literal type narrowing in tests
-  function asBoolean(val: boolean): boolean | undefined { return val; }
-  function asString(val: string): string { return val; }
-
-  it("showMobilePreview logic: false when hasPreview is false", () => {
-    const hasPreview = asBoolean(false);
-    const productType = asString("PAID");
-    const showMobilePreview = hasPreview === true && productType === "PAID";
+  it("BONUS product never shows mobile CTA", () => {
+    const productType: string = "BONUS";
+    const showMobilePreview = productType === "PAID";
     expect(showMobilePreview).toBe(false);
   });
 
-  it("showMobilePreview logic: false when BONUS product", () => {
-    const hasPreview = asBoolean(true);
-    const productType = asString("BONUS");
-    const showMobilePreview = hasPreview === true && productType === "PAID";
-    expect(showMobilePreview).toBe(false);
+  it("CTA is hidden on desktop (md:hidden class present)", () => {
+    expect(ACTIONS_SOURCE).toContain("md:hidden");
   });
 
-  it("showMobilePreview logic: false when hasPreview is undefined", () => {
-    const hasPreview = undefined;
-    const productType = "PAID";
-    const showMobilePreview = hasPreview === true && productType === "PAID";
-    expect(showMobilePreview).toBe(false);
+  it("CTA opens in new tab with safe rel", () => {
+    expect(ACTIONS_SOURCE).toContain('target="_blank"');
+    expect(ACTIONS_SOURCE).toContain('rel="noopener noreferrer"');
+  });
+
+  it("no hasPreview prop in interface definition", () => {
+    // Interface should not have hasPreview
+    expect(ACTIONS_SOURCE).not.toMatch(/hasPreview\s*[?:]/);
   });
 });

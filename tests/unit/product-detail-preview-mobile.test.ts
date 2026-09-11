@@ -68,9 +68,10 @@ describe("Product Detail — Preview Section", () => {
     expect(PAGE_SOURCE).not.toContain("mobile-preview-card");
   });
 
-  it("ProductActions receives hasPreview prop from page", () => {
-    expect(PAGE_SOURCE).toContain("hasPreview={!!previewRecord}");
-    expect(ACTIONS_SOURCE).toContain("hasPreview");
+  it("ProductActions does NOT gate mobile CTA on hasPreview (unconditional for PAID)", () => {
+    // hasPreview prop should be fully removed from both page and actions
+    expect(PAGE_SOURCE).not.toContain("hasPreview");
+    expect(ACTIONS_SOURCE).not.toContain("hasPreview");
   });
 
   it("mobile CTA uses the stable API endpoint, not a previewUrl prop", () => {

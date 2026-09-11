@@ -137,7 +137,7 @@ describe("GET /api/products/[productId]/preview", () => {
     expect(body.error).toContain("không hỗ trợ");
   });
 
-  it("returns 404 when no preview exists", async () => {
+  it("returns friendly HTML page when no preview exists", async () => {
     mockSingle.mockResolvedValue({
       data: { id: VALID_UUID, product_type: "PAID", is_active: true },
       error: null,
@@ -148,8 +148,11 @@ describe("GET /api/products/[productId]/preview", () => {
     const response = await GET(request, { params });
 
     expect(response.status).toBe(404);
-    const body = await response.json();
-    expect(body.error).toContain("chưa sẵn sàng");
+    const text = await response.text();
+    // Should be a friendly HTML page, not raw JSON
+    expect(text).toContain("chưa sẵn sàng");
+    expect(text).toContain("<!DOCTYPE html>");
+    expect(response.headers.get("Content-Type")).toContain("text/html");
   });
 
   it("redirects to signed URL for PAID product with preview", async () => {

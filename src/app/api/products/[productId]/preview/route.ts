@@ -80,9 +80,22 @@ export async function GET(
       .maybeSingle();
 
     if (previewError || !preview) {
-      return NextResponse.json(
-        { success: false, error: "Bản xem trước chưa sẵn sàng." },
-        { status: 404 },
+      // Friendly customer-facing page — no raw JSON on mobile
+      return new NextResponse(
+        `<!DOCTYPE html>
+<html lang="vi">
+<head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Xem trước chưa sẵn sàng</title>
+<style>body{font-family:system-ui,sans-serif;display:flex;align-items:center;justify-content:center;min-height:100vh;margin:0;background:#f9fafb;color:#374151;text-align:center;padding:1rem}
+.card{max-width:400px}.icon{font-size:3rem;margin-bottom:1rem}h1{font-size:1.25rem;margin:0 0 .5rem}p{margin:0 0 1.5rem;color:#6b7280;font-size:.875rem}
+a{display:inline-block;padding:.625rem 1.25rem;background:#4f46e5;color:#fff;border-radius:.5rem;text-decoration:none;font-size:.875rem;font-weight:600}</style></head>
+<body><div class="card"><div class="icon">📄</div><h1>Bản xem thử hiện chưa sẵn sàng</h1>
+<p>Bản xem trước của tài liệu này đang được chuẩn bị. Vui lòng quay lại sau.</p>
+<a href="javascript:history.back()">← Quay lại</a></div></body></html>`,
+        {
+          status: 404,
+          headers: { "Content-Type": "text/html; charset=utf-8" },
+        },
       );
     }
 
