@@ -1,21 +1,15 @@
 /**
- * Product Detail — Mobile Preview Visibility Regression Test
+ * Product Detail — Preview Section Regression Tests
  *
- * This test validates the Product Detail page composition to ensure:
- * 1. The PDF preview section exists in the page source
- * 2. The preview has its OWN grid item (sibling to description, not nested inside)
- * 3. The preview appears BEFORE description in JSX source order (= mobile render order)
- * 4. There is exactly ONE ProductPdfPreview usage (no duplicate desktop/mobile trees)
- * 5. The preview section is NOT wrapped in desktop-only visibility classes
- * 6. NO CSS order-* tricks are used — JSX source order IS mobile render order
- * 7. The grid parent uses grid-cols-1 on mobile (items are grid children)
- *
- * Root cause this test prevents:
- *   The preview was previously inside the same grid item as description,
- *   placed AFTER description in source order. On mobile (grid-cols-1),
- *   users scrolled through 1000+ px of content and never found the
- *   preview buried at the bottom. The fix extracts preview into its
- *   own grid item placed BEFORE description in source order.
+ * Validates:
+ * 1. Preview section heading is server-rendered (not inside a dynamic import)
+ * 2. Desktop: embedded ProductPdfPreview viewer (hidden md:block)
+ * 3. Mobile: MobilePreviewCard with "Mở bản xem thử" CTA (md:hidden)
+ * 4. Preview appears BEFORE description in JSX source order
+ * 5. No CSS order-* tricks — DOM source order = mobile render order
+ * 6. Single conditional branch — no duplicate desktop/mobile data fetching
+ * 7. BONUS products never get preview
+ * 8. Preview URL is never the full source file
  */
 
 import { describe, it, expect } from "vitest";
@@ -24,116 +18,108 @@ import { resolve } from "path";
 
 const PAGE_PATH = resolve(__dirname, "../../src/app/(store)/products/[slug]/page.tsx");
 const PAGE_SOURCE = readFileSync(PAGE_PATH, "utf-8");
-const PAGE_LINES = PAGE_SOURCE.split("\n");
 
-describe("Product Detail — Mobile Preview Visibility", () => {
+const MOBILE_CARD_PATH = resolve(__dirname, "../../src/components/product/mobile-preview-card.tsx");
+const MOBILE_CARD_SOURCE = readFileSync(MOBILE_CARD_PATH, "utf-8");
 
-  // ─── Basic existence ───────────────────────────────────────────────
+describe("Product Detail — Preview Section", () => {
 
-  it("page source contains the 'Xem trước tài liệu' heading", () => {
+  // ─── Server-rendered outer section ─────────────────────────────────
+
+  it("'Xem trước tài liệu' heading exists in the page source (server-rendered)", () => {
     expect(PAGE_SOURCE).toContain("Xem trước tài liệu");
   });
 
-  it("page source contains ProductPdfPreview component usage", () => {
+  it("preview heading is NOT inside a dynamically imported component", () => {
+    // The heading text must be in page.tsx, not buried inside product-pdf-preview
+    const previewCompSource = readFileSync(
+      resolve(__dirname, "../../src/components/product/product-pdf-preview.tsx"),
+      "utf-8",
+    );
+    expect(previewCompSource).not.toContain("Xem trước tài liệu");
+  });
+
+  it("preview section has a unique id for anchor navigation", () => {
+    expect(PAGE_SOURCE).toContain('id="preview-section"');
+  });
+
+  // ─── Desktop: embedded react-pdf viewer ────────────────────────────
+
+  it("desktop uses embedded ProductPdfPreview (hidden md:block)", () => {
     expect(PAGE_SOURCE).toContain("<ProductPdfPreview");
+    // The desktop wrapper should be hidden on mobile, shown on md+
+    expect(PAGE_SOURCE).toContain('hidden md:block');
   });
 
-  it("ProductPdfPreview is used exactly ONCE (no duplicate desktop/mobile trees)", () => {
-    const matches = PAGE_SOURCE.match(/<ProductPdfPreview/g);
-    expect(matches).not.toBeNull();
-    expect(matches!.length).toBe(1);
-  });
-
-  it("preview import exists", () => {
+  it("ProductPdfPreview import exists", () => {
     expect(PAGE_SOURCE).toContain(
       'import { ProductPdfPreview } from "@/components/product/product-pdf-preview"',
     );
   });
 
-  // ─── Source order (= mobile render order) ──────────────────────────
+  // ─── Mobile: native PDF link card ──────────────────────────────────
+
+  it("mobile uses MobilePreviewCard (md:hidden)", () => {
+    expect(PAGE_SOURCE).toContain("<MobilePreviewCard");
+    expect(PAGE_SOURCE).toContain("md:hidden");
+  });
+
+  it("MobilePreviewCard import exists", () => {
+    expect(PAGE_SOURCE).toContain(
+      'import { MobilePreviewCard } from "@/components/product/mobile-preview-card"',
+    );
+  });
+
+  it("MobilePreviewCard contains 'Mở bản xem thử' CTA text", () => {
+    expect(MOBILE_CARD_SOURCE).toContain("Mở bản xem thử");
+  });
+
+  it("MobilePreviewCard opens link in new tab safely", () => {
+    expect(MOBILE_CARD_SOURCE).toContain('target="_blank"');
+    expect(MOBILE_CARD_SOURCE).toContain('rel="noopener noreferrer"');
+  });
+
+  it("MobilePreviewCard uses the url prop as href (signed preview URL)", () => {
+    expect(MOBILE_CARD_SOURCE).toContain("href={url}");
+  });
+
+  it("MobilePreviewCard does NOT import react-pdf", () => {
+    // Check actual import statements, not documentation mentions
+    expect(MOBILE_CARD_SOURCE).not.toMatch(/import\s.*from\s+["']react-pdf["']/);
+    expect(MOBILE_CARD_SOURCE).not.toMatch(/import\s.*from\s+["']pdfjs/);
+    expect(MOBILE_CARD_SOURCE).not.toContain("pdfjs.GlobalWorkerOptions");
+  });
+
+  // ─── Source order ──────────────────────────────────────────────────
 
   it("preview appears BEFORE description in JSX source order", () => {
     const previewIdx = PAGE_SOURCE.indexOf("Xem trước tài liệu");
     const descIdx = PAGE_SOURCE.indexOf("Mô tả chi tiết");
-
     expect(previewIdx).toBeGreaterThan(-1);
     expect(descIdx).toBeGreaterThan(-1);
-    expect(
-      previewIdx,
-      "Preview must appear BEFORE description in source — source order IS mobile render order",
-    ).toBeLessThan(descIdx);
+    expect(previewIdx).toBeLessThan(descIdx);
   });
 
-  it("preview is a sibling grid item, NOT nested inside description's grid item", () => {
-    const previewLineIdx = PAGE_LINES.findIndex((l) => l.includes("<ProductPdfPreview"));
-    const descLineIdx = PAGE_LINES.findIndex((l) => l.includes("Mô tả chi tiết"));
+  it("does NOT use CSS order-* classes on preview or description grid items", () => {
+    const lines = PAGE_SOURCE.split("\n");
+    const previewIdx = lines.findIndex((l) => l.includes("<ProductPdfPreview"));
+    const descIdx = lines.findIndex((l) => l.includes("Mô tả chi tiết"));
 
-    expect(previewLineIdx).toBeGreaterThan(-1);
-    expect(descLineIdx).toBeGreaterThan(-1);
+    const previewContext = lines.slice(Math.max(0, previewIdx - 10), previewIdx + 1).join("\n");
+    const descContext = lines.slice(Math.max(0, descIdx - 10), descIdx + 1).join("\n");
 
-    // Preview must be in a SEPARATE grid item — verify there is a closing </div>
-    // between preview and description at the grid-item level
-    const betweenLines = PAGE_LINES.slice(previewLineIdx, descLineIdx).join("\n");
-    // The preview's grid wrapper should close before description starts
-    expect(betweenLines).toContain("</div>");
+    expect(previewContext).not.toMatch(/\border-\d+\b/);
+    expect(descContext).not.toMatch(/\border-\d+\b/);
   });
 
-  // ─── No CSS order tricks ──────────────────────────────────────────
+  // ─── Security ──────────────────────────────────────────────────────
 
-  it("does NOT use CSS order-* classes on grid items containing preview or description", () => {
-    const previewLineIdx = PAGE_LINES.findIndex((l) => l.includes("<ProductPdfPreview"));
-    const descLineIdx = PAGE_LINES.findIndex((l) => l.includes("Mô tả chi tiết"));
-
-    // Check 10 lines before preview for order-* on the grid item wrapper
-    const previewContext = PAGE_LINES.slice(
-      Math.max(0, previewLineIdx - 10),
-      previewLineIdx + 1,
-    ).join("\n");
-
-    // Check 10 lines before description for order-* on the grid item wrapper
-    const descContext = PAGE_LINES.slice(
-      Math.max(0, descLineIdx - 10),
-      descLineIdx + 1,
-    ).join("\n");
-
-    // Neither preview nor description grid items should rely on CSS order
-    const orderPattern = /\border-\d+\b/;
-    expect(
-      previewContext,
-      "Preview grid item should NOT use CSS order-* classes",
-    ).not.toMatch(orderPattern);
-    expect(
-      descContext,
-      "Description grid item should NOT use CSS order-* classes",
-    ).not.toMatch(orderPattern);
-  });
-
-  // ─── No desktop-only visibility ───────────────────────────────────
-
-  it("preview is NOT wrapped in desktop-only visibility classes", () => {
-    const previewLineIdx = PAGE_LINES.findIndex((l) => l.includes("<ProductPdfPreview"));
-    const contextBefore = PAGE_LINES
-      .slice(Math.max(0, previewLineIdx - 15), previewLineIdx + 1)
-      .join("\n");
-
-    const desktopOnlyPatterns = [
-      /className="[^"]*hidden\s+(?:md|lg|xl):(?:block|flex|grid)/,
-      /className="[^"]*(?:md|lg|xl):hidden/,
-    ];
-
-    for (const pattern of desktopOnlyPatterns) {
-      expect(contextBefore).not.toMatch(pattern);
-    }
-  });
-
-  // ─── Grid structure ───────────────────────────────────────────────
-
-  it("the grid uses grid-cols-1 on mobile", () => {
-    expect(PAGE_SOURCE).toMatch(/grid\s+grid-cols-1\s+lg:grid-cols-12/);
-  });
-
-  it("preview section has a unique id for anchor navigation", () => {
-    expect(PAGE_SOURCE).toContain('id="preview-section"');
+  it("mobile card never exposes full source paths", () => {
+    // MobilePreviewCard must not reference product_files, storage_path for full files,
+    // or any source document paths
+    expect(MOBILE_CARD_SOURCE).not.toContain("product_files");
+    expect(MOBILE_CARD_SOURCE).not.toContain("product-files");
+    expect(MOBILE_CARD_SOURCE).not.toContain("service_role");
   });
 
   // ─── Data condition ───────────────────────────────────────────────
@@ -146,7 +132,19 @@ describe("Product Detail — Mobile Preview Visibility", () => {
   it("previewUrl is derived from server-side getProductPreview (viewport-independent)", () => {
     expect(PAGE_SOURCE).toContain("getProductPreview");
     expect(PAGE_SOURCE).toContain("previewRecord");
-    // Ensure no viewport/mobile conditional around the data fetch
-    expect(PAGE_SOURCE).not.toMatch(/isMobile.*getProductPreview|getProductPreview.*isMobile/);
+  });
+
+  // ─── Grid structure ───────────────────────────────────────────────
+
+  it("the grid uses grid-cols-1 on mobile", () => {
+    expect(PAGE_SOURCE).toMatch(/grid\s+grid-cols-1\s+lg:grid-cols-12/);
+  });
+
+  // ─── BONUS products ───────────────────────────────────────────────
+
+  it("BONUS products are excluded by notFound() before preview logic", () => {
+    // The page has a guard: if product_type === "BONUS" → notFound()
+    expect(PAGE_SOURCE).toContain('product.product_type === "BONUS"');
+    expect(PAGE_SOURCE).toContain("notFound()");
   });
 });

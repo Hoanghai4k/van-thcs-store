@@ -20,6 +20,7 @@ import { ProductGallery } from "@/components/product/product-gallery";
 import { ProductActions } from "@/components/product/product-actions";
 import { ProductFAQ } from "@/components/product/product-faq";
 import { ProductPdfPreview } from "@/components/product/product-pdf-preview";
+import { MobilePreviewCard } from "@/components/product/mobile-preview-card";
 
 interface ProductPageProps {
   params: Promise<{ slug: string }>;
@@ -239,7 +240,7 @@ export default async function ProductDetailPage({ params }: ProductPageProps) {
         </div>
 
         {/* === 3. PDF Preview (Mobile: third / Desktop: left col, row 2) === */}
-        {/* Source order = mobile order. No CSS order-* tricks. */}
+        {/* Outer section is server-rendered. Desktop: embedded react-pdf. Mobile: native PDF link. */}
         {product.product_type === "PAID" && previewUrl && (
           <div className="lg:col-span-7" id="preview-section">
             <section className="scroll-mt-24 pt-4 lg:pt-6 border-t border-border">
@@ -247,7 +248,16 @@ export default async function ProductDetailPage({ params }: ProductPageProps) {
                 <FileText className="w-6 h-6 text-primary-600" />
                 Xem trước tài liệu
               </h2>
-              <ProductPdfPreview url={previewUrl} />
+
+              {/* Desktop: embedded react-pdf viewer */}
+              <div className="hidden md:block">
+                <ProductPdfPreview url={previewUrl} />
+              </div>
+
+              {/* Mobile: native browser PDF link */}
+              <div className="md:hidden">
+                <MobilePreviewCard url={previewUrl} />
+              </div>
             </section>
           </div>
         )}
