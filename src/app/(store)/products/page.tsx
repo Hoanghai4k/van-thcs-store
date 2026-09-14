@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { siteConfig } from "@/config/site";
 import { getProducts, getCategories } from "@/features/products/queries";
 import { ProductCard } from "@/components/product/product-card";
+import { ProductDiscoveryGuidance } from "@/components/product/product-discovery-guidance";
 import Link from "next/link";
 
 export const metadata: Metadata = {
@@ -57,11 +58,14 @@ export default async function ProductsPage() {
         {/* Product Grid */}
         <div className="flex-1">
           {products.length > 0 ? (
-            <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-5">
-              {products.map((product) => (
-                <ProductCard key={product.id} product={product} />
-              ))}
-            </div>
+            <>
+              <ProductDiscoveryGuidance />
+              <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-5">
+                {products.map((product) => (
+                  <ProductCard key={product.id} product={product} />
+                ))}
+              </div>
+            </>
           ) : (
             <div className="text-center py-20">
               <p className="text-text-muted text-lg">

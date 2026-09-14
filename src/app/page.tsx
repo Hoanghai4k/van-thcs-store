@@ -14,6 +14,7 @@ import {
 import { siteConfig } from "@/config/site";
 import { getFeaturedProducts, getCategories } from "@/features/products/queries";
 import { ProductCard } from "@/components/product/product-card";
+import { ProductDiscoveryGuidance } from "@/components/product/product-discovery-guidance";
 
 export default async function HomePage() {
   const [featuredProducts, categories] = await Promise.all([
@@ -135,6 +136,7 @@ export default async function HomePage() {
             </Link>
           </div>
 
+          <ProductDiscoveryGuidance />
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5">
             {featuredProducts.map((product) => (
               <ProductCard key={product.id} product={product} />

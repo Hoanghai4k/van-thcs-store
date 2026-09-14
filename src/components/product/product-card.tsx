@@ -39,21 +39,23 @@ export function ProductCard({ product }: ProductCardProps) {
   return (
     <div className="group bg-surface rounded-2xl border border-border hover:border-primary-200 shadow-sm hover:shadow-md transition-all duration-300 overflow-hidden flex flex-col">
       {/* Thumbnail */}
-      <div className="relative h-44 bg-gradient-to-br from-primary-50 via-primary-50 to-accent-50 flex items-center justify-center overflow-hidden">
-        {(() => {
-          const thumbUrl = getProductAssetUrl(product.thumbnail_path);
-          return thumbUrl ? (
-            <Image
-              src={thumbUrl}
-              alt={product.name}
-              fill
-              className="object-contain p-2"
-              sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 25vw"
-            />
-          ) : (
-            <FileText className="w-16 h-16 text-primary-300 group-hover:text-primary-400 transition-colors group-hover:scale-110 duration-300" />
-          );
-        })()}
+      <Link href={`/products/${product.slug}`} className="relative block h-44 bg-gradient-to-br from-primary-50 via-primary-50 to-accent-50 overflow-hidden group/thumb cursor-pointer">
+        <div className="absolute inset-0 flex items-center justify-center">
+          {(() => {
+            const thumbUrl = getProductAssetUrl(product.thumbnail_path);
+            return thumbUrl ? (
+              <Image
+                src={thumbUrl}
+                alt={product.name}
+                fill
+                className="object-contain p-2 group-hover/thumb:scale-105 transition-transform duration-500"
+                sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 25vw"
+              />
+            ) : (
+              <FileText className="w-16 h-16 text-primary-300 group-hover/thumb:text-primary-400 transition-colors group-hover/thumb:scale-110 duration-500" />
+            );
+          })()}
+        </div>
 
         {discount && (
           <span className="absolute top-3 right-3 bg-error text-white text-xs font-bold px-2.5 py-1 rounded-full shadow-sm">
@@ -61,12 +63,19 @@ export function ProductCard({ product }: ProductCardProps) {
           </span>
         )}
         {product.category && (
-          <span className="absolute top-3 left-3 bg-surface/90 backdrop-blur-sm text-primary-600 text-xs font-medium px-2.5 py-1 rounded-full flex items-center gap-1">
+          <span className="absolute top-3 left-3 bg-surface/90 backdrop-blur-sm text-primary-600 text-xs font-medium px-2.5 py-1 rounded-full flex items-center gap-1 z-10">
             <Tag className="w-3 h-3" />
             {product.category.name}
           </span>
         )}
-      </div>
+        
+        {/* Hover overlay hint */}
+        <div className="absolute inset-0 bg-black/40 opacity-0 group-hover/thumb:opacity-100 transition-opacity duration-300 flex items-center justify-center pointer-events-none">
+          <span className="bg-white/90 text-primary-800 text-sm font-semibold px-4 py-2 rounded-full transform translate-y-4 group-hover/thumb:translate-y-0 transition-all duration-300">
+            Xem chi tiết
+          </span>
+        </div>
+      </Link>
 
       {/* Content */}
       <div className="p-5 flex-1 flex flex-col">

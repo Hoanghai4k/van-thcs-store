@@ -5,6 +5,7 @@ import { ArrowLeft } from "lucide-react";
 import { siteConfig } from "@/config/site";
 import { getCategoryBySlug, getProducts, getCategories } from "@/features/products/queries";
 import { ProductCard } from "@/components/product/product-card";
+import { ProductDiscoveryGuidance } from "@/components/product/product-discovery-guidance";
 
 interface CategoryPageProps {
   params: Promise<{ slug: string }>;
@@ -74,11 +75,14 @@ export default async function CategoryPage({ params }: CategoryPageProps) {
 
         <div className="flex-1">
           {products.length > 0 ? (
-            <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-5">
-              {products.map((product) => (
-                <ProductCard key={product.id} product={product} />
-              ))}
-            </div>
+            <>
+              <ProductDiscoveryGuidance />
+              <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-5">
+                {products.map((product) => (
+                  <ProductCard key={product.id} product={product} />
+                ))}
+              </div>
+            </>
           ) : (
             <div className="text-center py-20">
               <p className="text-text-muted text-lg">Chưa có sản phẩm nào trong danh mục này.</p>
