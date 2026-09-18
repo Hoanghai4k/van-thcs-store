@@ -57,7 +57,7 @@ export function ProductActions({ product }: ProductActionsProps) {
 
   // Mobile preview CTA — rendered in the same card as "Mua ngay"
   const mobilePreviewCta = showMobilePreview ? (
-    <div className="md:hidden pt-1 space-y-1.5">
+    <div className="md:hidden pb-1 space-y-1.5">
       <a
         href={`/api/products/${product.id}/preview`}
         target="_blank"
@@ -78,6 +78,7 @@ export function ProductActions({ product }: ProductActionsProps) {
   if (inCart && !justAdded) {
     return (
       <div className="space-y-3">
+        {mobilePreviewCta}
         <button
           onClick={handleBuyNow}
           className="w-full flex items-center justify-center gap-2 py-3.5 px-6 rounded-xl text-base font-semibold bg-primary-600 text-white hover:bg-primary-700 shadow-sm hover:shadow-md transition-all active:scale-[0.98]"
@@ -97,7 +98,6 @@ export function ProductActions({ product }: ProductActionsProps) {
             <ArrowRight className="w-3.5 h-3.5" />
           </Link>
         </div>
-        {mobilePreviewCta}
       </div>
     );
   }
@@ -106,6 +106,7 @@ export function ProductActions({ product }: ProductActionsProps) {
   if (justAdded) {
     return (
       <div className="space-y-3">
+        {mobilePreviewCta}
         <button
           onClick={handleBuyNow}
           className="w-full flex items-center justify-center gap-2 py-3.5 px-6 rounded-xl text-base font-semibold bg-primary-600 text-white hover:bg-primary-700 shadow-sm hover:shadow-md transition-all active:scale-[0.98]"
@@ -125,7 +126,6 @@ export function ProductActions({ product }: ProductActionsProps) {
             <ArrowRight className="w-3.5 h-3.5" />
           </Link>
         </div>
-        {mobilePreviewCta}
       </div>
     );
   }
@@ -133,6 +133,7 @@ export function ProductActions({ product }: ProductActionsProps) {
   // Default: both CTAs available
   return (
     <div className="space-y-3">
+      {mobilePreviewCta}
       <button
         onClick={handleBuyNow}
         className="w-full flex items-center justify-center gap-2 py-3.5 px-6 rounded-xl text-base font-semibold bg-primary-600 text-white hover:bg-primary-700 shadow-sm hover:shadow-md transition-all active:scale-[0.98]"
@@ -147,7 +148,6 @@ export function ProductActions({ product }: ProductActionsProps) {
         <ShoppingCart className="w-5 h-5" />
         Thêm vào giỏ hàng
       </button>
-      {mobilePreviewCta}
     </div>
   );
 }

@@ -68,4 +68,15 @@ describe("ProductActions mobile preview CTA", () => {
     // Interface should not have hasPreview
     expect(ACTIONS_SOURCE).not.toMatch(/hasPreview\s*[?:]/);
   });
+
+  it("mobile CTA is positioned before purchase buttons (Mua ngay / Thêm vào giỏ hàng)", () => {
+    const previewIndex = ACTIONS_SOURCE.indexOf("{mobilePreviewCta}");
+    const buyNowIndex = ACTIONS_SOURCE.indexOf("onClick={handleBuyNow}");
+    
+    expect(previewIndex).toBeGreaterThan(-1);
+    expect(buyNowIndex).toBeGreaterThan(-1);
+    
+    // In all states (inCart, justAdded, default), mobilePreviewCta should be rendered first
+    expect(previewIndex).toBeLessThan(buyNowIndex);
+  });
 });
