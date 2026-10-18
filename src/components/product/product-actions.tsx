@@ -1,10 +1,9 @@
 "use client";
 
 import { useState } from "react";
-import { useRouter } from "next/navigation";
 import { ShoppingCart, Check, Zap, ArrowRight, ExternalLink } from "lucide-react";
 import Link from "next/link";
-import { useCart } from "@/components/cart/cart-provider";
+import { useBuyNow } from "@/components/product/use-buy-now";
 import type { ProductWithCategory } from "@/features/products/types";
 
 interface ProductActionsProps {
@@ -13,7 +12,7 @@ interface ProductActionsProps {
 
 /**
  * Dual CTA for product detail: "Mua ngay" + "Thêm vào giỏ hàng".
- * - Buy Now: adds to cart → redirects to /checkout
+ * - Buy Now: adds to cart → redirects to /checkout (shared useBuyNow flow)
  * - Add to Cart: adds to cart → shows inline feedback
  * - Already in cart: shows "Đã trong giỏ" + link to cart
  *
@@ -23,31 +22,10 @@ interface ProductActionsProps {
  * The endpoint itself handles whether a preview exists.
  */
 export function ProductActions({ product }: ProductActionsProps) {
-  const { addItem, isInCart } = useCart();
-  const router = useRouter();
-  const inCart = isInCart(product.id);
+  const { inCart, addToCart: addToCartItem, buyNow: handleBuyNow } = useBuyNow(product);
   const [justAdded, setJustAdded] = useState(false);
 
   const showMobilePreview = product.product_type === "PAID";
-
-  function addToCartItem() {
-    addItem({
-      productId: product.id,
-      name: product.name,
-      slug: product.slug,
-      price: product.price,
-      originalPrice: product.original_price,
-      thumbnailPath: product.thumbnail_path,
-      productType: product.product_type,
-    });
-  }
-
-  function handleBuyNow() {
-    if (!inCart) {
-      addToCartItem();
-    }
-    router.push("/checkout");
-  }
 
   function handleAddToCart() {
     if (inCart) return;

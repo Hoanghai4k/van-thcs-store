@@ -13,6 +13,8 @@ import {
   Wand2,
   RefreshCcw,
   AlertTriangle,
+  Copy,
+  Check,
 } from "lucide-react";
 import Image from "next/image";
 import type { ProductWithCategory } from "@/features/products/types";
@@ -91,6 +93,15 @@ export function ProductForm({
   const [relatedIds, setRelatedIds] = useState<string[]>(initialRelatedIds);
   const [bonusIncludedIds, setBonusIncludedIds] = useState<string[]>(initialBonusIncludedIds);
   const [currentPreviewRecord, setCurrentPreviewRecord] = useState<DbProductPreview | null>(previewRecord);
+  const [copiedPreviewLink, setCopiedPreviewLink] = useState(false);
+
+  function handleCopyPreviewLink() {
+    if (!slug) return;
+    const url = `https://tailieuhangcao.vn/xem-thu/${slug.trim()}`;
+    navigator.clipboard.writeText(url);
+    setCopiedPreviewLink(true);
+    setTimeout(() => setCopiedPreviewLink(false), 2000);
+  }
 
   // Image state
   const [thumbnailPath, setThumbnailPath] = useState(
@@ -864,10 +875,31 @@ export function ProductForm({
                         <X className="w-3.5 h-3.5" />
                         Xóa
                       </button>
+
+                      {slug && (
+                        <button
+                          type="button"
+                          onClick={handleCopyPreviewLink}
+                          className="px-3 py-1.5 text-xs font-semibold text-primary-700 border border-primary-200 bg-primary-50 rounded-md hover:bg-primary-100 transition-colors flex items-center gap-1.5 ml-auto"
+                          title={`Sao chép: https://tailieuhangcao.vn/xem-thu/${slug.trim()}`}
+                        >
+                          {copiedPreviewLink ? (
+                            <>
+                              <Check className="w-3.5 h-3.5 text-green-600" />
+                              <span>Đã chép link!</span>
+                            </>
+                          ) : (
+                            <>
+                              <Copy className="w-3.5 h-3.5" />
+                              <span>Copy link xem thử</span>
+                            </>
+                          )}
+                        </button>
+                      )}
                     </div>
                   </div>
                 ) : (
-                  <div>
+                  <div className="flex items-center gap-2">
                     <button
                       type="button"
                       onClick={handleGeneratePreviewPdf}
@@ -881,6 +913,26 @@ export function ProductForm({
                       )}
                       Tạo bản xem trước
                     </button>
+                    {slug && (
+                      <button
+                        type="button"
+                        onClick={handleCopyPreviewLink}
+                        className="px-3 py-2 text-xs font-semibold text-primary-700 border border-primary-200 bg-primary-50 rounded-lg hover:bg-primary-100 transition-colors flex items-center gap-1.5"
+                        title={`Sao chép: https://tailieuhangcao.vn/xem-thu/${slug.trim()}`}
+                      >
+                        {copiedPreviewLink ? (
+                          <>
+                            <Check className="w-3.5 h-3.5 text-green-600" />
+                            <span>Đã chép link!</span>
+                          </>
+                        ) : (
+                          <>
+                            <Copy className="w-3.5 h-3.5" />
+                            <span>Copy link xem thử</span>
+                          </>
+                        )}
+                      </button>
+                    )}
                   </div>
                 )}
               </section>
