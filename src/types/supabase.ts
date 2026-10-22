@@ -10,7 +10,7 @@ export type Database = {
   // Allows to automatically instantiate createClient with right options
   // instead of createClient<Database, { PostgrestVersion: 'XX' }>(URL, KEY)
   __InternalSupabase: {
-    PostgrestVersion: "14.5"
+    PostgrestVersion: "14.15"
   }
   graphql_public: {
     Tables: {
@@ -86,6 +86,7 @@ export type Database = {
       }
       customers: {
         Row: {
+          auth_user_id: string | null
           created_at: string
           email: string
           id: string
@@ -94,6 +95,7 @@ export type Database = {
           updated_at: string
         }
         Insert: {
+          auth_user_id?: string | null
           created_at?: string
           email: string
           id?: string
@@ -102,6 +104,7 @@ export type Database = {
           updated_at?: string
         }
         Update: {
+          auth_user_id?: string | null
           created_at?: string
           email?: string
           id?: string
@@ -110,6 +113,62 @@ export type Database = {
           updated_at?: string
         }
         Relationships: []
+      }
+      document_view_artifacts: {
+        Row: {
+          created_at: string
+          document_manifest: Json
+          error_code: string | null
+          error_message: string | null
+          id: string
+          page_count: number | null
+          product_file_id: string
+          renderer_version: string
+          source_sha256: string
+          status: string
+          storage_prefix: string | null
+          storage_provider: string
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          document_manifest?: Json
+          error_code?: string | null
+          error_message?: string | null
+          id?: string
+          page_count?: number | null
+          product_file_id: string
+          renderer_version: string
+          source_sha256: string
+          status: string
+          storage_prefix?: string | null
+          storage_provider?: string
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          document_manifest?: Json
+          error_code?: string | null
+          error_message?: string | null
+          id?: string
+          page_count?: number | null
+          product_file_id?: string
+          renderer_version?: string
+          source_sha256?: string
+          status?: string
+          storage_prefix?: string | null
+          storage_provider?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "document_view_artifacts_product_file_id_fkey"
+            columns: ["product_file_id"]
+            isOneToOne: false
+            referencedRelation: "product_files"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       download_tokens: {
         Row: {

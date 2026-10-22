@@ -105,6 +105,17 @@ export function normalizeEmail(email: string): string {
 }
 
 /**
+ * Escape special characters in SQL LIKE/ILIKE patterns (\, %, _).
+ * Ensures search strings are matched literally without wildcard expansion.
+ */
+export function escapeLikePattern(pattern: string): string {
+  return pattern
+    .replace(/\\/g, "\\\\")
+    .replace(/%/g, "\\%")
+    .replace(/_/g, "\\_");
+}
+
+/**
  * Truncate text to a maximum length with ellipsis.
  */
 export function truncateText(text: string, maxLength: number): string {

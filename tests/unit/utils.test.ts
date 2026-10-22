@@ -4,6 +4,7 @@ import {
   generateSlug,
   generateOrderCode,
   normalizeEmail,
+  escapeLikePattern,
   formatFileSize,
   cn,
 } from "@/lib/utils";
@@ -59,6 +60,28 @@ describe("normalizeEmail", () => {
 
   it("trims whitespace", () => {
     expect(normalizeEmail("  user@example.com  ")).toBe("user@example.com");
+  });
+});
+
+describe("escapeLikePattern", () => {
+  it("leaves standard alphanumeric emails unchanged", () => {
+    expect(escapeLikePattern("user@example.com")).toBe("user@example.com");
+  });
+
+  it("escapes underscore _ wildcard with backslash", () => {
+    expect(escapeLikePattern("customer_test@example.com")).toBe("customer\\_test@example.com");
+  });
+
+  it("escapes percent % wildcard with backslash", () => {
+    expect(escapeLikePattern("customer%test@example.com")).toBe("customer\\%test@example.com");
+  });
+
+  it("escapes backslash \\ with double backslash", () => {
+    expect(escapeLikePattern("customer\\test@example.com")).toBe("customer\\\\test@example.com");
+  });
+
+  it("escapes multiple wildcards in combination", () => {
+    expect(escapeLikePattern("test_%\\email@domain.com")).toBe("test\\_\\%\\\\email@domain.com");
   });
 });
 
