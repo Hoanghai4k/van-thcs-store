@@ -37,6 +37,11 @@
     ".next/dev/types/**/*.ts"
   ],
   "exclude": [
-    "node_modules"
+    "node_modules",
+    ".next",
+    "tools/full-view-renderer-poc",
+    "tools/full-view-renderer-poc/**",
+    "workers/full-view-renderer",
+    "workers/full-view-renderer/**"
   ]
 }
