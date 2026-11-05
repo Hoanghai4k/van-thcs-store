@@ -12,7 +12,8 @@
     "build": "tsc",
     "test": "vitest run",
     "generate:fixtures": "tsx fixtures/generate-test-fixtures.ts",
-    "smoke:real": "tsx scripts/real-infra-smoke-test.ts"
+    "smoke:real": "tsx scripts/real-infra-smoke-test.ts",
+    "prepare": "tsx scripts/prepare.ts"
   },
   "dependencies": {
     "@aws-sdk/client-s3": "^3.1155.0",

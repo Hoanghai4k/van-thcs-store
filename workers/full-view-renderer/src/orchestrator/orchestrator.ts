@@ -75,7 +75,7 @@ export class DocumentOrchestrator {
     }
 
     // 1. Authoritative byte-level SHA-256 computation
-    const sourceSha256 = await computeSourceSha256(sourceFilePath);
+    const sourceSha256 = request.sourceSha256Override ?? (await computeSourceSha256(sourceFilePath));
     const storagePrefix = buildStoragePrefix(productFileId, sourceSha256, rendererVersion);
 
     // 2. Query existing artifact state
@@ -151,7 +151,7 @@ export class DocumentOrchestrator {
       // 7. Plan derived storage objects
       const objectPlan = planDerivedObjects({
         productFileId,
-        sourceSha256: renderResult.sourceSha256,
+        sourceSha256,
         rendererVersion: renderResult.rendererVersion,
         documentManifest: renderResult.documentManifest,
         localOutputDirectory: renderResult.localOutputDirectory,

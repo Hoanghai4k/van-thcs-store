@@ -39,8 +39,12 @@
   "exclude": [
     "node_modules",
     ".next",
+    "tools",
+    "tools/**",
     "tools/full-view-renderer-poc",
     "tools/full-view-renderer-poc/**",
+    "workers",
+    "workers/**",
     "workers/full-view-renderer",
     "workers/full-view-renderer/**"
   ]

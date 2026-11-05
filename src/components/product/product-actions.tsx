@@ -1,13 +1,14 @@
 "use client";
 
 import { useState } from "react";
-import { ShoppingCart, Check, Zap, ArrowRight, ExternalLink } from "lucide-react";
+import { ShoppingCart, Check, Zap, ArrowRight, ExternalLink, BookOpen } from "lucide-react";
 import Link from "next/link";
 import { useBuyNow } from "@/components/product/use-buy-now";
 import type { ProductWithCategory } from "@/features/products/types";
 
 interface ProductActionsProps {
   product: ProductWithCategory;
+  isEntitled?: boolean;
 }
 
 /**
@@ -15,13 +16,14 @@ interface ProductActionsProps {
  * - Buy Now: adds to cart → redirects to /checkout (shared useBuyNow flow)
  * - Add to Cart: adds to cart → shows inline feedback
  * - Already in cart: shows "Đã trong giỏ" + link to cart
+ * - Entitled customer: displays "Xem bản đầy đủ" link to /account/library/[slug]
  *
  * For PAID products, a mobile-only "Xem thử tài liệu" link is always
  * rendered below the purchase buttons. It opens the stable preview
  * endpoint in a new tab (no react-pdf, no previewUrl dependency).
  * The endpoint itself handles whether a preview exists.
  */
-export function ProductActions({ product }: ProductActionsProps) {
+export function ProductActions({ product, isEntitled }: ProductActionsProps) {
   const { inCart, addToCart: addToCartItem, buyNow: handleBuyNow } = useBuyNow(product);
   const [justAdded, setJustAdded] = useState(false);
 
@@ -52,10 +54,28 @@ export function ProductActions({ product }: ProductActionsProps) {
     </div>
   ) : null;
 
+  // Entitled Customer Full Viewer CTA
+  const entitledFullViewerCta = isEntitled && product.slug ? (
+    <div className="pb-1 space-y-1.5">
+      <Link
+        href={`/account/library/${product.slug}`}
+        className="w-full flex items-center justify-center gap-2 py-3 px-5 rounded-xl text-sm font-semibold text-white bg-emerald-600 hover:bg-emerald-700 shadow-sm hover:shadow transition-all active:scale-[0.98]"
+        data-testid="entitled-full-viewer-cta"
+      >
+        <BookOpen className="w-4 h-4" />
+        <span>Xem bản đầy đủ trong Thư viện</span>
+      </Link>
+      <p className="text-[11px] text-emerald-700 dark:text-emerald-400 font-medium text-center">
+        ✓ Bạn đã sở hữu tài liệu này
+      </p>
+    </div>
+  ) : null;
+
   // Already in cart state
   if (inCart && !justAdded) {
     return (
       <div className="space-y-3">
+        {entitledFullViewerCta}
         {mobilePreviewCta}
         <button
           onClick={handleBuyNow}
@@ -84,6 +104,7 @@ export function ProductActions({ product }: ProductActionsProps) {
   if (justAdded) {
     return (
       <div className="space-y-3">
+        {entitledFullViewerCta}
         {mobilePreviewCta}
         <button
           onClick={handleBuyNow}
@@ -111,6 +132,7 @@ export function ProductActions({ product }: ProductActionsProps) {
   // Default: both CTAs available
   return (
     <div className="space-y-3">
+      {entitledFullViewerCta}
       {mobilePreviewCta}
       <button
         onClick={handleBuyNow}

@@ -219,3 +219,16 @@ export function getEndOfMonthVN(): Date {
   
   return new Date(Date.UTC(year, month + 1, 1, -7, 0, 0, 0));
 }
+
+/**
+ * Mask an email address for privacy-conscious display.
+ * Example: hoanghai@gmail.com -> h***@gmail.com
+ */
+export function maskEmail(email: string): string {
+  if (!email || typeof email !== "string") return "***";
+  const parts = email.trim().split("@");
+  if (parts.length !== 2 || !parts[0] || !parts[1]) return "***";
+  const [localPart, domain] = parts;
+  const firstChar = localPart.charAt(0);
+  return `${firstChar}***@${domain}`;
+}

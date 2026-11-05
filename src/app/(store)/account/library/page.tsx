@@ -4,6 +4,7 @@ import { ArrowLeft, BookOpen } from "lucide-react";
 import { siteConfig } from "@/config/site";
 import { requireCustomer } from "@/lib/auth/customer-auth";
 import { getCustomerLibrary } from "@/features/account/library-queries";
+import { checkProductsArtifactReadiness } from "@/features/viewer/viewer-service";
 import { LibraryView } from "@/components/account/library-view";
 
 export const metadata: Metadata = {
@@ -14,6 +15,14 @@ export const metadata: Metadata = {
 export default async function AccountLibraryPage() {
   await requireCustomer("/account/library");
   const items = await getCustomerLibrary();
+
+  // Check which products have ready full-view artifacts
+  const productIds = items.map((i) => i.productId);
+  const readyProductIds = await checkProductsArtifactReadiness(productIds);
+  const enrichedItems = items.map((item) => ({
+    ...item,
+    hasReadyArtifact: readyProductIds.has(item.productId),
+  }));
 
   return (
     <div className="container mx-auto px-4 py-8 sm:py-12 max-w-6xl">
@@ -44,15 +53,15 @@ export default async function AccountLibraryPage() {
           </p>
         </div>
 
-        {items.length > 0 && (
+        {enrichedItems.length > 0 && (
           <div className="text-sm text-text-secondary bg-surface-alt px-3.5 py-1.5 rounded-xl border border-border self-start sm:self-center">
-            Tổng cộng: <strong className="text-text-primary">{items.length}</strong> tài liệu
+            Tổng cộng: <strong className="text-text-primary">{enrichedItems.length}</strong> tài liệu
           </div>
         )}
       </div>
 
       {/* Library View with Filtering & Cards */}
-      <LibraryView items={items} />
+      <LibraryView items={enrichedItems} />
     </div>
   );
 }

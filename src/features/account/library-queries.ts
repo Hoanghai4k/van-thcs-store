@@ -30,6 +30,7 @@ export interface LibraryItem {
   acquisitionType: LibraryAcquisitionType;
   acquiredAt: string; // ISO date string
   orderCode: string;
+  hasReadyArtifact?: boolean;
 }
 
 interface OrderMeta {
@@ -217,4 +218,208 @@ export async function getCustomerLibraryCount(
 ): Promise<number> {
   const items = await getCustomerLibrary(client);
   return items.length;
+}
+
+export interface EntitlementVerified {
+  entitled: true;
+  customer: {
+    id: string;
+    authUserId: string;
+    email: string;
+    name: string;
+  };
+  product: {
+    id: string;
+    name: string;
+    slug: string | null;
+    isActive: boolean;
+  };
+  acquisitionType: LibraryAcquisitionType;
+  orderCode: string;
+  acquiredAt: string;
+}
+
+export interface EntitlementDenied {
+  entitled: false;
+  reason: "UNAUTHENTICATED" | "NO_CUSTOMER" | "PRODUCT_NOT_FOUND" | "NOT_ENTITLED";
+  message: string;
+}
+
+export type ProductEntitlementResult = EntitlementVerified | EntitlementDenied;
+
+const UUID_REGEX = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+
+/**
+ * Verify if the currently authenticated customer has entitlement to view a product.
+ *
+ * Checks both primary PAID purchases and BONUS gifts attached to PAID orders.
+ * Uses authenticated SSR client enforcing Row Level Security.
+ * Never trusts client-supplied customerId or email.
+ */
+export async function verifyProductEntitlement(
+  productIdOrSlug: string,
+  client?: SupabaseClient<Database>,
+): Promise<ProductEntitlementResult> {
+  const supabase = client ?? (await getSupabaseServerClient());
+
+  // 1. Authenticate user from session
+  const {
+    data: { user },
+    error: authError,
+  } = await supabase.auth.getUser();
+
+  if (authError || !user) {
+    return {
+      entitled: false,
+      reason: "UNAUTHENTICATED",
+      message: "Vui lòng đăng nhập để tiếp tục.",
+    };
+  }
+
+  // 2. Resolve linked customer business identity
+  const { data: customer, error: customerError } = await supabase
+    .from("customers")
+    .select("id, auth_user_id, email, name")
+    .eq("auth_user_id", user.id)
+    .maybeSingle();
+
+  if (customerError || !customer || !customer.auth_user_id) {
+    return {
+      entitled: false,
+      reason: "NO_CUSTOMER",
+      message: "Tài khoản khách hàng chưa được liên kết.",
+    };
+  }
+
+  // 3. Resolve target product
+  let productQuery = supabase
+    .from("products")
+    .select("id, name, slug, is_active");
+
+  const isUuid = UUID_REGEX.test(productIdOrSlug);
+  if (isUuid) {
+    productQuery = productQuery.eq("id", productIdOrSlug);
+  } else {
+    productQuery = productQuery.eq("slug", productIdOrSlug);
+  }
+
+  const { data: product, error: productError } = await productQuery.maybeSingle();
+
+  if (productError || !product) {
+    return {
+      entitled: false,
+      reason: "PRODUCT_NOT_FOUND",
+      message: "Tài liệu không tồn tại.",
+    };
+  }
+
+  // 4. Fetch own PAID orders only
+  // RLS on orders enforces: customer_id IN (SELECT id FROM customers WHERE auth_user_id = auth.uid())
+  const { data: paidOrders, error: ordersError } = await supabase
+    .from("orders")
+    .select("id, order_code, paid_at, created_at, status")
+    .eq("status", "PAID");
+
+  if (ordersError || !paidOrders || paidOrders.length === 0) {
+    return {
+      entitled: false,
+      reason: "NOT_ENTITLED",
+      message: "Bạn chưa có quyền xem tài liệu này.",
+    };
+  }
+
+  const orderMap = new Map<string, { orderCode: string; acquiredAt: string }>();
+  const paidOrderIds: string[] = [];
+
+  for (const order of paidOrders) {
+    paidOrderIds.push(order.id);
+    orderMap.set(order.id, {
+      orderCode: order.order_code,
+      acquiredAt: order.paid_at || order.created_at,
+    });
+  }
+
+  // 5. Query order_items and order_bonus_items for this specific product in customer's PAID orders
+  const [itemsRes, bonusRes] = await Promise.all([
+    supabase
+      .from("order_items")
+      .select("id, order_id, product_id, created_at")
+      .eq("product_id", product.id)
+      .in("order_id", paidOrderIds),
+    supabase
+      .from("order_bonus_items")
+      .select("id, order_id, bonus_product_id, created_at")
+      .eq("bonus_product_id", product.id)
+      .in("order_id", paidOrderIds),
+  ]);
+
+  const paidItems = itemsRes.data || [];
+  const bonusItems = bonusRes.data || [];
+
+  if (paidItems.length > 0) {
+    // Sort ascending to get earliest valid purchase
+    paidItems.sort((a, b) => {
+      const timeA = new Date(orderMap.get(a.order_id)?.acquiredAt || a.created_at).getTime();
+      const timeB = new Date(orderMap.get(b.order_id)?.acquiredAt || b.created_at).getTime();
+      return timeA - timeB;
+    });
+
+    const chosen = paidItems[0];
+    const orderInfo = orderMap.get(chosen.order_id);
+
+    return {
+      entitled: true,
+      customer: {
+        id: customer.id,
+        authUserId: customer.auth_user_id,
+        email: customer.email,
+        name: customer.name,
+      },
+      product: {
+        id: product.id,
+        name: product.name,
+        slug: product.slug,
+        isActive: product.is_active,
+      },
+      acquisitionType: "PAID",
+      orderCode: orderInfo?.orderCode || "",
+      acquiredAt: orderInfo?.acquiredAt || chosen.created_at,
+    };
+  }
+
+  if (bonusItems.length > 0) {
+    bonusItems.sort((a, b) => {
+      const timeA = new Date(orderMap.get(a.order_id)?.acquiredAt || a.created_at).getTime();
+      const timeB = new Date(orderMap.get(b.order_id)?.acquiredAt || b.created_at).getTime();
+      return timeA - timeB;
+    });
+
+    const chosen = bonusItems[0];
+    const orderInfo = orderMap.get(chosen.order_id);
+
+    return {
+      entitled: true,
+      customer: {
+        id: customer.id,
+        authUserId: customer.auth_user_id,
+        email: customer.email,
+        name: customer.name,
+      },
+      product: {
+        id: product.id,
+        name: product.name,
+        slug: product.slug,
+        isActive: product.is_active,
+      },
+      acquisitionType: "BONUS",
+      orderCode: orderInfo?.orderCode || "",
+      acquiredAt: orderInfo?.acquiredAt || chosen.created_at,
+    };
+  }
+
+  return {
+    entitled: false,
+    reason: "NOT_ENTITLED",
+    message: "Bạn chưa có quyền xem tài liệu này.",
+  };
 }

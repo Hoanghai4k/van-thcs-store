@@ -13,6 +13,7 @@ import {
 import Link from "next/link";
 import { siteConfig } from "@/config/site";
 import { getProductBySlug, getProductRelations, getProductPreview } from "@/features/products/queries";
+import { verifyProductEntitlement } from "@/features/account/library-queries";
 
 import { getSupabaseServerClient } from "@/lib/supabase/server";
 import { formatCurrency } from "@/lib/utils";
@@ -60,6 +61,15 @@ export default async function ProductDetailPage({ params }: ProductPageProps) {
   }
   
 
+
+  let isEntitled = false;
+  try {
+    const supabase = await getSupabaseServerClient();
+    const entitlement = await verifyProductEntitlement(product.id, supabase);
+    isEntitled = entitlement.entitled;
+  } catch {
+    // Unauthenticated or database error - fallback to false
+  }
 
   const discount =
     product.original_price && product.original_price > product.price
@@ -194,7 +204,7 @@ export default async function ProductDetailPage({ params }: ProductPageProps) {
               </div>
 
               {/* CTA Buttons */}
-              <ProductActions product={product} />
+              <ProductActions product={product} isEntitled={isEntitled} />
             </div>
 
 

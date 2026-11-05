@@ -9,7 +9,8 @@
     "lint": "eslint .",
     "typecheck": "tsc --noEmit",
     "test": "vitest run",
-    "test:watch": "vitest"
+    "test:watch": "vitest",
+    "full-view:prepare": "npm --prefix workers/full-view-renderer run prepare --"
   },
   "dependencies": {
     "@aws-sdk/client-s3": "^3.1119.0",

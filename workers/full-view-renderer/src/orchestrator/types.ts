@@ -58,6 +58,7 @@ export interface OrchestrateRenderRequest {
   webpQuality?: number;
   forceRetry?: boolean; // Force processing even if previously FAILED_FINAL
   dryRun?: boolean;     // Simulates orchestration without mutating storage or DB
+  sourceSha256Override?: string; // Optional authoritative hash of raw source file
   timeoutMs?: number;
 }
 

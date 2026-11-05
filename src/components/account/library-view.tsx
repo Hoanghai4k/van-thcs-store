@@ -3,7 +3,7 @@
 import { useState } from "react";
 import Image from "next/image";
 import Link from "next/link";
-import { BookOpen, FileText, Gift, Sparkles, ExternalLink, Archive } from "lucide-react";
+import { BookOpen, FileText, Gift, Sparkles, ExternalLink, Archive, Clock } from "lucide-react";
 import type { LibraryItem } from "@/features/account/library-queries";
 import { getProductAssetUrl } from "@/lib/storage/storage";
 import { formatDate } from "@/lib/utils";
@@ -166,21 +166,22 @@ export function LibraryView({ items }: LibraryViewProps) {
 
                 {/* Card Actions Footer */}
                 <div className="p-5 pt-0 space-y-2">
-                  {/* Primary CTA (Disabled Viewer Placeholder) */}
-                  <button
-                    type="button"
-                    disabled
-                    aria-disabled="true"
-                    className="w-full py-2.5 px-4 rounded-xl text-sm font-medium bg-surface-alt text-text-muted border border-border cursor-not-allowed flex items-center justify-center gap-2 select-none"
-                    title="Tính năng xem trực tuyến đang được hoàn thiện"
-                  >
-                    <BookOpen className="w-4 h-4" />
-                    <span>Xem tài liệu</span>
-                  </button>
-
-                  <p className="text-center text-[11px] text-text-muted">
-                    Tính năng xem đầy đủ đang được hoàn thiện
-                  </p>
+                  {item.hasReadyArtifact && item.slug ? (
+                    <Link
+                      href={`/account/library/${item.slug}`}
+                      className="w-full py-2.5 px-4 rounded-xl text-sm font-semibold bg-primary-600 hover:bg-primary-700 text-white flex items-center justify-center gap-2 transition-all shadow-xs hover:shadow"
+                    >
+                      <BookOpen className="w-4 h-4" />
+                      <span>Xem tài liệu</span>
+                    </Link>
+                  ) : (
+                    <div
+                      className="w-full py-2.5 px-3 rounded-xl text-xs font-medium bg-amber-50 dark:bg-amber-950/40 text-amber-800 dark:text-amber-300 border border-amber-200 dark:border-amber-800/50 flex items-center justify-center gap-1.5 text-center"
+                    >
+                      <Clock className="w-3.5 h-3.5 shrink-0 text-amber-600 dark:text-amber-400" />
+                      <span>Tài liệu đang được chuẩn bị để xem</span>
+                    </div>
+                  )}
 
                   {/* Optional secondary link to public product page if active */}
                   {item.slug && item.isActive && (
