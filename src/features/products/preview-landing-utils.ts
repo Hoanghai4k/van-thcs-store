@@ -109,6 +109,22 @@ export function buildPreviewSubtitle(params: {
   return parts.join(" • ");
 }
 
+export function buildPreviewPageCountCopy(params: {
+  previewCount: number | null | undefined;
+  fullCount: number | null | undefined;
+}): string {
+  const preview = params.previewCount && params.previewCount > 0 ? params.previewCount : null;
+  const full = params.fullCount && params.fullCount > 0 ? params.fullCount : null;
+
+  if (preview && full) {
+    return `Bản xem thử: ${preview} / ${formatCount(full)} trang`;
+  }
+  if (preview) {
+    return `Bạn đang xem ${preview} trang bản xem thử.`;
+  }
+  return "Bản xem thử đang được cập nhật.";
+}
+
 /**
  * End-of-preview summary, e.g.
  * "Bản đầy đủ gồm 1.478 trang và 3 tệp."

@@ -4,7 +4,6 @@ import {
   FileText,
   Tag,
   ArrowLeft,
-  Download,
   CheckCircle,
   BookOpen,
   Users,
@@ -13,7 +12,7 @@ import {
 import Link from "next/link";
 import { siteConfig } from "@/config/site";
 import { getProductBySlug, getProductRelations, getProductPreview } from "@/features/products/queries";
-import { verifyProductEntitlement } from "@/features/account/library-queries";
+import { getProductAccessState } from "@/features/products/access-state";
 
 import { getSupabaseServerClient } from "@/lib/supabase/server";
 import { formatCurrency } from "@/lib/utils";
@@ -62,14 +61,8 @@ export default async function ProductDetailPage({ params }: ProductPageProps) {
   
 
 
-  let isEntitled = false;
-  try {
-    const supabase = await getSupabaseServerClient();
-    const entitlement = await verifyProductEntitlement(product.id, supabase);
-    isEntitled = entitlement.entitled;
-  } catch {
-    // Unauthenticated or database error - fallback to false
-  }
+  const accessState = await getProductAccessState(product.id);
+  const isEntitled = accessState.isEntitled;
 
   const discount =
     product.original_price && product.original_price > product.price
@@ -171,11 +164,11 @@ export default async function ProductDetailPage({ params }: ProductPageProps) {
                   </div>
                 </div>
                 <div className="flex items-center gap-2.5 p-2.5 bg-surface-alt rounded-xl">
-                  <Download className="w-4.5 h-4.5 text-primary-500 flex-shrink-0" />
+                  <BookOpen className="w-4.5 h-4.5 text-primary-500 flex-shrink-0" />
                   <div>
-                    <p className="text-xs text-text-muted">Nhận hàng</p>
+                    <p className="text-xs text-text-muted">Hình thức</p>
                     <p className="text-sm font-medium text-text-primary">
-                      Tải ngay
+                      Xem trực tuyến
                     </p>
                   </div>
                 </div>
@@ -204,7 +197,7 @@ export default async function ProductDetailPage({ params }: ProductPageProps) {
               </div>
 
               {/* CTA Buttons */}
-              <ProductActions product={product} isEntitled={isEntitled} />
+              <ProductActions product={product} isEntitled={isEntitled} accessState={accessState} />
             </div>
 
 
@@ -232,17 +225,11 @@ export default async function ProductDetailPage({ params }: ProductPageProps) {
                 </div>
                 <div className="flex items-center gap-2.5">
                   <CheckCircle className="w-4 h-4 text-green-500 flex-shrink-0" />
-                  <span>Nhận tài liệu ngay sau khi thanh toán</span>
+                  <span>Xem toàn bộ tài liệu trên website</span>
                 </div>
                 <div className="flex items-center gap-2.5">
                   <CheckCircle className="w-4 h-4 text-green-500 flex-shrink-0" />
-                  <span>
-                    {product.file_format === "zip"
-                      ? "Tệp tài liệu số (ZIP) bảo mật"
-                      : product.file_format === "mixed"
-                        ? "Tải qua hệ thống riêng tư (DOCX + ZIP)"
-                        : "Tải qua hệ thống riêng tư (DOCX)"}
-                  </span>
+                  <span>Truy cập trong tài khoản cá nhân, không cần tải file về máy</span>
                 </div>
               </div>
             </div>

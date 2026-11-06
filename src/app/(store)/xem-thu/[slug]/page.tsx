@@ -7,6 +7,7 @@ import {
   getPreviewLandingData,
   getPreviewLandingProduct,
 } from "@/features/products/preview-landing";
+import { getProductAccessState } from "@/features/products/access-state";
 import { PreviewLandingView } from "@/components/preview/preview-landing-view";
 
 interface PreviewLandingPageProps {
@@ -70,11 +71,14 @@ export default async function PreviewLandingPage({
     notFound();
   }
 
+  const accessState = await getProductAccessState(data.product.id);
+
   return (
     <PreviewLandingView
       product={data.product}
       preview={data.preview}
       hasBonus={data.hasBonus}
+      accessState={accessState}
     />
   );
 }

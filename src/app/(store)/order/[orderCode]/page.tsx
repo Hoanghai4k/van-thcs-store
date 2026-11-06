@@ -19,14 +19,14 @@
  */
 
 import { getSupabaseAdmin } from "@/lib/supabase/admin";
+import { getSupabaseServerClient } from "@/lib/supabase/server";
 import { formatCurrency, formatDateTime } from "@/lib/utils";
 import Link from "next/link";
-import { Clock, CheckCircle, XCircle, AlertTriangle } from "lucide-react";
+import { Clock, CheckCircle, XCircle, AlertTriangle, BookOpen } from "lucide-react";
 import { redirect } from "next/navigation";
 import { ResumePaymentButton } from "@/components/order/resume-payment-button";
 import { CopyOrderCode } from "@/components/order/copy-order-code";
 import { getOrderAccessCookie } from "@/lib/auth/order-access";
-import { DeliveryButton } from "./delivery-button";
 
 interface Props {
   params: Promise<{ orderCode: string }>;
@@ -84,6 +84,12 @@ export default async function OrderStatusPage({ params }: Props) {
   // 4. Render order details (authorized)
   const customer = order.customer as { name: string; email: string; phone: string | null } | null;
   const items = (order.items as Array<{ id: string; product_name: string; unit_price: number }>) ?? [];
+
+  const supabase = await getSupabaseServerClient();
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+  const isAuthenticated = !!user;
 
   const statusConfig = getStatusConfig(order.status, order.latestPaymentAttempt?.status);
 
@@ -154,13 +160,53 @@ export default async function OrderStatusPage({ params }: Props) {
         </div>
       </div>
 
-      {/* PAID delivery CTA */}
+      {/* PAID Library & Full Viewer CTA */}
       {order.status === "PAID" && (
-        <div className="bg-green-50 border border-green-200 rounded-2xl p-6 mb-6 text-center">
-          <p className="text-green-800 font-medium mb-3">
-            Tài liệu của bạn đã sẵn sàng để tải xuống.
-          </p>
-          <DeliveryButton orderCode={order.order_code} orderId={order.id} />
+        <div className="bg-emerald-50 dark:bg-emerald-950/30 border border-emerald-200 dark:border-emerald-800/60 rounded-2xl p-6 mb-6 text-center space-y-4">
+          <div className="w-12 h-12 rounded-full bg-emerald-100 dark:bg-emerald-900/50 text-emerald-600 dark:text-emerald-400 flex items-center justify-center mx-auto">
+            <BookOpen className="w-6 h-6" />
+          </div>
+          {isAuthenticated ? (
+            <>
+              <div className="space-y-1">
+                <p className="text-emerald-900 dark:text-emerald-200 font-bold text-base">
+                  Tài liệu đã được kích hoạt trong tài khoản của bạn
+                </p>
+                <p className="text-emerald-700 dark:text-emerald-400 text-sm">
+                  Bạn có thể xem toàn bộ các trang tài liệu trực tuyến bất cứ lúc nào từ Thư viện cá nhân.
+                </p>
+              </div>
+              <div>
+                <Link
+                  href="/account/library"
+                  className="inline-flex items-center justify-center gap-2 px-8 py-3 bg-emerald-600 text-white font-semibold rounded-xl hover:bg-emerald-700 shadow-sm transition-colors text-base"
+                >
+                  <BookOpen className="w-5 h-5" />
+                  <span>Vào Thư viện để xem tài liệu</span>
+                </Link>
+              </div>
+            </>
+          ) : (
+            <>
+              <div className="space-y-1">
+                <p className="text-emerald-900 dark:text-emerald-200 font-bold text-base">
+                  Thanh toán thành công!
+                </p>
+                <p className="text-emerald-700 dark:text-emerald-400 text-sm">
+                  Để xem toàn bộ tài liệu trực tuyến trên website, vui lòng đăng nhập bằng email đã dùng khi mua hàng{customer?.email ? ` (${customer.email})` : ""}.
+                </p>
+              </div>
+              <div>
+                <Link
+                  href={`/login?redirect=${encodeURIComponent("/account/library")}`}
+                  className="inline-flex items-center justify-center gap-2 px-8 py-3 bg-emerald-600 text-white font-semibold rounded-xl hover:bg-emerald-700 shadow-sm transition-colors text-base"
+                >
+                  <BookOpen className="w-5 h-5" />
+                  <span>Đăng nhập để xem tài liệu</span>
+                </Link>
+              </div>
+            </>
+          )}
         </div>
       )}
 
