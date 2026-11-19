@@ -215,8 +215,19 @@ describe("Final Thesis Phase — Public Preview Paywall + Purchase Funnel", () =
   // TEST 10: Product detail owner-not-ready disables purchase
   // ───────────────────────────────────────────────────────────────────────────
   it("Test 10: Product detail owner-not-ready shows preparing notice without purchase buttons", () => {
-    expect(PRODUCT_ACTIONS_SRC).toContain("✓ Bạn đã sở hữu tài liệu này");
+    expect(PRODUCT_ACTIONS_SRC).toContain("Bạn đã sở hữu tài liệu này");
     expect(PRODUCT_ACTIONS_SRC).toContain("Tài liệu đang được chuẩn bị để xem");
+    expect(PRODUCT_ACTIONS_SRC).toContain("Xem lại bản xem thử");
+  });
+
+  // ───────────────────────────────────────────────────────────────────────────
+  // TEST 10b: Product detail unowned with preview shows 3 expected CTAs
+  // ───────────────────────────────────────────────────────────────────────────
+  it("Test 10b: Product detail unowned with preview shows Mua để xem đầy đủ + Xem thử tài liệu + Thêm vào giỏ hàng", () => {
+    expect(PRODUCT_ACTIONS_SRC).toContain("Mua để xem đầy đủ");
+    expect(PRODUCT_ACTIONS_SRC).toContain("Xem thử tài liệu");
+    expect(PRODUCT_ACTIONS_SRC).toContain("Thêm vào giỏ hàng");
+    expect(PRODUCT_ACTIONS_SRC).toContain("data-testid=\"preview-landing-cta\"");
   });
 
   // ───────────────────────────────────────────────────────────────────────────

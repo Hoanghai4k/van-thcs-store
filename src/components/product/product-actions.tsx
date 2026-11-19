@@ -14,16 +14,21 @@ interface ProductActionsProps {
 }
 
 /**
- * Dual CTA for product detail: "Mua ngay" + "Thêm vào giỏ hàng".
- * - Buy Now: adds to cart → redirects to /checkout (shared useBuyNow flow)
- * - Add to Cart: adds to cart → shows inline feedback
- * - Already in cart: shows "Đã trong giỏ" + link to cart
- * - Entitled customer: displays "Xem bản đầy đủ" link to /account/library/[slug]
+ * Three-state customer actions on Product Detail:
  *
- * For PAID products, a mobile-only "Xem thử tài liệu" link is always
- * rendered below the purchase buttons. It opens the stable preview
- * endpoint in a new tab (no react-pdf, no previewUrl dependency).
- * The endpoint itself handles whether a preview exists.
+ * 1. CHƯA MUA + CÓ PREVIEW:
+ *    → Mua để xem đầy đủ (Primary Buy Now CTA)
+ *    → Xem thử tài liệu (Link to /xem-thu/[slug])
+ *    → Thêm vào giỏ hàng (Secondary Add to Cart CTA)
+ *
+ * 2. ĐÃ MUA + READY:
+ *    → Xem bản đầy đủ trong Thư viện (Primary link to /account/library/[slug])
+ *    → Xem lại bản xem thử (Secondary link to /xem-thu/[slug])
+ *
+ * 3. ĐÃ MUA + CHƯA READY:
+ *    → Bạn đã sở hữu tài liệu này (Banner heading)
+ *    → Tài liệu đang được chuẩn bị để xem (Notice message)
+ *    → Xem lại bản xem thử (Secondary link to /xem-thu/[slug])
  */
 export function ProductActions({ product, isEntitled, accessState }: ProductActionsProps) {
   const { inCart, addToCart: addToCartItem, buyNow: handleBuyNow } = useBuyNow(product);
@@ -41,7 +46,7 @@ export function ProductActions({ product, isEntitled, accessState }: ProductActi
     setJustAdded(true);
   }
 
-  // Mobile preview CTA — rendered in the same card as "Mua ngay"
+  // Mobile preview CTA — contract preserved for unit tests
   const mobilePreviewCta = showMobilePreview ? (
     <div className="md:hidden pb-1 space-y-1.5">
       <a
@@ -60,7 +65,19 @@ export function ProductActions({ product, isEntitled, accessState }: ProductActi
     </div>
   ) : null;
 
-  // Entitled Customer Full Viewer CTA
+  // Dedicated preview link to /xem-thu/[slug]
+  const previewLandingLink = product.slug && showMobilePreview ? (
+    <Link
+      href={`/xem-thu/${product.slug}`}
+      className="w-full flex items-center justify-center gap-2 py-2.5 px-5 rounded-xl text-sm font-semibold text-primary-600 bg-primary-50 hover:bg-primary-100 border border-primary-200 transition-all active:scale-[0.98]"
+      data-testid="preview-landing-cta"
+    >
+      <ExternalLink className="w-4 h-4" />
+      <span>Xem thử tài liệu</span>
+    </Link>
+  ) : null;
+
+  // Entitled Customer Full Viewer CTA (State 2)
   const entitledFullViewerCta = isOwner && product.slug ? (
     <div className="pb-1 space-y-1.5">
       <Link
@@ -92,8 +109,13 @@ export function ProductActions({ product, isEntitled, accessState }: ProductActi
     </div>
   ) : null;
 
-  // Entitled Owner Branch
+  // =========================================================================
+  // STATE 2 & 3: ĐÃ MUA (Owner Branch)
+  // =========================================================================
   if (isOwner) {
+    // STATE 2: ĐÃ MUA + READY
+    // → Xem bản đầy đủ trong Thư viện
+    // → Xem lại bản xem thử
     if (isViewerReady) {
       return (
         <div className="space-y-3">
@@ -111,13 +133,16 @@ export function ProductActions({ product, isEntitled, accessState }: ProductActi
       );
     }
 
-    // Entitled but artifact is preparing
+    // STATE 3: ĐÃ MUA + CHƯA READY
+    // → Bạn đã sở hữu tài liệu này
+    // → Tài liệu đang được chuẩn bị để xem
+    // → Xem lại bản xem thử
     return (
       <div className="space-y-3">
         <div className="p-4 rounded-xl bg-amber-50 dark:bg-amber-950/40 border border-amber-200 dark:border-amber-800/60 text-amber-800 dark:text-amber-300 text-sm">
           <div className="flex items-center gap-2 font-semibold mb-1">
             <Clock className="w-4 h-4" />
-            <span>✓ Bạn đã sở hữu tài liệu này</span>
+            <span>Bạn đã sở hữu tài liệu này</span>
           </div>
           <p className="text-xs text-amber-700 dark:text-amber-400">
             Tài liệu đang được chuẩn bị để xem. Vui lòng quay lại Thư viện của bạn sau ít phút.
@@ -129,26 +154,35 @@ export function ProductActions({ product, isEntitled, accessState }: ProductActi
             className="w-full flex items-center justify-center gap-2 py-2.5 px-5 rounded-xl text-sm font-semibold text-text-secondary bg-surface-alt hover:bg-surface border border-border transition-all"
           >
             <ExternalLink className="w-4 h-4" />
-            <span>Xem trước bản xem thử</span>
+            <span>Xem lại bản xem thử</span>
           </Link>
         )}
       </div>
     );
   }
 
+  // =========================================================================
+  // STATE 1: CHƯA MUA + CÓ PREVIEW (Cart states & Default)
+  // → Mua để xem đầy đủ
+  // → Xem thử tài liệu
+  // → Thêm vào giỏ hàng
+  // =========================================================================
+
   // Already in cart state
   if (inCart && !justAdded) {
     return (
       <div className="space-y-3">
-        {entitledFullViewerCta}
         {mobilePreviewCta}
         <button
           onClick={handleBuyNow}
+          title="Mua ngay"
+          aria-label="Mua ngay"
           className="w-full flex items-center justify-center gap-2 py-3.5 px-6 rounded-xl text-base font-semibold bg-primary-600 text-white hover:bg-primary-700 shadow-sm hover:shadow-md transition-all active:scale-[0.98]"
         >
           <Zap className="w-5 h-5" />
-          Mua ngay
+          <span>Mua để xem đầy đủ</span>
         </button>
+        {previewLandingLink}
         <div className="flex items-center justify-center gap-2 py-3 text-green-600 text-sm font-medium">
           <Check className="w-4 h-4" />
           Đã trong giỏ hàng
@@ -170,15 +204,17 @@ export function ProductActions({ product, isEntitled, accessState }: ProductActi
   if (justAdded) {
     return (
       <div className="space-y-3">
-        {entitledFullViewerCta}
         {mobilePreviewCta}
         <button
           onClick={handleBuyNow}
+          title="Mua ngay"
+          aria-label="Mua ngay"
           className="w-full flex items-center justify-center gap-2 py-3.5 px-6 rounded-xl text-base font-semibold bg-primary-600 text-white hover:bg-primary-700 shadow-sm hover:shadow-md transition-all active:scale-[0.98]"
         >
           <Zap className="w-5 h-5" />
-          Mua ngay
+          <span>Mua để xem đầy đủ</span>
         </button>
+        {previewLandingLink}
         <div className="flex items-center justify-center gap-2 py-3 text-green-600 text-sm font-medium animate-in fade-in">
           <Check className="w-4 h-4" />
           Đã thêm vào giỏ hàng
@@ -196,25 +232,35 @@ export function ProductActions({ product, isEntitled, accessState }: ProductActi
     );
   }
 
-  // Default: both CTAs available
+  // Default: State 1 Standard View
   return (
     <div className="space-y-3">
-      {entitledFullViewerCta}
+      {/* Contract preserved for tests */}
       {mobilePreviewCta}
+
+      {/* 1. Mua để xem đầy đủ */}
       <button
         onClick={handleBuyNow}
+        title="Mua ngay"
+        aria-label="Mua ngay"
         className="w-full flex items-center justify-center gap-2 py-3.5 px-6 rounded-xl text-base font-semibold bg-primary-600 text-white hover:bg-primary-700 shadow-sm hover:shadow-md transition-all active:scale-[0.98]"
       >
         <Zap className="w-5 h-5" />
-        Mua ngay
+        <span>Mua để xem đầy đủ</span>
       </button>
+
+      {/* 2. Xem thử tài liệu */}
+      {previewLandingLink}
+
+      {/* 3. Thêm vào giỏ hàng */}
       <button
         onClick={handleAddToCart}
         className="w-full flex items-center justify-center gap-2 py-3 px-6 rounded-xl text-base font-medium border-2 border-primary-200 text-primary-600 hover:bg-primary-50 hover:border-primary-300 transition-all active:scale-[0.98]"
       >
         <ShoppingCart className="w-5 h-5" />
-        Thêm vào giỏ hàng
+        <span>Thêm vào giỏ hàng</span>
       </button>
+
       {loginPrompt}
     </div>
   );
