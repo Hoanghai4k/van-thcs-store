@@ -53,6 +53,10 @@ describe("Customer Authentication & Account Linking", () => {
       expect(getSafeRedirect("/account")).toBe("/account");
       expect(getSafeRedirect("/account/orders")).toBe("/account/orders");
       expect(getSafeRedirect("/account/library")).toBe("/account/library");
+      expect(getSafeRedirect("/account/library/van-7")).toBe("/account/library/van-7");
+      expect(getSafeRedirect("/account/library/meo-xac-dinh-vdnl-trong-bai-nlvh-rat-hay")).toBe(
+        "/account/library/meo-xac-dinh-vdnl-trong-bai-nlvh-rat-hay",
+      );
       expect(getSafeRedirect("/gio-hang")).toBe("/gio-hang");
       expect(getSafeRedirect("/tai-lieu/ngu-van-9?ref=banner")).toBe(
         "/tai-lieu/ngu-van-9?ref=banner",
@@ -67,6 +71,7 @@ describe("Customer Authentication & Account Linking", () => {
     });
 
     it("rejects malicious absolute external protocol URLs", () => {
+      expect(getSafeRedirect("https://evil.example")).toBe("/account");
       expect(getSafeRedirect("https://evil.com")).toBe("/account");
       expect(getSafeRedirect("http://evil.com/phish")).toBe("/account");
       expect(getSafeRedirect("ftp://evil.com/file")).toBe("/account");
@@ -74,6 +79,7 @@ describe("Customer Authentication & Account Linking", () => {
     });
 
     it("rejects protocol-relative URL exploits (//evil.com)", () => {
+      expect(getSafeRedirect("//evil.example")).toBe("/account");
       expect(getSafeRedirect("//evil.com")).toBe("/account");
       expect(getSafeRedirect("//attacker.com/steal-session")).toBe("/account");
       expect(getSafeRedirect("///evil.com")).toBe("/account");

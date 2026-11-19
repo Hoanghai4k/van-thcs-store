@@ -3,6 +3,7 @@ import { readFileSync } from "fs";
 import { resolve } from "path";
 import { getProductAccessState } from "@/features/products/access-state";
 import { buildPreviewPageCountCopy } from "@/features/products/preview-landing-utils";
+import { getSafeRedirect } from "@/lib/auth/customer-auth";
 import { MAX_PREVIEW_PAGES } from "@/lib/constants";
 import type { SupabaseClient } from "@supabase/supabase-js";
 import type { Database } from "@/types/database";
@@ -387,5 +388,23 @@ describe("Final Thesis Phase — Public Preview Paywall + Purchase Funnel", () =
     expect(PREVIEW_VIEW_SRC).toContain("Xem toàn bộ tài liệu trên website");
     expect(PREVIEW_VIEW_SRC).toContain("Truy cập trong tài khoản cá nhân");
     expect(PREVIEW_VIEW_SRC).toContain("Không cần tải file về máy");
+  });
+
+  // ───────────────────────────────────────────────────────────────────────────
+  // TEST 24: Login redirect safely preserves library routes while rejecting exploits
+  // ───────────────────────────────────────────────────────────────────────────
+  it("Test 24: Login redirect preserves /account/library/[slug] while rejecting open redirect exploits", () => {
+    // Valid library routes preserved
+    expect(getSafeRedirect("/account/library")).toBe("/account/library");
+    expect(getSafeRedirect("/account/library/van-7")).toBe("/account/library/van-7");
+    expect(getSafeRedirect("/account/library/meo-xac-dinh-vdnl-trong-bai-nlvh-rat-hay")).toBe(
+      "/account/library/meo-xac-dinh-vdnl-trong-bai-nlvh-rat-hay",
+    );
+
+    // Malicious open redirect attempts rejected and fall back safely
+    expect(getSafeRedirect("https://evil.example")).toBe("/account");
+    expect(getSafeRedirect("//evil.example")).toBe("/account");
+    expect(getSafeRedirect("http://evil.example/steal-session")).toBe("/account");
+    expect(getSafeRedirect("/\\evil.example")).toBe("/account");
   });
 });
